@@ -1,0 +1,74 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "greasemonkey": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "root": true,
+  "rules": {
+    "arrow-body-style": [
+      "error",
+      "always"
+    ],
+    "arrow-parens": [
+      "error",
+      "always"
+    ],
+    "arrow-spacing": [
+      "error",
+      {
+        "before": true,
+        "after": true
+      }
+    ],
+    "block-scoped-var": "error",
+    "block-spacing": [
+      "error",
+      "always"
+    ],
+    "camelcase": [
+      "error",
+      {
+        "allow": [
+          "StackExchange",
+          "GM_config"
+        ]
+      }
+    ],
+    "comma-dangle": [
+      "error",
+      "never"
+    ],
+    "comma-spacing": [
+      "error",
+      {
+        "before": false,
+        "after": true
+      }
+    ],
+    "comma-style": [
+      "error",
+      "last"
+    ],
+    "curly": "error",
+    "eqeqeq": "error",
+    "func-call-spacing": [
+      "error",
+      "never"
+    ],
+    "guard-for-in": "error",
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "prefer-const": "error",
+    "space-before-function-paren": "error",
+    "semi": [
+      "error",
+      "always"
+    ]
+  }
+}
