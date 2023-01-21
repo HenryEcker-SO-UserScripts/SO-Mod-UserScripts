@@ -65,7 +65,12 @@
       "single"
     ],
     "prefer-const": "error",
-    "space-before-function-paren": "error",
+    "space-before-function-paren": [
+      "error",
+      {
+        "named": "never"
+      }
+    ],
     "semi": [
       "error",
       "always"
