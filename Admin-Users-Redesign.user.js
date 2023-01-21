@@ -50,7 +50,7 @@
                 highlightSelf: false
             },
             'flagged-posts-recent': {
-                tabNavName: 'Flagged Posts (recent)',
+                tabNavName: 'Flagged Posts (last 30 days)',
                 tabTitle: 'Users with Flagged Posts (last 30 days)',
                 dataLoadFromUrl: '/admin/users/flagged-posts',
                 urlSearchParams: 'recent=1',
@@ -183,10 +183,10 @@
         window.addEventListener('popstate', (ev) => {
             ev.preventDefault();
             const {currentTab, currentPage} = fetchInformationFromPage();
-            const {dataLoadFromUrl, searchParams} = config.tabInfo[currentTab];
+            const {dataLoadFromUrl, urlSearchParams} = config.tabInfo[currentTab];
             $(`#${config.bodyId} .js-auto-load-target`)
                 .html(config.loadingComponent) // Replace with loading component because it's more confusing to not show any indication something's happening
-                .load(buildURL(dataLoadFromUrl, searchParams, {'page': currentPage}).toString());
+                .load(buildURL(dataLoadFromUrl, urlSearchParams, {'page': currentPage}).toString());
         });
     }
 
