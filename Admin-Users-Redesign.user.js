@@ -3,7 +3,7 @@
 // @description  Makes /admin/users a bit less busy
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign.user.js
 //
@@ -22,14 +22,18 @@
         'selfActionClass': 'bg-black-075',
         'bodyId': 'auru-main-content',
         'route': '/admin/users',
-        'defaultTab': 'messages',
+        'defaultTab': {
+            'main': 'messages',
+            'meta': 'flagged-posts'
+        },
         'loadingComponent': '<div class="d-flex fd-row g8"><div class="s-spinner s-spinner__sm"><div class="v-visible-sr">Loading...</div></div>Loading...</div>',
         'tabInfo': {
             'messages': {
                 tabNavName: 'Messages',
                 tabTitle: 'Latest User Messages',
                 dataLoadFromUrl: '/admin/users/messages',
-                highlightSelf: true
+                highlightSelf: true,
+                mainOnly: true
             },
             'annotated': {
                 tabNavName: 'Annotations',
@@ -47,7 +51,8 @@
                 tabNavName: 'Timed Suspension',
                 tabTitle: 'Latest User Messages)',
                 dataLoadFromUrl: '/admin/users/suspended',
-                highlightSelf: false
+                highlightSelf: false,
+                mainOnly: true
             },
             'flagged-posts-recent': {
                 tabNavName: 'Flagged Posts (last 30 days)',
@@ -99,14 +104,17 @@
     function buildNavLiString(currentTab) {
         return Object.entries(config.tabInfo)
             .map(([queryLocation, {
-                tabNavName, tabTitle
+                tabNavName, tabTitle, mainOnly
             }]) => {
-                return buildNavLi(tabNavName, tabTitle, queryLocation, currentTab);
+                return buildNavLi(tabNavName, tabTitle, queryLocation, currentTab, mainOnly);
             }).join('');
 
     }
 
-    function buildNavLi(tabText, tabTitle, queryLocation, currentTab) {
+    function buildNavLi(tabText, tabTitle, queryLocation, currentTab, mainOnly) {
+        if (mainOnly === true && StackExchange.options.site.isChildMeta) {
+            return '';
+        }
         return `<li><a class="s-navigation--item pr48 ps-relative${currentTab === queryLocation ? ' is-selected' : ''}" href="${buildURL(config.route, '', {tab: queryLocation}).toString()}" title="${tabTitle}">${tabText}</a></li>`;
     }
 
@@ -194,7 +202,7 @@
     function fetchInformationFromPage() {
         const usp = new URLSearchParams(window.location.search);
         return {
-            currentTab: usp.get('tab') ?? config.defaultTab,
+            currentTab: usp.get('tab') ?? config.defaultTab[StackExchange.options.site.isChildMeta ? 'meta' : 'main'],
             currentPage: usp.get('page') ?? 1,
             displayName: $('.s-topbar--item.s-user-card .s-avatar').first().attr('title')
         };
