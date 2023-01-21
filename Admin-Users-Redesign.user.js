@@ -3,7 +3,7 @@
 // @description  Makes /admin/users a bit less busy
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.1
+// @version      0.0.2
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign.user.js
 //
@@ -23,6 +23,7 @@
         'bodyId': 'auru-main-content',
         'route': '/admin/users',
         'defaultTab': 'messages',
+        'loadingComponent': '<div class="d-flex fd-row g8"><div class="s-spinner s-spinner__sm"><div class="v-visible-sr">Loading...</div></div>Loading...</div>',
         'tabInfo': {
             'messages': {
                 tabNavName: 'Messages',
@@ -64,55 +65,27 @@
         }
     };
 
-
-    function attachOnDataLoadTasks(currentTab, displayName) {
-        $(document).on('ajaxComplete', (_0, _1, {url}) => {
-            if (url.startsWith(config.route)) {
-                addListenerToPaginationItems();
-                if (config.tabInfo[currentTab].highlightSelf) {
-                    highlightOwnItems(displayName);
+    function buildURL(relativePath, baseURLSearchParamString, searchParams) {
+        const url = new URL(relativePath, window.location.origin);
+        if (baseURLSearchParamString !== undefined || searchParams !== undefined) {
+            const usp = new URLSearchParams(baseURLSearchParamString);
+            Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+                if (value === undefined) {
+                    usp.delete(key);
+                } else {
+                    usp.set(key, value);
                 }
-            }
-        });
-    }
-
-    function addListenerToPaginationItems() {
-        $('.js-ajax .s-pagination--item').on('click', (ev) => {
-            const href = ev.target.getAttribute('href');
-            updateURLSearchParamPage(
-                new URLSearchParams(href.split('?').at(-1)).get('page')
-            );
-        });
-    }
-
-
-    function updateURLSearchParamPage(newPage) {
-        const usp = new URLSearchParams(window.location.search);
-        if (newPage === null || newPage === undefined) {
-            return;
-        } else if (newPage === '1') {
-            usp.delete('page');
-        } else {
-            usp.set('page', newPage);
+            });
+            url.search = usp.toString();
         }
-
-        // Using replace state because backwards navigation is a huge pain (would require manually fetching the page), 
-        // but this at least allows page refreshes, share links, and some navigation between tabs
-        // TODO Add back button support
-        history.replaceState(null, '', `${config.route}?${usp.toString()}`);
-    }
-
-    function highlightOwnItems(displayName) {
-        $(`.annotime:contains("${displayName}")`)
-            .closest('tr')
-            .addClass(config.selfActionClass);
+        return url;
     }
 
     // Build HTML for the page
-    function rebuildPage(currentTab, currentPage) {
+    function rebuildPage(currentTab, currentPage, displayName) {
         return $('<div class="d-flex mb48"></div>')
             .append(buildNav(currentTab))
-            .append(buildMainBody(currentTab, currentPage));
+            .append(buildMainBody(currentTab, currentPage, displayName));
     }
 
 
@@ -134,19 +107,78 @@
     }
 
     function buildNavLi(tabText, tabTitle, queryLocation, currentTab) {
-        return `<li><a class="s-navigation--item pr48 ps-relative${currentTab === queryLocation ? ' is-selected' : ''}" href="${config.route}?tab=${queryLocation}" title="${tabTitle}">${tabText}</a></li>`;
+        return `<li><a class="s-navigation--item pr48 ps-relative${currentTab === queryLocation ? ' is-selected' : ''}" href="${buildURL(config.route, '', {tab: queryLocation}).toString()}" title="${tabTitle}">${tabText}</a></li>`;
     }
 
     // Build main container for data
-    function buildMainBody(currentTab, currentPage) {
-        const currentConfig = config.tabInfo[currentTab];
-        const usp = new URLSearchParams(currentConfig.urlSearchParams);
-        usp.set('page', currentPage);
+    function buildMainBody(currentTab, currentPage, displayName) {
+        const {tabTitle, dataLoadFromUrl, urlSearchParams} = config.tabInfo[currentTab];
+
+        const jsAutoLoadDiv = $(`<div class="js-auto-load" data-load-from="${buildURL(dataLoadFromUrl, urlSearchParams, {page: currentPage}).toString()}" aria-live="polite">${config.loadingComponent}</div>`);
+        attachLoadListenerToDiv(jsAutoLoadDiv[0], currentTab, displayName);
+
         return $(`<div id="${config.bodyId}"></div>`)
-            .append(`<h2>${currentConfig.tabTitle}</h2>`)
-            .append($(`<div class="js-auto-load" data-load-from="${currentConfig.dataLoadFromUrl}?${usp.toString()}" aria-live="polite"><div class="d-flex fd-row g8"><div class="s-spinner s-spinner__sm"><div class="v-visible-sr">Loading...</div></div>Loading...</div></div>`));
+            .append(`<h2>${tabTitle}</h2>`)
+            .append(jsAutoLoadDiv);
     }
 
+    // Attach mutation observer to monitor for when the DOM elements have been added
+    function attachLoadListenerToDiv(node, currentTab, displayName) {
+        const observer = new MutationObserver((mutationList) => {
+            for (const mutation of mutationList) {
+                if (
+                    mutation.type === 'childList' &&
+                    (mutation.addedNodes ?? []).length === 5 && // This is a set number of elements
+                    mutation.target.classList.contains('js-auto-load-target')
+                ) {
+                    addListenerToPaginationItems();
+                    if (config.tabInfo[currentTab].highlightSelf) {
+                        highlightOwnItems(displayName);
+                    }
+                    return; // We've found what we need don't look through any more mutations
+                }
+            }
+        });
+        observer.observe(node, {childList: true});
+    }
+
+
+    function addListenerToPaginationItems() {
+        $('.js-ajax .s-pagination--item').on('click', (ev) => {
+            updateURLSearchParamPage(
+                new URLSearchParams(
+                    buildURL(ev.target.href).search
+                ).get('page')
+            );
+        });
+    }
+
+    function updateURLSearchParamPage(newPage) {
+        if (newPage === null || newPage === undefined) {
+            return;
+        }
+        const newLocation = buildURL(config.route, window.location.search, {'page': newPage === '1' ? undefined : newPage}).toString();
+        history.pushState(null, '', newLocation);
+    }
+
+    // Highlight items that contain your display name as the author
+    function highlightOwnItems(displayName) {
+        $(`.annotime:contains("${displayName}")`)
+            .closest('tr')
+            .addClass(config.selfActionClass);
+    }
+
+    // Allow back and forward navigation to update page values
+    function attachOnPopStateTasks() {
+        window.addEventListener('popstate', (ev) => {
+            ev.preventDefault();
+            const {currentTab, currentPage} = fetchInformationFromPage();
+            const {dataLoadFromUrl, searchParams} = config.tabInfo[currentTab];
+            $(`#${config.bodyId} .js-auto-load-target`)
+                .html(config.loadingComponent) // Replace with loading component because it's more confusing to not show any indication something's happening
+                .load(buildURL(dataLoadFromUrl, searchParams, {'page': currentPage}).toString());
+        });
+    }
 
     // Helper to get various information from page/URL
     function fetchInformationFromPage() {
@@ -160,10 +192,7 @@
 
     StackExchange.ready(() => {
         const {currentTab, currentPage, displayName} = fetchInformationFromPage();
-        $('.content-page').replaceWith(
-            rebuildPage(currentTab, currentPage)
-        );
-        attachOnDataLoadTasks(currentTab, displayName);
+        $('.content-page').replaceWith(rebuildPage(currentTab, currentPage, displayName));
+        attachOnPopStateTasks();
     });
-
 }());
