@@ -124,7 +124,7 @@
 
     // Attach mutation observer to monitor for when the DOM elements have been added
     function attachLoadListenerToDiv(node, currentTab, displayName) {
-        const observer = new MutationObserver((mutationList) => {
+        const dataObserver = new MutationObserver((mutationList, observer) => {
             for (const mutation of mutationList) {
                 if (
                     mutation.type === 'childList' &&
@@ -135,11 +135,21 @@
                     if (config.tabInfo[currentTab].highlightSelf) {
                         highlightOwnItems(displayName);
                     }
-                    return; // We've found what we need don't look through any more mutations
+                    break; // We've found what we need don't look through any more mutations
                 }
             }
+            observer.disconnect(); // Don't care about any future DOM updates
         });
-        observer.observe(node, {childList: true});
+
+        const observerConfig = {childList: true};
+
+        dataObserver.observe(node, observerConfig);
+        // Re-attach observer on next ajax call
+        $(document).on('ajaxSend', (_0, _1, {url}) => {
+            if (url.startsWith(config.route)) {
+                dataObserver.observe(node, observerConfig);
+            }
+        });
     }
 
 
