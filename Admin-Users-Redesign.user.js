@@ -4,8 +4,8 @@
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
 // @version      0.0.1
-// @downloadURL  https://github.com/HenryEcker/SO-UserScripts/raw/main/Admin-Users-Redesign.user.js
-// @updateURL    https://github.com/HenryEcker/SO-UserScripts/raw/main/Admin-Users-Redesign.user.js
+// @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign.user.js
+// @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign.user.js
 //
 // @match        *://*.stackoverflow.com/admin/users
 //
