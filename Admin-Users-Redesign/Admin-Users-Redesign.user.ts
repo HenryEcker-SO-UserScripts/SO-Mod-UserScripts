@@ -3,7 +3,7 @@
 // @description  Makes /admin/users a bit less busy
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.4
+// @version      0.0.5
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign/Admin-Users-Redesign.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign/Admin-Users-Redesign.user.js
 //
@@ -229,9 +229,15 @@
         };
     }
 
-    StackExchange.ready(() => {
-        const {currentTab, currentPage, displayName} = fetchInformationFromPage();
-        $('.content-page').replaceWith(rebuildPage(currentTab, currentPage, displayName));
-        attachOnPopStateTasks();
-    });
+    function main() {
+        const mountPoint = $('.content-page');
+        mountPoint.empty();
+        StackExchange.ready(() => {
+            const {currentTab, currentPage, displayName} = fetchInformationFromPage();
+            mountPoint.append(rebuildPage(currentTab, currentPage, displayName));
+            attachOnPopStateTasks();
+        });
+    }
+
+    main();
 }());
