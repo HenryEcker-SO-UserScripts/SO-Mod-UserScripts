@@ -1,0 +1,28 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": false,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "isolatedModules": false,
+    "removeComments": false,
+    "target": "esnext",
+    "module": "esnext",
+    "downlevelIteration": true,
+    "types": [
+      "jquery",
+      "tampermonkey"
+    ]
+  },
+  "include": [
+    "./**/*"
+  ]
+}
