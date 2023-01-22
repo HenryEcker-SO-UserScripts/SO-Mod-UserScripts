@@ -235,5 +235,3 @@
         attachOnPopStateTasks();
     });
 }());
-
-export {};
