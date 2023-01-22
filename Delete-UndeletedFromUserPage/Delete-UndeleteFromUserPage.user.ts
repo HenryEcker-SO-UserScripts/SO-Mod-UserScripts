@@ -29,7 +29,7 @@
         undeleteVoteCode: 11
     };
 
-    function getFormDataFromObject(obj: { [key: string]: unknown; }) {
+    function getFormDataFromObject(obj: Record<string, unknown>) {
         return Object.entries(obj).reduce((acc, [key, value]) => {
             acc.set(key, value as string);
             return acc;
