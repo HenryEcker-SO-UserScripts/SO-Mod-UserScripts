@@ -69,12 +69,14 @@
       })
     });
   }
-  function attachAttrs(e, attrs) {
+  function attachAttributes(e, attrs) {
     for (const [key, value] of Object.entries(attrs)) {
       if (key === "className") {
         e.addClass(value);
       } else if (key === "htmlFor") {
         e.attr("for", value);
+      } else if (value === true || value === false) {
+        e.prop(key, value);
       } else {
         e.attr(key, value);
       }
@@ -82,19 +84,19 @@
     return e;
   }
   function buildLabel(text, attrs) {
-    return attachAttrs(
+    return attachAttributes(
       $(`<label class="s-label">${text}</label>`),
       attrs ?? {}
     );
   }
   function buildInput(attrs) {
-    return attachAttrs(
+    return attachAttributes(
       $('<input class="s-input"/>'),
       attrs
     );
   }
   function buildButton(text, attrs) {
-    return attachAttrs(
+    return attachAttributes(
       $(`<button class="s-btn">${text}</button>`),
       attrs ?? {}
     );
@@ -231,8 +233,10 @@
         className: "flex--item",
         htmlFor: textareaConfig.id
       });
-      const textarea = $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>');
-      attachAttrs(textarea, textareaConfig);
+      const textarea = attachAttributes(
+        $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>'),
+        textareaConfig
+      );
       textarea.val(initialText);
       textarea.on("change", changeHandler);
       return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}"></div>`).append(label).append(textarea).append('<div data-se-char-counter-target="output" class="cool"></div>');
