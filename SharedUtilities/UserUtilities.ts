@@ -22,9 +22,20 @@ export function getUserPii(userId: number | string): Promise<{
 
 export function fetchFullUrlFromUserId(userId: number | string): Promise<string> {
     return fetch(`/users/${userId}`, {method: 'OPTIONS'})
-        .then(res => {
-            return res.url;
-        });
+        .then(res => res.url);
+}
+
+export function fetchUserIdFromUsersPath(href: string, convertToNumber: false): undefined | string;
+export function fetchUserIdFromUsersPath(href: string, convertToNumber?: true): undefined | number;
+export function fetchUserIdFromUsersPath(href: string, convertToNumber = true): undefined | number | string {
+    const match = href.match(/\/users\/(\d+)\/.*/i);
+    if (match === null || match.length < 2) {
+        return undefined;
+    }
+    if (!convertToNumber) {
+        return match[1];
+    }
+    return Number(match[1]);
 }
 
 export function deleteUser(userId: number | string, deleteReason: string, deleteReasonDetails: string) {
@@ -46,5 +57,4 @@ export function annotateUser(userId: number | string, annotationDetails: string)
             annotation: annotationDetails
         })
     });
-
 }
