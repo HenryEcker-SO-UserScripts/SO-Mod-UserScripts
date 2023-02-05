@@ -1,4 +1,4 @@
-import {fetchUserIdFromUsersPath} from '../SharedUtilities/UserUtilities';
+import {fetchUserIdFromHref} from '../SharedUtilities/UserUtilities';
 
 function getUserLinksFromNotice(): JQuery<HTMLAnchorElement> {
     return $('.s-notice.s-notice__info').find('a[href^="/users"]') as JQuery<HTMLAnchorElement>;
@@ -15,7 +15,7 @@ function getUserReviewQueueHistoryURL(userId: string): string {
 function addHistoryLinks(): void {
     getUserLinksFromNotice().after(function () {
         const n = $(this);
-        const userId = fetchUserIdFromUsersPath(n.attr('href'), false);
+        const userId = fetchUserIdFromHref(n.attr('href'), false);
         if (userId === undefined) {
             return document.createDocumentFragment();
         }
