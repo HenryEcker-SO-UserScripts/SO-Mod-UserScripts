@@ -1,5 +1,12 @@
-import {getUserPii, deleteUser, annotateUser, fetchFullUrlFromUserId} from '../SharedUtilities/UserUtilities';
-import {buildLabel, buildButton, buildInput} from '../SharedUtilities/StacksComponentBuilders';
+import {
+    getUserPii,
+    deleteUser,
+    annotateUser,
+    fetchFullUrlFromUserId,
+    fetchUserIdFromHref
+} from '../SharedUtilities/UserUtilities';
+import {buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
+
 
 const config = {
     ids: {
@@ -23,13 +30,13 @@ const config = {
 
 // User Actions
 function getUserIdFromAccountInfoURL(): number {
-    const match = window.location.pathname.match(/users\/account-info\/(\d+)/);
-    if (match === null || match.length < 2) {
+    const userId = fetchUserIdFromHref(window.location.pathname);
+    if (userId === undefined) {
         const message = 'Could not get Sock Id from URL';
         StackExchange.helpers.showToast(message, {transientTimeout: 3000, type: 'danger'});
-        throw Error();
+        throw Error(message);
     }
-    return Number(match[1]);
+    return userId;
 }
 
 function handleDeleteUser(userId: number, deletionDetails: string) {
