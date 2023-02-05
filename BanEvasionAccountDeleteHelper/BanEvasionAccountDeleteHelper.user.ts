@@ -8,7 +8,17 @@ import {
 import {buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
 
 
-const config = {
+interface ValidationBounds {
+    min: number;
+    max: number;
+}
+
+interface UserScriptConfig {
+    ids: Record<string, string>;
+    validationBounds: Record<string, ValidationBounds>;
+}
+
+const config: UserScriptConfig = {
     ids: {
         modal: 'beadh-modal',
         mainAccountIdInput: 'beadh-main-account-id-input',
@@ -174,53 +184,61 @@ class DeleteEvasionAccountControls {
 
     }
 
+    private static buildTextarea(labelText: string, textareaId: string, textAreaName: string, textAreaPlaceholder: string, initialText: string, changeHandler: (ev: JQuery.ChangeEvent) => void, validationBounds: ValidationBounds) {
+        const label = buildLabel(labelText, {
+            className: 'flex--item',
+            htmlFor: textareaId
+        });
+        const textarea = $(`<textarea style="font-family:monospace" rows="6" class="flex--item s-textarea" id="${textareaId}" name="${textAreaName}" placeholder="${textAreaPlaceholder}" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
+        textarea.val(initialText);
+        textarea.on('change', changeHandler);
+
+        return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}"></div>`)
+            .append(label)
+            .append(textarea)
+            .append('<div data-se-char-counter-target="output" class="cool"></div>');
+
+    }
+
 
     private buildDeleteReasonDetailsTextarea() {
-        const label = buildLabel('Please provide details leading to the deletion of this account (required):', {
-            className: 'flex--item',
-            htmlFor: config.ids.deleteReasonDetails
-        });
-        const textarea = $(`<textarea style="font-family:monospace" rows="6" class="flex--item s-textarea" id="${config.ids.deleteReasonDetails}" name="deleteReasonDetails" placeholder="Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later." data-se-user-delete-form-target="detailTextarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
         this.deletionDetails = `\n\n${DeleteEvasionAccountControls.buildDetailStringFromObject({
             'Main Account': this.mainAccountUrl,
             'Email': this.sockEmail,
             'Real name': this.sockRealName
         }, ':  ', '\n', true)}`;
-        textarea.val(this.deletionDetails);
-        textarea.on('change', () => {
-            this.deletionDetails = textarea.val() as string;
-        });
-        textarea.trigger('input');
-
-
-        return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${config.validationBounds.deleteReasonDetails.min}" data-se-char-counter-max="${config.validationBounds.deleteReasonDetails.max}"></div>`)
-            .append(label)
-            .append(textarea)
-            .append('<div data-se-char-counter-target="output" class="cool"></div>');
+        return DeleteEvasionAccountControls.buildTextarea(
+            'Please provide details leading to the deletion of this account (required):',
+            config.ids.deleteReasonDetails,
+            'deleteReasonDetails',
+            'Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.',
+            this.deletionDetails,
+            (ev) => {
+                this.deletionDetails = $(ev.target).val() as string;
+            },
+            config.validationBounds.deleteReasonDetails
+        );
     }
 
 
     private buildAnnotateDetailsTextarea() {
-        const label = buildLabel('Annotate the main account (required): ', {
-            className: 'flex--item',
-            htmlFor: config.ids.annotationDetails
-        });
-        const textarea = $(`<textarea style="font-family:monospace"  rows="4" class="flex--item s-textarea" id="${config.ids.annotationDetails}" name="annotation" placeholder="Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
         this.annotationDetails = DeleteEvasionAccountControls.buildDetailStringFromObject({
             'Deleted evasion account': this.sockUrl,
             'Email': this.sockEmail,
             'Real name': this.sockRealName
         }, ': ', ' | ');
-        textarea.val(this.annotationDetails);
-        textarea.on('change', () => {
-            this.annotationDetails = textarea.val() as string;
-        });
-        textarea.trigger('input');
 
-        return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${config.validationBounds.annotationDetails.min}" data-se-char-counter-max="${config.validationBounds.annotationDetails.max}"></div>`)
-            .append(label)
-            .append(textarea)
-            .append('<div data-se-char-counter-target="output" class="cool"></div>');
+        return DeleteEvasionAccountControls.buildTextarea(
+            'Annotate the main account (required): ',
+            config.ids.annotationDetails,
+            'annotation',
+            'Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;',
+            this.annotationDetails,
+            (ev) => {
+                this.annotationDetails = $(ev.target).val() as string;
+            },
+            config.validationBounds.annotationDetails
+        );
     }
 
     private createDeleteAndAnnotateControls() {
@@ -244,7 +262,7 @@ class DeleteEvasionAccountControls {
     }
 
 
-    private static validateLength(label: string, s: string, bounds: { min: number; max: number; }) {
+    private static validateLength(label: string, s: string, bounds: ValidationBounds) {
         if (s.length < bounds.min || s.length > bounds.max) {
             const message = `${label} has ${s.length} characters which is outside the supported bounds of ${bounds.min} to ${bounds.max}`;
             StackExchange.helpers.showToast(
