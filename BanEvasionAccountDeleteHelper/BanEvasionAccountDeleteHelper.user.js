@@ -232,15 +232,17 @@
                 throw Error(message);
             }
         }
-        getDeletionDetails() {
+        validateFields() {
             DeleteEvasionAccountControls.validateLength('Deletion reason details', this.deletionDetails, config.validationBounds.deleteReasonDetails);
+            DeleteEvasionAccountControls.validateLength('Annotation details', this.annotationDetails, config.validationBounds.annotationDetails);
+        }
+        getDeletionDetails() {
             return {
                 sockAccountId: this.sockAccountId,
                 deletionDetails: this.deletionDetails
             };
         }
         getAnnotationDetails() {
-            DeleteEvasionAccountControls.validateLength('Annotation details', this.annotationDetails, config.validationBounds.annotationDetails);
             return {
                 mainAccountId: this.mainAccountId,
                 annotationDetails: this.annotationDetails
@@ -252,20 +254,30 @@
         const submitButton = $('<button class="flex--item s-btn s-btn__filled s-btn__danger" type="button">Delete and Annotate</button>');
         submitButton.on('click', (ev) => {
             ev.preventDefault();
-            const { sockAccountId, deletionDetails } = controller.getDeletionDetails();
-            const { mainAccountId, annotationDetails } = controller.getAnnotationDetails();
-            deleteUser(sockAccountId, deletionDetails)
-                .then(() => {
-                return annotateUser(mainAccountId, annotationDetails);
+            controller.validateFields();
+            void StackExchange.helpers.showConfirmModal({
+                title: 'Are you sure you want to delete this account?',
+                body: 'You will be deleting this account and placing an annotation on the main. This operation cannot be undone.',
+                buttonLabelHtml: 'I\'m sure'
             })
-                .then(() => {
-                // Reload current page if delete and annotation is successful
-                window.location.reload();
-                // Open new tab to send message to main account
-                window.open(`/users/message/create/${mainAccountId}`, '_blank');
-            })
-                .catch(err => {
-                console.error(err);
+                .then(res => {
+                if (res) {
+                    const { sockAccountId, deletionDetails } = controller.getDeletionDetails();
+                    const { mainAccountId, annotationDetails } = controller.getAnnotationDetails();
+                    deleteUser(sockAccountId, deletionDetails)
+                        .then(() => {
+                        return annotateUser(mainAccountId, annotationDetails);
+                    })
+                        .then(() => {
+                        // Reload current page if delete and annotation is successful
+                        window.location.reload();
+                        // Open new tab to send message to main account
+                        window.open(`/users/message/create/${mainAccountId}`, '_blank');
+                    })
+                        .catch(err => {
+                        console.error(err);
+                    });
+                }
             });
         });
         // Build Modal
