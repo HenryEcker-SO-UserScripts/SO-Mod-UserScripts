@@ -1,12 +1,8 @@
-import path from 'path';
-import banner from 'vite-plugin-banner';
+import buildViteConfig from '../vite-config-builder';
 
-
-const fileNameBase = 'BanEvasionAccountDeleteHelper';
-
-export default {
-    plugins: [
-        banner(`// ==UserScript==
+export default buildViteConfig(
+    'BanEvasionAccountDeleteHelper',
+    `// ==UserScript==
 // @name         Ban Evasion Account Delete Helper
 // @description  Adds streamlined interface to deleting, annotating, and messaging accounts
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
@@ -20,25 +16,4 @@ export default {
 // @grant        none
 //
 // ==/UserScript==
-/* globals StackExchange, Stacks, $ */`)
-    ],
-    build: {
-        rollupOptions: {
-            input: {
-                main: path.resolve(__dirname, `${fileNameBase}.user.ts`)
-            },
-            output: {
-                banner: '(function() {"use strict";',
-                footer: '})();',
-                manualChunks: undefined,
-                entryFileNames: `${fileNameBase}.user.js`
-            }
-        },
-        minify: false,
-        outDir: './dist',
-        assetsDir: '',
-        sourcemap: false,
-        target: ['ESNext'],
-        reportCompressedSize: false
-    }
-};
+/* globals StackExchange, Stacks, $ */`);
