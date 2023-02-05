@@ -1,4 +1,4 @@
-import {fetchUserIdFromHref} from '../SharedUtilities/UserUtilities';
+import {fetchUserIdFromHref} from '../Utilities-Shared/UserUtilities';
 
 function getUserLinksFromNotice(): JQuery<HTMLAnchorElement> {
     return $('.s-notice.s-notice__info').find('a[href^="/users"]') as JQuery<HTMLAnchorElement>;
