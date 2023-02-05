@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface to deleting, annotating, and messaging accounts
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.1
+// @version      0.0.2
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/BanEvasionAccountDeleteHelper.user.js
 //
@@ -182,11 +182,20 @@
 
             checkButton.on('click', (ev) => {
                 ev.preventDefault();
+                this.mainAccountId = Number(input.val());
+
+                if (this.mainAccountId === this.sockAccountId) {
+                    StackExchange.helpers.showToast('Cannot enter current account ID in parent field.', {
+                        type: 'danger',
+                        transientTimeout: 3000
+                    });
+                    return;
+                }
+
                 // Disable so that no changes are made with this information after the fact (a refresh is required to fix this)
                 input.prop('disabled', true);
                 checkButton.prop('disabled', true);
 
-                this.mainAccountId = input.val() as number;
                 void fetchFullUrlFromUserId(this.mainAccountId)
                     .then((mainUrl) => {
                         this.mainAccountUrl = mainUrl;
@@ -213,14 +222,46 @@
             this.createDeleteAndAnnotateControls();
         }
 
+        private static buildDetailStringFromObject(obj: Record<string, string>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
+            const filteredObj = Object.entries(obj)
+                .reduce((acc, [key, value]) => {
+                    if (value.length > 0) {
+                        acc[`${key}${keyValueSeparator}`] = value;
+                    }
+                    return acc;
+                }, {} as Record<string, string>);
+
+            const getPaddingStr = (function () {
+                if (alignColumns) {
+                    const maxLabelLength = Math.max(...Object.keys(filteredObj).map(k => k.length));
+                    return function (key: string) {
+                        return new Array(maxLabelLength - key.length + 1).join(' ');
+                    };
+                } else {
+                    return function (_: unknown) {
+                        return '';
+                    };
+                }
+            }());
+
+            return Object.entries(filteredObj)
+                .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
+                .join(recordSeparator);
+
+        }
+
 
         private buildDeleteReasonDetailsTextarea() {
-            const label = buildLabel('Please provide details leading to deleting this account (required):', {
+            const label = buildLabel('Please provide details leading to the deletion of this account (required):', {
                 className: 'flex--item',
                 htmlFor: config.ids.deleteReasonDetails
             });
             const textarea = $(`<textarea style="font-family:monospace" rows="6" class="flex--item s-textarea" id="${config.ids.deleteReasonDetails}" name="deleteReasonDetails" placeholder="Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later." data-se-user-delete-form-target="detailTextarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
-            this.deletionDetails = `\n\nMain Account:  ${this.mainAccountUrl}\nEmail:         ${this.sockEmail}\nReal Name:     ${this.sockRealName}`;
+            this.deletionDetails = `\n\n${DeleteEvasionAccountControls.buildDetailStringFromObject({
+                'Main Account': this.mainAccountUrl,
+                'Email': this.sockEmail,
+                'Real name': this.sockRealName
+            }, ':  ', '\n', true)}`;
             textarea.val(this.deletionDetails);
             textarea.on('change', () => {
                 this.deletionDetails = textarea.val() as string;
@@ -241,7 +282,11 @@
                 htmlFor: config.ids.annotationDetails
             });
             const textarea = $(`<textarea style="font-family:monospace"  rows="4" class="flex--item s-textarea" id="${config.ids.annotationDetails}" name="annotation" placeholder="Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
-            this.annotationDetails = `Deleted evasion account: ${this.sockUrl} | Email: ${this.sockEmail} | Real Name: ${this.sockRealName}`;
+            this.annotationDetails = DeleteEvasionAccountControls.buildDetailStringFromObject({
+                'Deleted evasion account': this.sockUrl,
+                'Email': this.sockEmail,
+                'Real name': this.sockRealName
+            }, ': ', ' | ');
             textarea.val(this.annotationDetails);
             textarea.on('change', () => {
                 this.annotationDetails = textarea.val() as string;
