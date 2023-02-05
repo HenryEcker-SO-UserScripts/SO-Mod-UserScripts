@@ -5,7 +5,7 @@ import {
     fetchUserIdFromHref,
     getUserPii
 } from '../SharedUtilities/UserUtilities';
-import {attachAttrs, buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
+import {attachAttributes, buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
 
 // import {annotateUser, deleteUser, getUserPii,} from '../TestUtilities/UserUtilities';
 
@@ -202,8 +202,10 @@ class DeleteEvasionAccountControls {
             className: 'flex--item',
             htmlFor: textareaConfig.id
         });
-        const textarea = $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>');
-        attachAttrs(textarea, textareaConfig);
+        const textarea = attachAttributes(
+            $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>'),
+            textareaConfig
+        );
         textarea.val(initialText);
         textarea.on('change', changeHandler);
 
