@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Ban Evasion Account Delete Helper
-// @description  Adds streamlined interface to deleting, annotating, and messaging accounts
+// @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -35,9 +35,20 @@
     });
   }
   function fetchFullUrlFromUserId(userId) {
-    return fetch(`/users/${userId}`, { method: "OPTIONS" }).then((res) => {
-      return res.url;
-    });
+    return fetch(`/users/${userId}`, { method: "OPTIONS" }).then((res) => res.url);
+  }
+  function fetchUserIdFromHref(href, convertToNumber = true) {
+    let match = href.match(/\/users\/(\d+)\/.*/i);
+    if (match === null) {
+      match = href.match(/users\/account-info\/(\d+)/i);
+    }
+    if (match === null || match.length < 2) {
+      return void 0;
+    }
+    if (!convertToNumber) {
+      return match[1];
+    }
+    return Number(match[1]);
   }
   function deleteUser(userId, deleteReason, deleteReasonDetails) {
     return fetch(`/admin/users/${userId}/delete`, {
@@ -107,13 +118,13 @@
     }
   };
   function getUserIdFromAccountInfoURL() {
-    const match = window.location.pathname.match(/users\/account-info\/(\d+)/);
-    if (match === null || match.length < 2) {
+    const userId = fetchUserIdFromHref(window.location.pathname);
+    if (userId === void 0) {
       const message = "Could not get Sock Id from URL";
       StackExchange.helpers.showToast(message, { transientTimeout: 3e3, type: "danger" });
-      throw Error();
+      throw Error(message);
     }
-    return Number(match[1]);
+    return userId;
   }
   function handleDeleteUser(userId, deletionDetails) {
     return deleteUser(
@@ -122,18 +133,20 @@
       deletionDetails
     ).then((res) => {
       if (res.status !== 200) {
-        StackExchange.helpers.showToast("Deletion unsuccessful.", { transient: false, type: "danger" });
+        const message = `Deletion on ${userId} unsuccessful.`;
+        StackExchange.helpers.showToast(message, { transient: false, type: "danger" });
         console.error(res);
-        throw Error("Something went wrong!");
+        throw Error(message);
       }
     });
   }
   function handleAnnotateUser(userId, annotationDetails) {
     return annotateUser(userId, annotationDetails).then((res) => {
       if (res.status !== 200) {
-        StackExchange.helpers.showToast("Annotation unsuccessful.", { transient: false, type: "danger" });
+        const message = `Annotation on ${userId} unsuccessful.`;
+        StackExchange.helpers.showToast(message, { transient: false, type: "danger" });
         console.error(res);
-        throw Error("Something went wrong!");
+        throw Error(message);
       }
     });
   }
@@ -213,12 +226,18 @@
       }();
       return Object.entries(filteredObj).map(([key, value]) => `${key}${getPaddingStr(key)}${value}`).join(recordSeparator);
     }
-    buildDeleteReasonDetailsTextarea() {
-      const label = buildLabel("Please provide details leading to the deletion of this account (required):", {
+    static buildTextarea(labelText, textareaConfig, initialText, changeHandler, validationBounds) {
+      const label = buildLabel(labelText, {
         className: "flex--item",
-        htmlFor: config.ids.deleteReasonDetails
+        htmlFor: textareaConfig.id
       });
-      const textarea = $(`<textarea style="font-family:monospace" rows="6" class="flex--item s-textarea" id="${config.ids.deleteReasonDetails}" name="deleteReasonDetails" placeholder="Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later." data-se-user-delete-form-target="detailTextarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
+      const textarea = $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>');
+      attachAttrs(textarea, textareaConfig);
+      textarea.val(initialText);
+      textarea.on("change", changeHandler);
+      return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}"></div>`).append(label).append(textarea).append('<div data-se-char-counter-target="output" class="cool"></div>');
+    }
+    buildDeleteReasonDetailsTextarea() {
       this.deletionDetails = `
 
 ${DeleteEvasionAccountControls.buildDetailStringFromObject({
@@ -226,30 +245,41 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
         "Email": this.sockEmail,
         "Real name": this.sockRealName
       }, ":  ", "\n", true)}`;
-      textarea.val(this.deletionDetails);
-      textarea.on("change", () => {
-        this.deletionDetails = textarea.val();
-      });
-      textarea.trigger("input");
-      return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${config.validationBounds.deleteReasonDetails.min}" data-se-char-counter-max="${config.validationBounds.deleteReasonDetails.max}"></div>`).append(label).append(textarea).append('<div data-se-char-counter-target="output" class="cool"></div>');
+      return DeleteEvasionAccountControls.buildTextarea(
+        "Please provide details leading to the deletion of this account (required):",
+        {
+          id: config.ids.deleteReasonDetails,
+          name: "deleteReasonDetails",
+          placeholder: "Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.",
+          rows: 6
+        },
+        this.deletionDetails,
+        (ev) => {
+          this.deletionDetails = $(ev.target).val();
+        },
+        config.validationBounds.deleteReasonDetails
+      );
     }
     buildAnnotateDetailsTextarea() {
-      const label = buildLabel("Annotate the main account (required): ", {
-        className: "flex--item",
-        htmlFor: config.ids.annotationDetails
-      });
-      const textarea = $(`<textarea style="font-family:monospace"  rows="4" class="flex--item s-textarea" id="${config.ids.annotationDetails}" name="annotation" placeholder="Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
       this.annotationDetails = DeleteEvasionAccountControls.buildDetailStringFromObject({
         "Deleted evasion account": this.sockUrl,
         "Email": this.sockEmail,
         "Real name": this.sockRealName
       }, ": ", " | ");
-      textarea.val(this.annotationDetails);
-      textarea.on("change", () => {
-        this.annotationDetails = textarea.val();
-      });
-      textarea.trigger("input");
-      return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${config.validationBounds.annotationDetails.min}" data-se-char-counter-max="${config.validationBounds.annotationDetails.max}"></div>`).append(label).append(textarea).append('<div data-se-char-counter-target="output" class="cool"></div>');
+      return DeleteEvasionAccountControls.buildTextarea(
+        "Annotate the main account (required): ",
+        {
+          id: config.ids.annotationDetails,
+          name: "annotation",
+          placeholder: "Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;",
+          rows: 4
+        },
+        this.annotationDetails,
+        (ev) => {
+          this.annotationDetails = $(ev.target).val();
+        },
+        config.validationBounds.annotationDetails
+      );
     }
     createDeleteAndAnnotateControls() {
       void Promise.all([
