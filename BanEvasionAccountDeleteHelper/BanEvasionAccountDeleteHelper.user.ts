@@ -82,15 +82,18 @@ class DeleteEvasionAccountControls {
     private deletionDetails: string;
     private annotationDetails: string;
     private readonly modalBodyContainer: JQuery<HTMLDivElement>;
-    private readonly mainAccountLookupControls: JQuery<HTMLDivElement>;
-    private readonly mainAccountInfoDisplay: JQuery<HTMLDivElement>;
+    private mainAccountLookupControls: JQuery<HTMLDivElement>;
+    private mainAccountInfoDisplay: JQuery<HTMLDivElement>;
 
     constructor(sockAccountId: number) {
         this.sockAccountId = sockAccountId;
         this.modalBodyContainer = $('<div class="d-flex fd-column g12 mx8"></div>');
+        this.createInitial();
+    }
+
+    private createInitial() {
         this.mainAccountLookupControls = $('<div class="d-flex fd-row g4 jc-space-between ai-center"></div>');
         this.mainAccountInfoDisplay = $('<div></div>');
-
         this.modalBodyContainer
             .append(this.mainAccountLookupControls)
             .append(this.mainAccountInfoDisplay);
@@ -271,8 +274,13 @@ class DeleteEvasionAccountControls {
     }
 
 
-    getForm() {
+    getModalBodyContainer() {
         return this.modalBodyContainer;
+    }
+
+    resetModalBodyContainer() {
+        this.modalBodyContainer.empty();
+        this.createInitial();
     }
 
 
@@ -313,7 +321,10 @@ class DeleteEvasionAccountControls {
 
 function createModal() {
     const controller = new DeleteEvasionAccountControls(getUserIdFromAccountInfoURL());
-    const submitButton = $('<button class="flex--item s-btn s-btn__filled s-btn__danger" type="button">Delete and Annotate</button>');
+    const submitButton = buildButton(
+        'Delete and Annotate',
+        {className: 'flex--item s-btn__filled s-btn__danger', type: 'button'}
+    );
     submitButton.on('click', (ev) => {
         ev.preventDefault();
         controller.validateFields();
@@ -342,6 +353,14 @@ function createModal() {
                 }
             });
     });
+
+    const cancelButton = buildButton(
+        'Cancel',
+        {className: 'flex--item s-btn__muted', type: 'button', 'data-action': 's-modal#hide'}
+    );
+    cancelButton.on('click', () => {
+        controller.resetModalBodyContainer();
+    });
     // Build Modal
     return $(`<aside class="s-modal s-modal__danger" id="${config.ids.modal}" tabindex="-1" role="dialog" aria-labelledby="${config.ids.modal}-title" aria-describedby="${config.ids.modal}-description" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">`)
         .append(
@@ -349,15 +368,15 @@ function createModal() {
                 .append(`<h1 class="s-modal--header" id="${config.ids.modal}-title">Delete Ban Evasion Account</h1>`)
                 .append(
                     $(`<div class="s-modal--body" id="${config.ids.modal}-description"></div>`)
-                        .append(controller.getForm())
+                        .append(controller.getModalBodyContainer())
                 )
                 .append(
                     $('<div class="d-flex gx8 s-modal--footer"></div>')
                         .append(submitButton)
-                        .append('<button class="flex--item s-btn s-btn__muted" type="button" data-action="s-modal#hide">Cancel</button>')
+                        .append(cancelButton)
                 )
                 .append(
-                    '<button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="@_s(&quot; Close&quot;)" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>'
+                    '<button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>'
                 )
         );
 }
