@@ -1,8 +1,24 @@
 import buildViteConfig from '../vite-config-builder';
+import filterReplace from 'vite-plugin-filter-replace';
 
-export default buildViteConfig(
-    'BanEvasionAccountDeleteHelper',
-    `// ==UserScript==
+export default ({mode}) => {
+    const plugins = mode === 'testing' ? [
+        filterReplace(
+            [
+                // Reduces excess space in elements built with jQuery
+                {
+                    replace: {
+                        from: /\/Utilities\/UserModActions/g,
+                        to: '/Utilities-Testing/UserModActions'
+                    }
+                }
+            ],
+            {enforce: 'pre'}
+        )
+    ] : [];
+    return buildViteConfig(
+        'BanEvasionAccountDeleteHelper',
+        `// ==UserScript==
 // @name         Ban Evasion Account Delete Helper
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
@@ -16,4 +32,7 @@ export default buildViteConfig(
 // @grant        none
 //
 // ==/UserScript==
-/* globals StackExchange, Stacks, $ */`);
+/* globals StackExchange, Stacks, $ */`,
+        plugins
+    );
+};
