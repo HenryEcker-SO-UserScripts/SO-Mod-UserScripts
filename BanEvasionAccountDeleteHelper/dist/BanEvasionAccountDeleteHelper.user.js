@@ -34,22 +34,6 @@
       };
     });
   }
-  function fetchFullUrlFromUserId(userId) {
-    return fetch(`/users/${userId}`, { method: "OPTIONS" }).then((res) => res.url);
-  }
-  function fetchUserIdFromHref(href, convertToNumber = true) {
-    let match = href.match(/\/users\/(\d+)\/.*/i);
-    if (match === null) {
-      match = href.match(/users\/account-info\/(\d+)/i);
-    }
-    if (match === null || match.length < 2) {
-      return void 0;
-    }
-    if (!convertToNumber) {
-      return match[1];
-    }
-    return Number(match[1]);
-  }
   function deleteUser(userId, deleteReason, deleteReasonDetails) {
     return fetch(`/admin/users/${userId}/delete`, {
       method: "POST",
@@ -68,6 +52,22 @@
         annotation: annotationDetails
       })
     });
+  }
+  function fetchFullUrlFromUserId(userId) {
+    return fetch(`/users/${userId}`, { method: "OPTIONS" }).then((res) => res.url);
+  }
+  function fetchUserIdFromHref(href, convertToNumber = true) {
+    let match = href.match(/\/users\/(\d+)\/.*/i);
+    if (match === null) {
+      match = href.match(/users\/account-info\/(\d+)/i);
+    }
+    if (match === null || match.length < 2) {
+      return void 0;
+    }
+    if (!convertToNumber) {
+      return match[1];
+    }
+    return Number(match[1]);
   }
   function attachAttributes(e, attrs) {
     for (const [key, value] of Object.entries(attrs)) {

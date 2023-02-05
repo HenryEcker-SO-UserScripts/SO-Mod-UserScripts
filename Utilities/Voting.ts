@@ -1,4 +1,4 @@
-import {getFormDataFromObject} from './FetchUtilities';
+import {getFormDataFromObject} from './General';
 
 export function castPostsVote(postId: number | string, voteType: number | string) {
     return fetch(`/posts/${postId}/vote/${voteType}`, {

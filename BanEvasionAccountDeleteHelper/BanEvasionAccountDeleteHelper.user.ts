@@ -1,14 +1,6 @@
-import {
-    annotateUser,
-    deleteUser,
-    fetchFullUrlFromUserId,
-    fetchUserIdFromHref,
-    getUserPii
-} from '../Utilities-Shared/UserUtilities';
-import {attachAttributes, buildButton, buildInput, buildLabel} from '../Utilities-Shared/StacksComponentBuilders';
-
-// import {annotateUser, deleteUser, getUserPii,} from '../Utilities-Test/UserUtilities';
-
+import {annotateUser, deleteUser, getUserPii} from '../Utilities/UserModActions';
+import {fetchFullUrlFromUserId, fetchUserIdFromHref,} from '../Utilities/UserInfo';
+import {attachAttributes, buildButton, buildInput, buildLabel} from '../Utilities/StacksComponentBuilders';
 
 interface ValidationBounds {
     min: number;
