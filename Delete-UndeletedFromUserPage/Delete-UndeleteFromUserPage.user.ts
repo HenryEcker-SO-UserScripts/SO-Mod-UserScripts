@@ -1,4 +1,4 @@
-import {castPostsVote} from '../SharedUtilities/VoteUtilities';
+import {castPostsVote} from '../Utilities-Shared/VoteUtilities';
 
 interface UserScriptConfig {
     deleteVoteCode: number;

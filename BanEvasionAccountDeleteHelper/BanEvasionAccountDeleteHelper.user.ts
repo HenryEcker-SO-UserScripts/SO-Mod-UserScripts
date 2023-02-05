@@ -4,10 +4,10 @@ import {
     fetchFullUrlFromUserId,
     fetchUserIdFromHref,
     getUserPii
-} from '../SharedUtilities/UserUtilities';
-import {attachAttributes, buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
+} from '../Utilities-Shared/UserUtilities';
+import {attachAttributes, buildButton, buildInput, buildLabel} from '../Utilities-Shared/StacksComponentBuilders';
 
-// import {annotateUser, deleteUser, getUserPii,} from '../TestUtilities/UserUtilities';
+// import {annotateUser, deleteUser, getUserPii,} from '../Utilities-Test/UserUtilities';
 
 
 interface ValidationBounds {
