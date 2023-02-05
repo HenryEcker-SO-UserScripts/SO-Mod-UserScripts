@@ -5,7 +5,7 @@ export default ({mode}) => {
     const plugins = mode === 'testing' ? [
         filterReplace(
             [
-                // Reduces excess space in elements built with jQuery
+                // Replace (potentially) dangerous mod actions with the testing equivalents (simulated operations)
                 {
                     replace: {
                         from: /\/Utilities\/UserModActions/g,
