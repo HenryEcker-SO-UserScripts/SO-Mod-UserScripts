@@ -184,12 +184,12 @@ class DeleteEvasionAccountControls {
 
     }
 
-    private static buildTextarea(labelText: string, textareaId: string, textAreaName: string, textAreaPlaceholder: string, initialText: string, changeHandler: (ev: JQuery.ChangeEvent) => void, validationBounds: ValidationBounds) {
+    private static buildTextarea(labelText: string, textareaId: string, textAreaName: string, textAreaPlaceholder: string, textAreaRows: number, initialText: string, changeHandler: (ev: JQuery.ChangeEvent) => void, validationBounds: ValidationBounds) {
         const label = buildLabel(labelText, {
             className: 'flex--item',
             htmlFor: textareaId
         });
-        const textarea = $(`<textarea style="font-family:monospace" rows="6" class="flex--item s-textarea" id="${textareaId}" name="${textAreaName}" placeholder="${textAreaPlaceholder}" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
+        const textarea = $(`<textarea style="font-family:monospace" rows="${textAreaRows}" class="flex--item s-textarea" id="${textareaId}" name="${textAreaName}" placeholder="${textAreaPlaceholder}" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
         textarea.val(initialText);
         textarea.on('change', changeHandler);
 
@@ -212,6 +212,7 @@ class DeleteEvasionAccountControls {
             config.ids.deleteReasonDetails,
             'deleteReasonDetails',
             'Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.',
+            6,
             this.deletionDetails,
             (ev) => {
                 this.deletionDetails = $(ev.target).val() as string;
@@ -233,6 +234,7 @@ class DeleteEvasionAccountControls {
             config.ids.annotationDetails,
             'annotation',
             'Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;',
+            4,
             this.annotationDetails,
             (ev) => {
                 this.annotationDetails = $(ev.target).val() as string;
