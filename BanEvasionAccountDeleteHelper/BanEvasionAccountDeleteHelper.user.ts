@@ -5,7 +5,9 @@ import {
     fetchFullUrlFromUserId,
     fetchUserIdFromHref
 } from '../SharedUtilities/UserUtilities';
-import {buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
+import {attachAttrs, buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
+
+// import {annotateUser, deleteUser, getUserPii,} from '../TestUtilities/UserUtilities';
 
 
 interface ValidationBounds {
@@ -184,12 +186,24 @@ class DeleteEvasionAccountControls {
 
     }
 
-    private static buildTextarea(labelText: string, textareaId: string, textAreaName: string, textAreaPlaceholder: string, textAreaRows: number, initialText: string, changeHandler: (ev: JQuery.ChangeEvent) => void, validationBounds: ValidationBounds) {
+    private static buildTextarea(
+        labelText: string,
+        textareaConfig: {
+            id: string;
+            rows: number;
+            name: string;
+            placeholder: string;
+        },
+        initialText: string,
+        changeHandler: (ev: JQuery.ChangeEvent) => void,
+        validationBounds: ValidationBounds
+    ) {
         const label = buildLabel(labelText, {
             className: 'flex--item',
-            htmlFor: textareaId
+            htmlFor: textareaConfig.id
         });
-        const textarea = $(`<textarea style="font-family:monospace" rows="${textAreaRows}" class="flex--item s-textarea" id="${textareaId}" name="${textAreaName}" placeholder="${textAreaPlaceholder}" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>`);
+        const textarea = $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>');
+        attachAttrs(textarea, textareaConfig);
         textarea.val(initialText);
         textarea.on('change', changeHandler);
 
@@ -209,10 +223,12 @@ class DeleteEvasionAccountControls {
         }, ':  ', '\n', true)}`;
         return DeleteEvasionAccountControls.buildTextarea(
             'Please provide details leading to the deletion of this account (required):',
-            config.ids.deleteReasonDetails,
-            'deleteReasonDetails',
-            'Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.',
-            6,
+            {
+                id: config.ids.deleteReasonDetails,
+                name: 'deleteReasonDetails',
+                placeholder: 'Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.',
+                rows: 6
+            },
             this.deletionDetails,
             (ev) => {
                 this.deletionDetails = $(ev.target).val() as string;
@@ -231,10 +247,12 @@ class DeleteEvasionAccountControls {
 
         return DeleteEvasionAccountControls.buildTextarea(
             'Annotate the main account (required): ',
-            config.ids.annotationDetails,
-            'annotation',
-            'Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;',
-            4,
+            {
+                id: config.ids.annotationDetails,
+                name: 'annotation',
+                placeholder: 'Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;',
+                rows: 4
+            },
             this.annotationDetails,
             (ev) => {
                 this.annotationDetails = $(ev.target).val() as string;
