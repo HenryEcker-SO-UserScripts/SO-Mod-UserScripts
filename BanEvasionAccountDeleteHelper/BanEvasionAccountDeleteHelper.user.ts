@@ -1,9 +1,9 @@
 import {
-    getUserPii,
-    deleteUser,
     annotateUser,
+    deleteUser,
     fetchFullUrlFromUserId,
-    fetchUserIdFromHref
+    fetchUserIdFromHref,
+    getUserPii
 } from '../SharedUtilities/UserUtilities';
 import {attachAttrs, buildButton, buildInput, buildLabel} from '../SharedUtilities/StacksComponentBuilders';
 
