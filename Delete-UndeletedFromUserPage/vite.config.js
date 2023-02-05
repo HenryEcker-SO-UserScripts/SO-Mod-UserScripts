@@ -1,11 +1,9 @@
-import path from 'path';
-import banner from 'vite-plugin-banner';
+import buildViteConfig from '../vite-config-builder';
 
-const fileNameBase = 'Delete-UndeleteFromUserPage';
 
-export default {
-    plugins: [
-        banner(`// ==UserScript==
+export default buildViteConfig(
+    'Delete-UndeleteFromUserPage',
+    `// ==UserScript==
 // @name         Inline delete/undelete post buttons
 // @description  Adds delete/undelete buttons on the questions and answers tabs in user profile
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
@@ -20,25 +18,5 @@ export default {
 // @grant        none
 //
 // ==/UserScript==
-/* globals StackExchange, $ */`)
-    ],
-    build: {
-        rollupOptions: {
-            input: {
-                main: path.resolve(__dirname, `${fileNameBase}.user.ts`)
-            },
-            output: {
-                banner: '(function() {"use strict";',
-                footer: '})();',
-                manualChunks: undefined,
-                entryFileNames: `${fileNameBase}.user.js`
-            }
-        },
-        minify: false,
-        outDir: './dist',
-        assetsDir: '',
-        sourcemap: false,
-        target: ['ESNext'],
-        reportCompressedSize: false
-    }
-};
+/* globals StackExchange, $ */`
+);
