@@ -21,6 +21,15 @@
   "rules": {
     "semi": "off",
     "no-extra-semi": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_(\\d+)?$",
+        "varsIgnorePattern": "^_(\\d+)?$"
+        // Ignore unused vars that are _, _0, _1, _2 (etc)
+      }
+    ],
     "func-style": [
       "error",
       "declaration",
@@ -84,13 +93,17 @@
           "StrictPascalCase"
         ],
         "leadingUnderscore": "forbid",
-        "trailingUnderscore": "forbid"
+        "trailingUnderscore": "forbid",
+        "filter": {
+          "regex": "^_(\\d+)?$",
+          // Ignore unused vars that are _, _0, _1, _2 (etc)
+          "match": false
+        }
       }
     ],
     "@typescript-eslint/no-confusing-void-expression": "error",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-extra-non-null-assertion": "error",
-    "@typescript-eslint/no-extraneous-class": "error",
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-for-in-array": "error",
     "@typescript-eslint/no-inferrable-types": [
