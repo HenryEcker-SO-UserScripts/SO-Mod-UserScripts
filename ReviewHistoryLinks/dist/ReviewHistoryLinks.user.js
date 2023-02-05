@@ -23,8 +23,11 @@
 /* globals StackExchange, $ */
 (function() {
   "use strict";
-  function fetchUserIdFromUsersPath(href, convertToNumber = true) {
-    const match = href.match(/\/users\/(\d+)\/.*/i);
+  function fetchUserIdFromHref(href, convertToNumber = true) {
+    let match = href.match(/\/users\/(\d+)\/.*/i);
+    if (match === null) {
+      match = href.match(/users\/account-info\/(\d+)/i);
+    }
     if (match === null || match.length < 2) {
       return void 0;
     }
@@ -45,7 +48,7 @@
   function addHistoryLinks() {
     getUserLinksFromNotice().after(function() {
       const n = $(this);
-      const userId = fetchUserIdFromUsersPath(n.attr("href"), false);
+      const userId = fetchUserIdFromHref(n.attr("href"), false);
       if (userId === void 0) {
         return document.createDocumentFragment();
       }
