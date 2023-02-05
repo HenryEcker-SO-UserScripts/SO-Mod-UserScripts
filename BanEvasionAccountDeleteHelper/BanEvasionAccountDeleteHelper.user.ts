@@ -47,9 +47,10 @@ function handleDeleteUser(userId: number, deletionDetails: string) {
     )
         .then(res => {
             if (res.status !== 200) {
-                StackExchange.helpers.showToast('Deletion unsuccessful.', {transient: false, type: 'danger'});
+                const message = `Deletion on ${userId} unsuccessful.`;
+                StackExchange.helpers.showToast(message, {transient: false, type: 'danger'});
                 console.error(res);
-                throw Error('Something went wrong!');
+                throw Error(message);
             }
         });
 }
@@ -58,9 +59,10 @@ function handleAnnotateUser(userId: number, annotationDetails: string) {
     return annotateUser(userId, annotationDetails)
         .then(res => {
             if (res.status !== 200) {
-                StackExchange.helpers.showToast('Annotation unsuccessful.', {transient: false, type: 'danger'});
+                const message = `Annotation on ${userId} unsuccessful.`;
+                StackExchange.helpers.showToast(message, {transient: false, type: 'danger'});
                 console.error(res);
-                throw Error('Something went wrong!');
+                throw Error(message);
             }
         });
 
@@ -292,7 +294,6 @@ function createModal() {
                 if (res) {
                     const {sockAccountId, deletionDetails} = controller.getDeletionDetails();
                     const {mainAccountId, annotationDetails} = controller.getAnnotationDetails();
-
                     handleDeleteUser(sockAccountId, deletionDetails)
                         .then(() => {
                             return handleAnnotateUser(mainAccountId, annotationDetails);
