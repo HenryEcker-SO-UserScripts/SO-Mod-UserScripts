@@ -274,7 +274,7 @@ class DeleteEvasionAccountControls {
         return $('<div class="d-flex fd-row"></div>')
             .append(buildCheckboxContainer('Open message user in new tab', {
                 id: config.ids.openMessageUser,
-                checked: true // default to checked
+                checked: true
             }));
     }
 
