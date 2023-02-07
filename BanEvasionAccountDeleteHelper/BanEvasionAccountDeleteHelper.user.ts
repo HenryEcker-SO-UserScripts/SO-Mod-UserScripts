@@ -91,8 +91,11 @@ class DeleteEvasionAccountControls {
     private mainAccountLookupControls: JQuery<HTMLDivElement>;
     private mainAccountInfoDisplay: JQuery<HTMLDivElement>;
 
-    constructor(sockAccountId: number) {
-        this.sockAccountId = sockAccountId;
+    constructor(
+        private readonly sockAccountId: number,
+        private readonly onReady: () => void,
+        private readonly onReset: () => void
+    ) {
         this.modalBodyContainer = $('<div class="d-flex fd-column g12 mx8"></div>');
         this.createInitial();
     }
@@ -132,6 +135,9 @@ class DeleteEvasionAccountControls {
             // Disable so that no changes are made with this information after the fact (a refresh is required to fix this)
             input.prop('disabled', true);
             checkButton.prop('disabled', true);
+
+            // Form is now ready to be submitted
+            this.onReady();
 
             void fetchFullUrlFromUserId(this.mainAccountId)
                 .then((mainUrl) => {
@@ -295,6 +301,7 @@ class DeleteEvasionAccountControls {
 
     resetModalBodyContainer() {
         this.modalBodyContainer.empty();
+        this.onReset();
         this.createInitial();
     }
 
@@ -331,10 +338,20 @@ class DeleteEvasionAccountControls {
 
 
 function createModal() {
-    const controller = new DeleteEvasionAccountControls(getUserIdFromAccountInfoURL());
     const submitButton = buildButton(
         'Delete and Annotate',
-        {className: 'flex--item s-btn__filled s-btn__danger', type: 'button'}
+        {className: 'flex--item s-btn__filled s-btn__danger', type: 'button', disabled: true}
+    );
+    const controller = new DeleteEvasionAccountControls(
+        getUserIdFromAccountInfoURL(),
+        () => {
+            // Activate modal submit button
+            submitButton.prop('disabled', false);
+        },
+        () => {
+            // De-activate modal submit button
+            submitButton.prop('disabled', true);
+        }
     );
     submitButton.on('click', (ev) => {
         ev.preventDefault();
