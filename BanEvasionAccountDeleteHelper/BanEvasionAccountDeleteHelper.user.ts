@@ -77,8 +77,66 @@ function handleAnnotateUser(userId: number, annotationDetails: string) {
                 throw Error(message);
             }
         });
+}
+
+function buildDetailStringFromObject(obj: Record<string, string>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
+    const filteredObj = Object.entries(obj)
+        .reduce((acc, [key, value]) => {
+            if (value.length > 0) {
+                acc[`${key}${keyValueSeparator}`] = value;
+            }
+            return acc;
+        }, {} as Record<string, string>);
+
+    const getPaddingStr = (function () {
+        if (alignColumns) {
+            const maxLabelLength = Math.max(...Object.keys(filteredObj).map(k => k.length));
+            return function (key: string) {
+                return new Array(maxLabelLength - key.length + 1).join(' ');
+            };
+        } else {
+            return function (_: unknown) {
+                return '';
+            };
+        }
+    }());
+
+    return Object.entries(filteredObj)
+        .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
+        .join(recordSeparator);
 
 }
+
+function buildTextarea(
+    labelText: string,
+    textareaConfig: {
+        id: string;
+        rows: number;
+        name: string;
+        placeholder: string;
+    },
+    initialText: string,
+    changeHandler: (ev: JQuery.ChangeEvent) => void,
+    validationBounds: ValidationBounds
+) {
+    const label = buildLabel(labelText, {
+        className: 'flex--item',
+        htmlFor: textareaConfig.id
+    });
+    const textarea = attachAttributes(
+        $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>'),
+        textareaConfig
+    );
+    textarea.val(initialText);
+    textarea.on('change', changeHandler);
+
+    return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}"></div>`)
+        .append(label)
+        .append(textarea)
+        .append('<div data-se-char-counter-target="output" class="cool"></div>');
+
+}
+
 
 class DeleteEvasionAccountControls {
     private mainAccountUrl: string;
@@ -89,8 +147,6 @@ class DeleteEvasionAccountControls {
     private deletionDetails: string;
     private annotationDetails: string;
     private readonly modalBodyContainer: JQuery<HTMLDivElement>;
-    private mainAccountLookupControls: JQuery<HTMLDivElement>;
-    private mainAccountInfoDisplay: JQuery<HTMLDivElement>;
 
     constructor(
         private readonly sockAccountId: number,
@@ -98,16 +154,10 @@ class DeleteEvasionAccountControls {
         private readonly onReset: () => void
     ) {
         this.modalBodyContainer = $('<div class="d-flex fd-column g12 mx8"></div>');
-        this.createInitial();
+        this.createStep1Fields();
     }
 
-    private createInitial() {
-        this.mainAccountLookupControls = $('<div class="d-flex fd-row g4 jc-space-between ai-center"></div>');
-        this.mainAccountInfoDisplay = $('<div></div>');
-        this.modalBodyContainer
-            .append(this.mainAccountLookupControls)
-            .append(this.mainAccountInfoDisplay);
-
+    private createStep1Fields() {
         this.createMainAccountInput();
     }
 
@@ -141,95 +191,48 @@ class DeleteEvasionAccountControls {
             void fetchFullUrlFromUserId(this.mainAccountId)
                 .then((mainUrl) => {
                     this.mainAccountUrl = mainUrl;
-                    this.createMainAccountInfoDisplay();
+                    void this.createStep2Fields();
                 });
         });
 
-        this.mainAccountLookupControls
-            .append(buildLabel('Enter Id For Main Account: ', {
-                htmlFor: config.ids.mainAccountIdInput,
-                style: 'min-width:fit-content;'
-            }))
-            .append(input)
-            .append(checkButton);
+
+        this.modalBodyContainer
+            .append(
+                $('<div class="d-flex fd-row g4 jc-space-between ai-center"></div>')
+                    .append(buildLabel('Enter Id For Main Account: ', {
+                        htmlFor: config.ids.mainAccountIdInput,
+                        style: 'min-width:fit-content;'
+                    }))
+                    .append(input)
+                    .append(checkButton)
+            );
     }
 
-    private createMainAccountInfoDisplay() {
-        this.mainAccountInfoDisplay
+    private async createStep2Fields() {
+        this.createMainAccountDisplay();
+        await this.createDeleteAndAnnotateControls();
+        this.createFollowUpActionControls();
+        this.onReady();
+    }
+
+
+    private createMainAccountDisplay(): void {
+        this.modalBodyContainer
             .append(
                 $('<div class="d-flex fd-row g6"></div>')
                     .append(buildLabel('Main account located here:'))
                     .append($(`<a href=${this.mainAccountUrl} target="_blank">${this.mainAccountUrl}</a>`))
             );
-        this.createDeleteAndAnnotateControls();
-    }
-
-    private static buildDetailStringFromObject(obj: Record<string, string>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
-        const filteredObj = Object.entries(obj)
-            .reduce((acc, [key, value]) => {
-                if (value.length > 0) {
-                    acc[`${key}${keyValueSeparator}`] = value;
-                }
-                return acc;
-            }, {} as Record<string, string>);
-
-        const getPaddingStr = (function () {
-            if (alignColumns) {
-                const maxLabelLength = Math.max(...Object.keys(filteredObj).map(k => k.length));
-                return function (key: string) {
-                    return new Array(maxLabelLength - key.length + 1).join(' ');
-                };
-            } else {
-                return function (_: unknown) {
-                    return '';
-                };
-            }
-        }());
-
-        return Object.entries(filteredObj)
-            .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
-            .join(recordSeparator);
-
-    }
-
-    private static buildTextarea(
-        labelText: string,
-        textareaConfig: {
-            id: string;
-            rows: number;
-            name: string;
-            placeholder: string;
-        },
-        initialText: string,
-        changeHandler: (ev: JQuery.ChangeEvent) => void,
-        validationBounds: ValidationBounds
-    ) {
-        const label = buildLabel(labelText, {
-            className: 'flex--item',
-            htmlFor: textareaConfig.id
-        });
-        const textarea = attachAttributes(
-            $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>'),
-            textareaConfig
-        );
-        textarea.val(initialText);
-        textarea.on('change', changeHandler);
-
-        return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}"></div>`)
-            .append(label)
-            .append(textarea)
-            .append('<div data-se-char-counter-target="output" class="cool"></div>');
-
     }
 
 
     private buildDeleteReasonDetailsTextarea() {
-        this.deletionDetails = `\n\n${DeleteEvasionAccountControls.buildDetailStringFromObject({
+        this.deletionDetails = `\n\n${buildDetailStringFromObject({
             'Main Account': this.mainAccountUrl,
             'Email': this.sockEmail,
             'Real name': this.sockRealName
         }, ':  ', '\n', true)}`;
-        return DeleteEvasionAccountControls.buildTextarea(
+        return buildTextarea(
             'Please provide details leading to the deletion of this account (required):',
             {
                 id: config.ids.deleteReasonDetails,
@@ -247,13 +250,13 @@ class DeleteEvasionAccountControls {
 
 
     private buildAnnotateDetailsTextarea() {
-        this.annotationDetails = DeleteEvasionAccountControls.buildDetailStringFromObject({
+        this.annotationDetails = buildDetailStringFromObject({
             'Deleted evasion account': this.sockUrl,
             'Email': this.sockEmail,
             'Real name': this.sockRealName
         }, ': ', ' | ');
 
-        return DeleteEvasionAccountControls.buildTextarea(
+        return buildTextarea(
             'Annotate the main account (required): ',
             {
                 id: config.ids.annotationDetails,
@@ -269,16 +272,8 @@ class DeleteEvasionAccountControls {
         );
     }
 
-    private followUpActionControls() {
-        return $('<div class="d-flex fd-row"></div>')
-            .append(buildCheckboxContainer('Open message user in new tab', {
-                id: config.ids.openMessageUser,
-                checked: true
-            }));
-    }
-
-    private createDeleteAndAnnotateControls() {
-        void Promise.all([
+    private createDeleteAndAnnotateControls(): Promise<void> {
+        return Promise.all([
             getUserPii(this.sockAccountId),
             fetchFullUrlFromUserId(this.sockAccountId)
         ])
@@ -288,26 +283,30 @@ class DeleteEvasionAccountControls {
                 this.sockUrl = sockUrl;
                 this.modalBodyContainer
                     .append(this.buildDeleteReasonDetailsTextarea())
-                    .append(this.buildAnnotateDetailsTextarea())
-                    .append(this.followUpActionControls());
-            })
-            .then(() => {
-                // Form is now ready to be submitted
-                this.onReady();
+                    .append(this.buildAnnotateDetailsTextarea());
             });
     }
 
-
-    getModalBodyContainer() {
-        return this.modalBodyContainer;
+    private createFollowUpActionControls(): void {
+        this.modalBodyContainer
+            .append(
+                $('<div class="d-flex fd-row"></div>')
+                    .append(buildCheckboxContainer('Open message user in new tab', {
+                        id: config.ids.openMessageUser,
+                        checked: true
+                    }))
+            );
     }
 
     resetModalBodyContainer() {
         this.modalBodyContainer.empty();
         this.onReset();
-        this.createInitial();
+        this.createStep1Fields();
     }
 
+    getModalBodyContainer() {
+        return this.modalBodyContainer;
+    }
 
     private static validateLength(label: string, s: string, bounds: ValidationBounds) {
         if (s.length < bounds.min || s.length > bounds.max) {
@@ -340,10 +339,58 @@ class DeleteEvasionAccountControls {
 }
 
 
+function handleDeleteAndAnnotateUsers(
+    sockAccountId: number,
+    deletionDetails: string,
+    mainAccountId: number,
+    annotationDetails: string
+) {
+    return handleDeleteUser(sockAccountId, deletionDetails)
+        .then(() => handleAnnotateUser(mainAccountId, annotationDetails));
+}
+
+function handleSubmitActions(controller: DeleteEvasionAccountControls) {
+    controller.validateFields(); // validate before confirming (it's more annoying to confirm, then get a message that the field needs fixed)
+    void StackExchange.helpers.showConfirmModal({
+        title: 'Are you sure you want to delete this account?',
+        body: 'You will be deleting this account and placing an annotation on the main. This operation cannot be undone.',
+        buttonLabelHtml: 'I\'m sure'
+    })
+        .then(actionConfirmed => {
+            if (!actionConfirmed) {
+                return;
+            }
+            const {
+                sockAccountId,
+                deletionDetails,
+                mainAccountId,
+                annotationDetails,
+                shouldMessageAfter
+            } = controller.getFields();
+
+            handleDeleteAndAnnotateUsers(sockAccountId, deletionDetails, mainAccountId, annotationDetails)
+                .then(() => {
+                    if (shouldMessageAfter) {
+                        // Open new tab to send message to main account
+                        window.open(`/users/message/create/${mainAccountId}`, '_blank');
+                    }
+                    // Reload current page if delete and annotation is successful
+                    window.location.reload();
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        });
+}
+
 function createModal() {
     const submitButton = buildButton(
         'Delete and Annotate',
         {className: 'flex--item s-btn__filled s-btn__danger', type: 'button', disabled: true}
+    );
+    const cancelButton = buildButton(
+        'Cancel',
+        {className: 'flex--item s-btn__muted', type: 'button', 'data-action': 's-modal#hide'}
     );
     const controller = new DeleteEvasionAccountControls(
         getUserIdFromAccountInfoURL(),
@@ -356,48 +403,12 @@ function createModal() {
             submitButton.prop('disabled', true);
         }
     );
+
     submitButton.on('click', (ev) => {
         ev.preventDefault();
-        controller.validateFields(); // validate before confirming (it's more annoying to confirm, then get a message that the field needs fixed)
-        void StackExchange.helpers.showConfirmModal({
-            title: 'Are you sure you want to delete this account?',
-            body: 'You will be deleting this account and placing an annotation on the main. This operation cannot be undone.',
-            buttonLabelHtml: 'I\'m sure'
-        })
-            .then(actionConfirmed => {
-                if (!actionConfirmed) {
-                    return;
-                }
-                const {
-                    sockAccountId,
-                    deletionDetails,
-                    mainAccountId,
-                    annotationDetails,
-                    shouldMessageAfter
-                } = controller.getFields();
-
-                handleDeleteUser(sockAccountId, deletionDetails)
-                    .then(() => {
-                        return handleAnnotateUser(mainAccountId, annotationDetails);
-                    })
-                    .then(() => {
-                        if (shouldMessageAfter) {
-                            // Open new tab to send message to main account
-                            window.open(`/users/message/create/${mainAccountId}`, '_blank');
-                        }
-                        // Reload current page if delete and annotation is successful
-                        window.location.reload();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                    });
-            });
+        handleSubmitActions(controller);
     });
 
-    const cancelButton = buildButton(
-        'Cancel',
-        {className: 'flex--item s-btn__muted', type: 'button', 'data-action': 's-modal#hide'}
-    );
     cancelButton.on('click', () => {
         controller.resetModalBodyContainer();
     });
@@ -442,6 +453,4 @@ function main() {
         );
 }
 
-StackExchange.ready(() => {
-    main();
-});
+StackExchange.ready(main);
