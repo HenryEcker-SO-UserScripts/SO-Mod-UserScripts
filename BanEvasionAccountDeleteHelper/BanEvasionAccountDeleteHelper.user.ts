@@ -1,6 +1,12 @@
 import {annotateUser, deleteUser, getUserPii} from '../Utilities/UserModActions';
 import {fetchFullUrlFromUserId, fetchUserIdFromHref,} from '../Utilities/UserInfo';
-import {attachAttributes, buildButton, buildInput, buildLabel} from '../Utilities/StacksComponentBuilders';
+import {
+    attachAttributes,
+    buildButton,
+    buildCheckboxContainer,
+    buildInput,
+    buildLabel, isCheckboxChecked
+} from '../Utilities/StacksComponentBuilders';
 
 interface ValidationBounds {
     min: number;
@@ -17,7 +23,8 @@ const config: UserScriptConfig = {
         modal: 'beadh-modal',
         mainAccountIdInput: 'beadh-main-account-id-input',
         deleteReasonDetails: 'beadh-deleteReasonDetails',
-        annotationDetails: 'beadh-mod-menu-annotation'
+        annotationDetails: 'beadh-mod-menu-annotation',
+        openMessageUser: 'beadh-message-user-checkbox'
     },
     validationBounds: {
         deleteReasonDetails: {
@@ -76,7 +83,6 @@ class DeleteEvasionAccountControls {
     private mainAccountUrl: string;
     private mainAccountId: number;
     private sockUrl: string;
-    private readonly sockAccountId: number;
     private sockEmail: string;
     private sockRealName: string;
     private deletionDetails: string;
@@ -258,6 +264,14 @@ class DeleteEvasionAccountControls {
         );
     }
 
+    private followUpActionControls() {
+        return $('<div class="d-flex fd-row"></div>')
+            .append(buildCheckboxContainer('Open message user in new tab', {
+                id: config.ids.openMessageUser,
+                checked: true // default to checked
+            }));
+    }
+
     private createDeleteAndAnnotateControls() {
         void Promise.all([
             getUserPii(this.sockAccountId),
@@ -269,7 +283,8 @@ class DeleteEvasionAccountControls {
                 this.sockUrl = sockUrl;
                 this.modalBodyContainer
                     .append(this.buildDeleteReasonDetailsTextarea())
-                    .append(this.buildAnnotateDetailsTextarea());
+                    .append(this.buildAnnotateDetailsTextarea())
+                    .append(this.followUpActionControls());
             });
     }
 
@@ -303,17 +318,13 @@ class DeleteEvasionAccountControls {
         DeleteEvasionAccountControls.validateLength('Annotation details', this.annotationDetails, config.validationBounds.annotationDetails);
     }
 
-    getDeletionDetails() {
+    getFields() {
         return {
             sockAccountId: this.sockAccountId,
-            deletionDetails: this.deletionDetails
-        };
-    }
-
-    getAnnotationDetails() {
-        return {
+            deletionDetails: this.deletionDetails,
             mainAccountId: this.mainAccountId,
-            annotationDetails: this.annotationDetails
+            annotationDetails: this.annotationDetails,
+            shouldMessageAfter: isCheckboxChecked(config.ids.openMessageUser)
         };
     }
 }
@@ -327,30 +338,39 @@ function createModal() {
     );
     submitButton.on('click', (ev) => {
         ev.preventDefault();
-        controller.validateFields();
+        controller.validateFields(); // validate before confirming (it's more annoying to confirm, then get a message that the field needs fixed)
         void StackExchange.helpers.showConfirmModal({
             title: 'Are you sure you want to delete this account?',
             body: 'You will be deleting this account and placing an annotation on the main. This operation cannot be undone.',
             buttonLabelHtml: 'I\'m sure'
         })
-            .then(res => {
-                if (res) {
-                    const {sockAccountId, deletionDetails} = controller.getDeletionDetails();
-                    const {mainAccountId, annotationDetails} = controller.getAnnotationDetails();
-                    handleDeleteUser(sockAccountId, deletionDetails)
-                        .then(() => {
-                            return handleAnnotateUser(mainAccountId, annotationDetails);
-                        })
-                        .then(() => {
-                            // Reload current page if delete and annotation is successful
-                            window.location.reload();
+            .then(actionConfirmed => {
+                if (!actionConfirmed) {
+                    return;
+                }
+                const {
+                    sockAccountId,
+                    deletionDetails,
+                    mainAccountId,
+                    annotationDetails,
+                    shouldMessageAfter
+                } = controller.getFields();
+
+                handleDeleteUser(sockAccountId, deletionDetails)
+                    .then(() => {
+                        return handleAnnotateUser(mainAccountId, annotationDetails);
+                    })
+                    .then(() => {
+                        if (shouldMessageAfter) {
                             // Open new tab to send message to main account
                             window.open(`/users/message/create/${mainAccountId}`, '_blank');
-                        })
-                        .catch(err => {
-                            console.error(err);
-                        });
-                }
+                        }
+                        // Reload current page if delete and annotation is successful
+                        window.location.reload();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
             });
     });
 
