@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.6
+// @version      0.0.7
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -169,13 +169,47 @@
       }
     });
   }
+  function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
+    const filteredObj = Object.entries(obj).reduce((acc, [key, value]) => {
+      if (value.length > 0) {
+        acc[`${key}${keyValueSeparator}`] = value;
+      }
+      return acc;
+    }, {});
+    const getPaddingStr = function() {
+      if (alignColumns) {
+        const maxLabelLength = Math.max(...Object.keys(filteredObj).map((k) => k.length));
+        return function(key) {
+          return new Array(maxLabelLength - key.length + 1).join(" ");
+        };
+      } else {
+        return function(_) {
+          return "";
+        };
+      }
+    }();
+    return Object.entries(filteredObj).map(([key, value]) => `${key}${getPaddingStr(key)}${value}`).join(recordSeparator);
+  }
+  function buildTextarea(labelText, textareaConfig, initialText, changeHandler, validationBounds) {
+    const label = buildLabel(labelText, {
+      className: "flex--item",
+      htmlFor: textareaConfig.id
+    });
+    const textarea = attachAttributes(
+      $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>'),
+      textareaConfig
+    );
+    textarea.val(initialText);
+    textarea.on("change", changeHandler);
+    return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}"></div>`).append(label).append(textarea).append('<div data-se-char-counter-target="output" class="cool"></div>');
+  }
   class DeleteEvasionAccountControls {
     constructor(sockAccountId, onReady, onReset) {
       this.sockAccountId = sockAccountId;
       this.onReady = onReady;
       this.onReset = onReset;
       this.modalBodyContainer = $('<div class="d-flex fd-column g12 mx8"></div>');
-      this.createInitial();
+      this.createStep1Fields();
     }
     mainAccountUrl;
     mainAccountId;
@@ -185,12 +219,7 @@
     deletionDetails;
     annotationDetails;
     modalBodyContainer;
-    mainAccountLookupControls;
-    mainAccountInfoDisplay;
-    createInitial() {
-      this.mainAccountLookupControls = $('<div class="d-flex fd-row g4 jc-space-between ai-center"></div>');
-      this.mainAccountInfoDisplay = $("<div></div>");
-      this.modalBodyContainer.append(this.mainAccountLookupControls).append(this.mainAccountInfoDisplay);
+    createStep1Fields() {
       this.createMainAccountInput();
     }
     createMainAccountInput() {
@@ -214,63 +243,36 @@
         checkButton.prop("disabled", true);
         void fetchFullUrlFromUserId(this.mainAccountId).then((mainUrl) => {
           this.mainAccountUrl = mainUrl;
-          this.createMainAccountInfoDisplay();
+          void this.createStep2Fields();
         });
       });
-      this.mainAccountLookupControls.append(buildLabel("Enter Id For Main Account: ", {
-        htmlFor: config.ids.mainAccountIdInput,
-        style: "min-width:fit-content;"
-      })).append(input).append(checkButton);
+      this.modalBodyContainer.append(
+        $('<div class="d-flex fd-row g4 jc-space-between ai-center"></div>').append(buildLabel("Enter Id For Main Account: ", {
+          htmlFor: config.ids.mainAccountIdInput,
+          style: "min-width:fit-content;"
+        })).append(input).append(checkButton)
+      );
     }
-    createMainAccountInfoDisplay() {
-      this.mainAccountInfoDisplay.append(
+    async createStep2Fields() {
+      this.createMainAccountDisplay();
+      await this.createDeleteAndAnnotateControls();
+      this.createFollowUpActionControls();
+      this.onReady();
+    }
+    createMainAccountDisplay() {
+      this.modalBodyContainer.append(
         $('<div class="d-flex fd-row g6"></div>').append(buildLabel("Main account located here:")).append($(`<a href=${this.mainAccountUrl} target="_blank">${this.mainAccountUrl}</a>`))
       );
-      this.createDeleteAndAnnotateControls();
-    }
-    static buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
-      const filteredObj = Object.entries(obj).reduce((acc, [key, value]) => {
-        if (value.length > 0) {
-          acc[`${key}${keyValueSeparator}`] = value;
-        }
-        return acc;
-      }, {});
-      const getPaddingStr = function() {
-        if (alignColumns) {
-          const maxLabelLength = Math.max(...Object.keys(filteredObj).map((k) => k.length));
-          return function(key) {
-            return new Array(maxLabelLength - key.length + 1).join(" ");
-          };
-        } else {
-          return function(_) {
-            return "";
-          };
-        }
-      }();
-      return Object.entries(filteredObj).map(([key, value]) => `${key}${getPaddingStr(key)}${value}`).join(recordSeparator);
-    }
-    static buildTextarea(labelText, textareaConfig, initialText, changeHandler, validationBounds) {
-      const label = buildLabel(labelText, {
-        className: "flex--item",
-        htmlFor: textareaConfig.id
-      });
-      const textarea = attachAttributes(
-        $('<textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false"></textarea>'),
-        textareaConfig
-      );
-      textarea.val(initialText);
-      textarea.on("change", changeHandler);
-      return $(`<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}"></div>`).append(label).append(textarea).append('<div data-se-char-counter-target="output" class="cool"></div>');
     }
     buildDeleteReasonDetailsTextarea() {
       this.deletionDetails = `
 
-${DeleteEvasionAccountControls.buildDetailStringFromObject({
+${buildDetailStringFromObject({
         "Main Account": this.mainAccountUrl,
         "Email": this.sockEmail,
         "Real name": this.sockRealName
       }, ":  ", "\n", true)}`;
-      return DeleteEvasionAccountControls.buildTextarea(
+      return buildTextarea(
         "Please provide details leading to the deletion of this account (required):",
         {
           id: config.ids.deleteReasonDetails,
@@ -286,12 +288,12 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
       );
     }
     buildAnnotateDetailsTextarea() {
-      this.annotationDetails = DeleteEvasionAccountControls.buildDetailStringFromObject({
+      this.annotationDetails = buildDetailStringFromObject({
         "Deleted evasion account": this.sockUrl,
         "Email": this.sockEmail,
         "Real name": this.sockRealName
       }, ": ", " | ");
-      return DeleteEvasionAccountControls.buildTextarea(
+      return buildTextarea(
         "Annotate the main account (required): ",
         {
           id: config.ids.annotationDetails,
@@ -306,32 +308,32 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
         config.validationBounds.annotationDetails
       );
     }
-    followUpActionControls() {
-      return $('<div class="d-flex fd-row"></div>').append(buildCheckboxContainer("Open message user in new tab", {
-        id: config.ids.openMessageUser,
-        checked: true
-      }));
-    }
     createDeleteAndAnnotateControls() {
-      void Promise.all([
+      return Promise.all([
         getUserPii(this.sockAccountId),
         fetchFullUrlFromUserId(this.sockAccountId)
       ]).then(([{ email, name }, sockUrl]) => {
         this.sockEmail = email;
         this.sockRealName = name;
         this.sockUrl = sockUrl;
-        this.modalBodyContainer.append(this.buildDeleteReasonDetailsTextarea()).append(this.buildAnnotateDetailsTextarea()).append(this.followUpActionControls());
-      }).then(() => {
-        this.onReady();
+        this.modalBodyContainer.append(this.buildDeleteReasonDetailsTextarea()).append(this.buildAnnotateDetailsTextarea());
       });
     }
-    getModalBodyContainer() {
-      return this.modalBodyContainer;
+    createFollowUpActionControls() {
+      this.modalBodyContainer.append(
+        $('<div class="d-flex fd-row"></div>').append(buildCheckboxContainer("Open message user in new tab", {
+          id: config.ids.openMessageUser,
+          checked: true
+        }))
+      );
     }
     resetModalBodyContainer() {
       this.modalBodyContainer.empty();
       this.onReset();
-      this.createInitial();
+      this.createStep1Fields();
+    }
+    getModalBodyContainer() {
+      return this.modalBodyContainer;
     }
     static validateLength(label, s, bounds) {
       if (s.length < bounds.min || s.length > bounds.max) {
@@ -360,10 +362,44 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
       };
     }
   }
+  function handleDeleteAndAnnotateUsers(sockAccountId, deletionDetails, mainAccountId, annotationDetails) {
+    return handleDeleteUser(sockAccountId, deletionDetails).then(() => handleAnnotateUser(mainAccountId, annotationDetails));
+  }
+  function handleSubmitActions(controller) {
+    controller.validateFields();
+    void StackExchange.helpers.showConfirmModal({
+      title: "Are you sure you want to delete this account?",
+      body: "You will be deleting this account and placing an annotation on the main. This operation cannot be undone.",
+      buttonLabelHtml: "I'm sure"
+    }).then((actionConfirmed) => {
+      if (!actionConfirmed) {
+        return;
+      }
+      const {
+        sockAccountId,
+        deletionDetails,
+        mainAccountId,
+        annotationDetails,
+        shouldMessageAfter
+      } = controller.getFields();
+      handleDeleteAndAnnotateUsers(sockAccountId, deletionDetails, mainAccountId, annotationDetails).then(() => {
+        if (shouldMessageAfter) {
+          window.open(`/users/message/create/${mainAccountId}`, "_blank");
+        }
+        window.location.reload();
+      }).catch((err) => {
+        console.error(err);
+      });
+    });
+  }
   function createModal() {
     const submitButton = buildButton(
       "Delete and Annotate",
       { className: "flex--item s-btn__filled s-btn__danger", type: "button", disabled: true }
+    );
+    const cancelButton = buildButton(
+      "Cancel",
+      { className: "flex--item s-btn__muted", type: "button", "data-action": "s-modal#hide" }
     );
     const controller = new DeleteEvasionAccountControls(
       getUserIdFromAccountInfoURL(),
@@ -376,38 +412,8 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
     );
     submitButton.on("click", (ev) => {
       ev.preventDefault();
-      controller.validateFields();
-      void StackExchange.helpers.showConfirmModal({
-        title: "Are you sure you want to delete this account?",
-        body: "You will be deleting this account and placing an annotation on the main. This operation cannot be undone.",
-        buttonLabelHtml: "I'm sure"
-      }).then((actionConfirmed) => {
-        if (!actionConfirmed) {
-          return;
-        }
-        const {
-          sockAccountId,
-          deletionDetails,
-          mainAccountId,
-          annotationDetails,
-          shouldMessageAfter
-        } = controller.getFields();
-        handleDeleteUser(sockAccountId, deletionDetails).then(() => {
-          return handleAnnotateUser(mainAccountId, annotationDetails);
-        }).then(() => {
-          if (shouldMessageAfter) {
-            window.open(`/users/message/create/${mainAccountId}`, "_blank");
-          }
-          window.location.reload();
-        }).catch((err) => {
-          console.error(err);
-        });
-      });
+      handleSubmitActions(controller);
     });
-    const cancelButton = buildButton(
-      "Cancel",
-      { className: "flex--item s-btn__muted", type: "button", "data-action": "s-modal#hide" }
-    );
     cancelButton.on("click", () => {
       controller.resetModalBodyContainer();
     });
@@ -437,7 +443,5 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
       $("<li></li>").append(link)
     );
   }
-  StackExchange.ready(() => {
-    main();
-  });
+  StackExchange.ready(main);
 })();
