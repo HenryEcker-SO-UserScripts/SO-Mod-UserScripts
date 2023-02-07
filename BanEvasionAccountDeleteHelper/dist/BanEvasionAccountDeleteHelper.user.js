@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.5
+// @version      0.0.6
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -95,6 +95,22 @@
       attrs
     );
   }
+  function buildCheckboxContainer(labelText, checkboxAttrs) {
+    const checkboxContainer = $('<div class="s-check-control"></div>');
+    const checkbox = attachAttributes(
+      $('<input class="s-checkbox" type="checkbox" />'),
+      checkboxAttrs
+    );
+    const label = buildLabel(
+      labelText,
+      { htmlFor: checkboxAttrs.id }
+    );
+    checkboxContainer.append(checkbox).append(label);
+    return checkboxContainer;
+  }
+  function isCheckboxChecked(checkboxId) {
+    return $(`#${checkboxId}`).prop("checked");
+  }
   function buildButton(text, attrs) {
     return attachAttributes(
       $(`<button class="s-btn">${text}</button>`),
@@ -106,7 +122,8 @@
       modal: "beadh-modal",
       mainAccountIdInput: "beadh-main-account-id-input",
       deleteReasonDetails: "beadh-deleteReasonDetails",
-      annotationDetails: "beadh-mod-menu-annotation"
+      annotationDetails: "beadh-mod-menu-annotation",
+      openMessageUser: "beadh-message-user-checkbox"
     },
     validationBounds: {
       deleteReasonDetails: {
@@ -153,10 +170,16 @@
     });
   }
   class DeleteEvasionAccountControls {
+    constructor(sockAccountId, onReady, onReset) {
+      this.sockAccountId = sockAccountId;
+      this.onReady = onReady;
+      this.onReset = onReset;
+      this.modalBodyContainer = $('<div class="d-flex fd-column g12 mx8"></div>');
+      this.createInitial();
+    }
     mainAccountUrl;
     mainAccountId;
     sockUrl;
-    sockAccountId;
     sockEmail;
     sockRealName;
     deletionDetails;
@@ -164,11 +187,6 @@
     modalBodyContainer;
     mainAccountLookupControls;
     mainAccountInfoDisplay;
-    constructor(sockAccountId) {
-      this.sockAccountId = sockAccountId;
-      this.modalBodyContainer = $('<div class="d-flex fd-column g12 mx8"></div>');
-      this.createInitial();
-    }
     createInitial() {
       this.mainAccountLookupControls = $('<div class="d-flex fd-row g4 jc-space-between ai-center"></div>');
       this.mainAccountInfoDisplay = $("<div></div>");
@@ -194,6 +212,7 @@
         }
         input.prop("disabled", true);
         checkButton.prop("disabled", true);
+        this.onReady();
         void fetchFullUrlFromUserId(this.mainAccountId).then((mainUrl) => {
           this.mainAccountUrl = mainUrl;
           this.createMainAccountInfoDisplay();
@@ -288,6 +307,12 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
         config.validationBounds.annotationDetails
       );
     }
+    followUpActionControls() {
+      return $('<div class="d-flex fd-row"></div>').append(buildCheckboxContainer("Open message user in new tab", {
+        id: config.ids.openMessageUser,
+        checked: true
+      }));
+    }
     createDeleteAndAnnotateControls() {
       void Promise.all([
         getUserPii(this.sockAccountId),
@@ -296,7 +321,7 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
         this.sockEmail = email;
         this.sockRealName = name;
         this.sockUrl = sockUrl;
-        this.modalBodyContainer.append(this.buildDeleteReasonDetailsTextarea()).append(this.buildAnnotateDetailsTextarea());
+        this.modalBodyContainer.append(this.buildDeleteReasonDetailsTextarea()).append(this.buildAnnotateDetailsTextarea()).append(this.followUpActionControls());
       });
     }
     getModalBodyContainer() {
@@ -304,6 +329,7 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
     }
     resetModalBodyContainer() {
       this.modalBodyContainer.empty();
+      this.onReset();
       this.createInitial();
     }
     static validateLength(label, s, bounds) {
@@ -323,24 +349,29 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
       DeleteEvasionAccountControls.validateLength("Deletion reason details", this.deletionDetails, config.validationBounds.deleteReasonDetails);
       DeleteEvasionAccountControls.validateLength("Annotation details", this.annotationDetails, config.validationBounds.annotationDetails);
     }
-    getDeletionDetails() {
+    getFields() {
       return {
         sockAccountId: this.sockAccountId,
-        deletionDetails: this.deletionDetails
-      };
-    }
-    getAnnotationDetails() {
-      return {
+        deletionDetails: this.deletionDetails,
         mainAccountId: this.mainAccountId,
-        annotationDetails: this.annotationDetails
+        annotationDetails: this.annotationDetails,
+        shouldMessageAfter: isCheckboxChecked(config.ids.openMessageUser)
       };
     }
   }
   function createModal() {
-    const controller = new DeleteEvasionAccountControls(getUserIdFromAccountInfoURL());
     const submitButton = buildButton(
       "Delete and Annotate",
-      { className: "flex--item s-btn__filled s-btn__danger", type: "button" }
+      { className: "flex--item s-btn__filled s-btn__danger", type: "button", disabled: true }
+    );
+    const controller = new DeleteEvasionAccountControls(
+      getUserIdFromAccountInfoURL(),
+      () => {
+        submitButton.prop("disabled", false);
+      },
+      () => {
+        submitButton.prop("disabled", true);
+      }
     );
     submitButton.on("click", (ev) => {
       ev.preventDefault();
@@ -349,19 +380,27 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
         title: "Are you sure you want to delete this account?",
         body: "You will be deleting this account and placing an annotation on the main. This operation cannot be undone.",
         buttonLabelHtml: "I'm sure"
-      }).then((res) => {
-        if (res) {
-          const { sockAccountId, deletionDetails } = controller.getDeletionDetails();
-          const { mainAccountId, annotationDetails } = controller.getAnnotationDetails();
-          handleDeleteUser(sockAccountId, deletionDetails).then(() => {
-            return handleAnnotateUser(mainAccountId, annotationDetails);
-          }).then(() => {
-            window.location.reload();
-            window.open(`/users/message/create/${mainAccountId}`, "_blank");
-          }).catch((err) => {
-            console.error(err);
-          });
+      }).then((actionConfirmed) => {
+        if (!actionConfirmed) {
+          return;
         }
+        const {
+          sockAccountId,
+          deletionDetails,
+          mainAccountId,
+          annotationDetails,
+          shouldMessageAfter
+        } = controller.getFields();
+        handleDeleteUser(sockAccountId, deletionDetails).then(() => {
+          return handleAnnotateUser(mainAccountId, annotationDetails);
+        }).then(() => {
+          if (shouldMessageAfter) {
+            window.open(`/users/message/create/${mainAccountId}`, "_blank");
+          }
+          window.location.reload();
+        }).catch((err) => {
+          console.error(err);
+        });
       });
     });
     const cancelButton = buildButton(
