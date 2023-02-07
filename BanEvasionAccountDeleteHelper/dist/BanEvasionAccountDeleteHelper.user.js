@@ -212,7 +212,6 @@
         }
         input.prop("disabled", true);
         checkButton.prop("disabled", true);
-        this.onReady();
         void fetchFullUrlFromUserId(this.mainAccountId).then((mainUrl) => {
           this.mainAccountUrl = mainUrl;
           this.createMainAccountInfoDisplay();
@@ -322,6 +321,8 @@ ${DeleteEvasionAccountControls.buildDetailStringFromObject({
         this.sockRealName = name;
         this.sockUrl = sockUrl;
         this.modalBodyContainer.append(this.buildDeleteReasonDetailsTextarea()).append(this.buildAnnotateDetailsTextarea()).append(this.followUpActionControls());
+      }).then(() => {
+        this.onReady();
       });
     }
     getModalBodyContainer() {

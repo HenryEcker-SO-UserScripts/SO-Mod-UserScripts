@@ -5,7 +5,8 @@ import {
     buildButton,
     buildCheckboxContainer,
     buildInput,
-    buildLabel, isCheckboxChecked
+    buildLabel,
+    isCheckboxChecked
 } from '../Utilities/StacksComponentBuilders';
 
 interface ValidationBounds {
@@ -136,8 +137,6 @@ class DeleteEvasionAccountControls {
             input.prop('disabled', true);
             checkButton.prop('disabled', true);
 
-            // Form is now ready to be submitted
-            this.onReady();
 
             void fetchFullUrlFromUserId(this.mainAccountId)
                 .then((mainUrl) => {
@@ -291,6 +290,10 @@ class DeleteEvasionAccountControls {
                     .append(this.buildDeleteReasonDetailsTextarea())
                     .append(this.buildAnnotateDetailsTextarea())
                     .append(this.followUpActionControls());
+            })
+            .then(() => {
+                // Form is now ready to be submitted
+                this.onReady();
             });
     }
 
