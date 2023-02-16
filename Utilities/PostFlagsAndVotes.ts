@@ -1,16 +1,20 @@
-import {getFormDataFromObject} from './General';
+import {fetchPostFormDataBodyJsonResponse} from './General';
 import type {IdType} from './Types';
 
 export function castPostsVote(postId: IdType, voteType: IdType) {
-    return fetch(`/posts/${postId}/vote/${voteType}`, {
-        method: 'POST',
-        body: getFormDataFromObject({fkey: StackExchange.options.user.fkey})
-    });
+    return fetchPostFormDataBodyJsonResponse(
+        `/posts/${postId}/vote/${voteType}`,
+        {
+            fkey: StackExchange.options.user.fkey
+        }
+    );
 }
 
 export function reopenQuestion(postId: IdType) {
-    return fetch(`/flags/questions/${postId}/reopen/add`, {
-        method: 'POST',
-        body: getFormDataFromObject({fkey: StackExchange.options.user.fkey})
-    });
+    return fetchPostFormDataBodyJsonResponse(
+        `/flags/questions/${postId}/reopen/add`,
+        {
+            fkey: StackExchange.options.user.fkey
+        }
+    );
 }

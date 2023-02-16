@@ -4,3 +4,10 @@ export function getFormDataFromObject(obj: Record<string, unknown>) {
         return acc;
     }, new FormData());
 }
+
+export function fetchPostFormDataBodyJsonResponse<T>(endPoint: string, data: Record<string, unknown>): Promise<T> {
+    return fetch(endPoint, {
+        method: 'POST',
+        body: getFormDataFromObject(data)
+    }).then(res => res.json());
+}

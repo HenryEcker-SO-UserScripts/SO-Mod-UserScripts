@@ -1,4 +1,4 @@
-import {getFormDataFromObject} from './General';
+import {fetchPostFormDataBodyJsonResponse} from './General';
 import type {IdType} from './Types';
 
 
@@ -11,23 +11,23 @@ type LockTypeId = (
 
 export function lockPost(postId: IdType, lockId: LockTypeId, durationInHours = 24) {
     // duration -1 can be used to permanently lock the post
-    return fetch(`/admin/posts/${postId}/unlock`, {
-        method: 'POST',
-        body: getFormDataFromObject({
-            'mod-actions': 'unlock',
+    return fetchPostFormDataBodyJsonResponse(
+        `/admin/posts/${postId}/lock`,
+        {
+            'mod-actions': 'lock',
             noticetype: lockId,
             duration: durationInHours,
             fkey: StackExchange.options.user.fkey
-        })
-    });
+        }
+    );
 }
 
 export function unlockPost(postId: IdType) {
-    return fetch(`/admin/posts/${postId}/unlock`, {
-        method: 'POST',
-        body: getFormDataFromObject({
+    return fetchPostFormDataBodyJsonResponse(
+        `/admin/posts/${postId}/unlock`,
+        {
             'mod-actions': 'unlock',
             fkey: StackExchange.options.user.fkey
-        })
-    });
+        }
+    );
 }
