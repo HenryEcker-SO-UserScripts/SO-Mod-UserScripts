@@ -1,4 +1,5 @@
 import {getFormDataFromObject} from './General';
+import type {IdType} from './Types';
 
 
 type LockTypeId = (
@@ -8,7 +9,7 @@ type LockTypeId = (
     23 | // Wiki Lock
     28); // Obsolete Lock
 
-export function lockPost(postId: number | string, lockId: LockTypeId, durationInHours = 24) {
+export function lockPost(postId: IdType, lockId: LockTypeId, durationInHours = 24) {
     // duration -1 can be used to permanently lock the post
     return fetch(`/admin/posts/${postId}/unlock`, {
         method: 'POST',
@@ -21,7 +22,7 @@ export function lockPost(postId: number | string, lockId: LockTypeId, durationIn
     });
 }
 
-export function unlockPost(postId: number | string) {
+export function unlockPost(postId: IdType) {
     return fetch(`/admin/posts/${postId}/unlock`, {
         method: 'POST',
         body: getFormDataFromObject({

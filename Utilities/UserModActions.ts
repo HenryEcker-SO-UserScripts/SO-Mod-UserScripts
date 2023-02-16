@@ -1,6 +1,7 @@
 import {getFormDataFromObject} from './General';
+import type {IdType} from './Types';
 
-export function getUserPii(userId: number | string): Promise<{
+export function getUserPii(userId: IdType): Promise<{
     email: string;
     name: string;
     ip: string;
@@ -21,7 +22,7 @@ export function getUserPii(userId: number | string): Promise<{
 }
 
 
-export function deleteUser(userId: number | string, deleteReason: string, deleteReasonDetails: string) {
+export function deleteUser(userId: IdType, deleteReason: string, deleteReasonDetails: string) {
     return fetch(`/admin/users/${userId}/delete`, {
         method: 'POST',
         body: getFormDataFromObject({
@@ -32,7 +33,7 @@ export function deleteUser(userId: number | string, deleteReason: string, delete
     });
 }
 
-export function annotateUser(userId: number | string, annotationDetails: string) {
+export function annotateUser(userId: IdType, annotationDetails: string) {
     return fetch(`/admin/users/${userId}/annotate`, {
         method: 'POST',
         body: getFormDataFromObject({
