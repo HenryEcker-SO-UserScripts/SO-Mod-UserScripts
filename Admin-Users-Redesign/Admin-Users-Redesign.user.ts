@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Redesign Admin Users Page
 // @description  Makes /admin/users a bit less busy
-// @homepage     https://github.com/HenryEcker/SO-UserScripts
+// @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
 // @version      0.0.7
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign/Admin-Users-Redesign.user.js
