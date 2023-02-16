@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ban Evasion Account Delete Helper
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
-// @homepage     https://github.com/HenryEcker/SO-UserScripts
+// @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
 // @version      0.0.7
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js

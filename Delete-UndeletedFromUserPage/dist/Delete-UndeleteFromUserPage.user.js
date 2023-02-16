@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Inline delete/undelete post buttons
 // @description  Adds delete/undelete buttons on the questions and answers tabs in user profile
-// @homepage     https://github.com/HenryEcker/SO-UserScripts
+// @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
 // @version      0.0.7
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Delete-UndeletedFromUserPage/dist/Delete-UndeleteFromUserPage.user.js
@@ -22,11 +22,19 @@
       return acc;
     }, new FormData());
   }
-  function castPostsVote(postId, voteType) {
-    return fetch(`/posts/${postId}/vote/${voteType}`, {
+  function fetchPostFormDataBodyJsonResponse(endPoint, data) {
+    return fetch(endPoint, {
       method: "POST",
-      body: getFormDataFromObject({ fkey: StackExchange.options.user.fkey })
-    });
+      body: getFormDataFromObject(data)
+    }).then((res) => res.json());
+  }
+  function castPostsVote(postId, voteType) {
+    return fetchPostFormDataBodyJsonResponse(
+      `/posts/${postId}/vote/${voteType}`,
+      {
+        fkey: StackExchange.options.user.fkey
+      }
+    );
   }
   const config = {
     deleteVoteCode: 10,
