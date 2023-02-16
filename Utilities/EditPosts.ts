@@ -1,15 +1,29 @@
-import {getFormDataFromObject} from './General';
+import {fetchPostFormDataBodyJsonResponse} from './General';
 import type {IdType} from './Types';
 
+
+interface EditTagResponse {
+    success: boolean;
+    html: string; // full html for tags component
+}
+
 export function editTags(postId: IdType, tags: string, reviewTaskId?: IdType) {
-    return fetch(`/posts/${postId}/edit-tags`, {
-        method: 'POST',
-        body: getFormDataFromObject({
+    return fetchPostFormDataBodyJsonResponse<EditTagResponse>(
+        `/posts/${postId}/edit-tags`,
+        {
             tagnames: tags,
             fkey: StackExchange.options.user.fkey,
             reviewTaskId: reviewTaskId // undefined if no review task
-        })
-    });
+        }
+    );
+}
+
+interface PostEditResponse {
+    html: string; // full html for container: includes body, tags, usercards, etc.
+    message: 'ok'; // some message
+    redirectTo: string; // url to return to after edit completes
+    success: boolean;
+    title: string; // current title (after edit)
 }
 
 export function editPost(
@@ -22,9 +36,9 @@ export function editPost(
     isCurrent = true,
     author?: string
 ) {
-    return fetch(`/posts/${postId}/edit-submit/${revisionGuid}`, {
-        method: 'POST',
-        body: getFormDataFromObject({
+    return fetchPostFormDataBodyJsonResponse<PostEditResponse>(
+        `/posts/${postId}/edit-submit/${revisionGuid}`,
+        {
             'is-current': isCurrent,
             'title': title,
             'post-text': postText,
@@ -32,29 +46,64 @@ export function editPost(
             'author': author ?? '',
             'tagnames': tags,
             'edit-comment': editComment
-        })
-    });
+        }
+    );
+}
+
+interface PostEditorHeartbeatResponse {
+    'draftSaved': boolean;
+    'disableEditor': boolean;
+    'breakoutSimilarQuestions': boolean;
 }
 
 export function postEditorHeartbeat(postId: IdType, clientRevisionGuid: string) {
-    return fetch(`/posts/${postId}/editor-heartbeat/edit`, {
-        method: 'POST',
-        body: getFormDataFromObject({
+    return fetchPostFormDataBodyJsonResponse<PostEditorHeartbeatResponse>(
+        `/posts/${postId}/editor-heartbeat/edit`,
+        {
             fkey: StackExchange.options.user.fkey,
             clientRevisionGuid: clientRevisionGuid
-        })
-    });
+        }
+    );
 }
 
-export function validatePostBody(body: string, oldBody: string, isQuestion: boolean, isSuggestedEdit = false) {
-    return fetch('/posts/validate-body', {
-        method: 'POST',
-        body: getFormDataFromObject({
+interface ValidateResponse {
+    errors: object;
+    source: object;
+    success: boolean;
+    warnings: object;
+}
+
+export function validatePostBody(body: string, oldBody: string, isQuestion: boolean, isSuggestedEdit = false): Promise<ValidateResponse> {
+    return fetchPostFormDataBodyJsonResponse<ValidateResponse>(
+        '/posts/validate-body',
+        {
             body: body,
             oldBody: oldBody,
             isQuestion: isQuestion,
             isSuggestedEdit: isSuggestedEdit,
             fkey: StackExchange.options.user.fkey
-        })
-    });
+        }
+    );
+}
+
+export function validatePostTitle(title: string): Promise<ValidateResponse> {
+    return fetchPostFormDataBodyJsonResponse<ValidateResponse>(
+        '/posts/validate-title',
+        {
+            title: title,
+            fkey: StackExchange.options.user.fkey
+        }
+    );
+}
+
+export function validatePostTags(tags: string, oldTags: string, postTypeId = 1): Promise<ValidateResponse> {
+    return fetchPostFormDataBodyJsonResponse<ValidateResponse>(
+        '/posts/validate-title',
+        {
+            tags: tags,
+            oldTags: oldTags,
+            fkey: StackExchange.options.user.fkey,
+            postTypeId: postTypeId
+        }
+    );
 }
