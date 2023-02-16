@@ -1,4 +1,6 @@
-export function fetchFullUrlFromUserId(userId: number | string): Promise<string> {
+import type {IdType} from './Types';
+
+export function fetchFullUrlFromUserId(userId: IdType): Promise<string> {
     return fetch(`/users/${userId}`, {method: 'OPTIONS'})
         .then(res => res.url);
 }
