@@ -107,3 +107,20 @@ export function validatePostTags(tags: string, oldTags: string, postTypeId = 1):
         }
     );
 }
+
+
+export function isSuggestedEditQueueFull(postId: IdType): Promise<boolean> {
+    return fetch(
+        `/posts/${postId}/edit`,
+        {
+            method: 'GET',
+            credentials: 'omit' // Send without credentials
+        }
+    ).then(({status}) => {
+        /*
+         * Status 200 means can make suggestion i.e. NOT FULL (false)
+         * Status 403 means can't make suggestion i.e. FULL   (true)
+         */
+        return status !== 200;
+    });
+}
