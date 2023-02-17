@@ -73,7 +73,7 @@ interface ValidateResponse {
     warnings: object;
 }
 
-export function validatePostBody(body: string, oldBody: string, isQuestion: boolean, isSuggestedEdit = false): Promise<ValidateResponse> {
+export function validatePostBody(body: string, oldBody: string, isQuestion: boolean, isSuggestedEdit = false) {
     return fetchPostFormDataBodyJsonResponse<ValidateResponse>(
         '/posts/validate-body',
         {
@@ -86,7 +86,7 @@ export function validatePostBody(body: string, oldBody: string, isQuestion: bool
     );
 }
 
-export function validatePostTitle(title: string): Promise<ValidateResponse> {
+export function validatePostTitle(title: string) {
     return fetchPostFormDataBodyJsonResponse<ValidateResponse>(
         '/posts/validate-title',
         {
@@ -96,7 +96,7 @@ export function validatePostTitle(title: string): Promise<ValidateResponse> {
     );
 }
 
-export function validatePostTags(tags: string, oldTags: string, postTypeId = 1): Promise<ValidateResponse> {
+export function validatePostTags(tags: string, oldTags: string, postTypeId = 1) {
     return fetchPostFormDataBodyJsonResponse<ValidateResponse>(
         '/posts/validate-title',
         {
@@ -123,4 +123,14 @@ export function isSuggestedEditQueueFull(postId: IdType): Promise<boolean> {
          */
         return status !== 200;
     });
+}
+
+export function discardQuestionDraft() {
+    return fetchPostFormDataBodyJsonResponse<{ success: boolean; }>(
+        '/post/discard-draft',
+        {
+            fkey: StackExchange.options.user.fkey,
+            postType: 'ask'
+        }
+    );
 }
