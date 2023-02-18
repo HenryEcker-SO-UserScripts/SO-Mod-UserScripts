@@ -3,7 +3,7 @@
 // @description  Adds delete/undelete buttons on the questions and answers tabs in user profile
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.7
+// @version      0.0.8
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Delete-UndeletedFromUserPage/dist/Delete-UndeleteFromUserPage.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Delete-UndeletedFromUserPage/dist/Delete-UndeleteFromUserPage.user.js
 //
@@ -22,14 +22,14 @@
       return acc;
     }, new FormData());
   }
-  function fetchPostFormDataBodyJsonResponse(endPoint, data) {
+  function fetchPostFormData(endPoint, data) {
     return fetch(endPoint, {
       method: "POST",
       body: getFormDataFromObject(data)
-    }).then((res) => res.json());
+    });
   }
   function castPostsVote(postId, voteType) {
-    return fetchPostFormDataBodyJsonResponse(
+    return fetchPostFormData(
       `/posts/${postId}/vote/${voteType}`,
       {
         fkey: StackExchange.options.user.fkey
