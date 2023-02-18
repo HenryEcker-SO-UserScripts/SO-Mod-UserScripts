@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.7
+// @version      0.0.8
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -21,11 +21,17 @@
       return acc;
     }, new FormData());
   }
-  function getUserPii(userId) {
-    return fetch("/admin/all-pii", {
+  function fetchPostFormData(endPoint, data) {
+    return fetch(endPoint, {
       method: "POST",
-      body: getFormDataFromObject({ id: userId, fkey: StackExchange.options.user.fkey })
-    }).then((res) => res.text()).then((resText) => {
+      body: getFormDataFromObject(data)
+    });
+  }
+  function getUserPii(userId) {
+    return fetchPostFormData(
+      "/admin/all-pii",
+      { id: userId, fkey: StackExchange.options.user.fkey }
+    ).then((res) => res.text()).then((resText) => {
       const html = $(resText);
       return {
         email: html[1].children[1].innerText.trim(),
@@ -35,23 +41,23 @@
     });
   }
   function deleteUser(userId, deleteReason, deleteReasonDetails) {
-    return fetch(`/admin/users/${userId}/delete`, {
-      method: "POST",
-      body: getFormDataFromObject({
+    return fetchPostFormData(
+      `/admin/users/${userId}/delete`,
+      {
         fkey: StackExchange.options.user.fkey,
         deleteReason,
         deleteReasonDetails
-      })
-    });
+      }
+    );
   }
   function annotateUser(userId, annotationDetails) {
-    return fetch(`/admin/users/${userId}/annotate`, {
-      method: "POST",
-      body: getFormDataFromObject({
+    return fetchPostFormData(
+      `/admin/users/${userId}/annotate`,
+      {
         fkey: StackExchange.options.user.fkey,
         annotation: annotationDetails
-      })
-    });
+      }
+    );
   }
   function fetchFullUrlFromUserId(userId) {
     return fetch(`/users/${userId}`, { method: "OPTIONS" }).then((res) => res.url);
