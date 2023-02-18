@@ -5,9 +5,13 @@ export function getFormDataFromObject(obj: Record<string, unknown>) {
     }, new FormData());
 }
 
-export function fetchPostFormDataBodyJsonResponse<T>(endPoint: string, data: Record<string, unknown>): Promise<T> {
+export function fetchPostFormData(endPoint: string, data: Record<string, unknown>) {
     return fetch(endPoint, {
         method: 'POST',
         body: getFormDataFromObject(data)
-    }).then(res => res.json());
+    });
+}
+
+export function fetchPostFormDataBodyJsonResponse<T>(endPoint: string, data: Record<string, unknown>): Promise<T> {
+    return fetchPostFormData(endPoint, data).then(res => res.json());
 }
