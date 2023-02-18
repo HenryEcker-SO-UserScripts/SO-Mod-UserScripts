@@ -19,7 +19,8 @@
     "downlevelIteration": true,
     "types": [
       "jquery",
-      "tampermonkey"
+      "tampermonkey",
+      "@userscripters/stackexchange-global-types"
     ]
   },
   "include": [
