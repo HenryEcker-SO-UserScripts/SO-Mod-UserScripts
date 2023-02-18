@@ -1,8 +1,8 @@
-import {fetchPostFormDataBodyJsonResponse} from './General';
+import {fetchPostFormData, fetchPostFormDataBodyJsonResponse} from './General';
 import type {IdType} from './Types';
 
 export function castPostsVote(postId: IdType, voteType: IdType) {
-    return fetchPostFormDataBodyJsonResponse(
+    return fetchPostFormData(
         `/posts/${postId}/vote/${voteType}`,
         {
             fkey: StackExchange.options.user.fkey

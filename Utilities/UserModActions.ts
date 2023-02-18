@@ -1,4 +1,4 @@
-import {getFormDataFromObject} from './General';
+import {fetchPostFormData} from './General';
 import type {IdType} from './Types';
 
 export function getUserPii(userId: IdType): Promise<{
@@ -6,10 +6,10 @@ export function getUserPii(userId: IdType): Promise<{
     name: string;
     ip: string;
 }> {
-    return fetch('/admin/all-pii', {
-        method: 'POST',
-        body: getFormDataFromObject({id: userId, fkey: StackExchange.options.user.fkey})
-    })
+    return fetchPostFormData(
+        '/admin/all-pii',
+        {id: userId, fkey: StackExchange.options.user.fkey}
+    )
         .then(res => res.text())
         .then(resText => {
             const html = $(resText);
@@ -23,22 +23,22 @@ export function getUserPii(userId: IdType): Promise<{
 
 
 export function deleteUser(userId: IdType, deleteReason: string, deleteReasonDetails: string) {
-    return fetch(`/admin/users/${userId}/delete`, {
-        method: 'POST',
-        body: getFormDataFromObject({
+    return fetchPostFormData(
+        `/admin/users/${userId}/delete`,
+        {
             fkey: StackExchange.options.user.fkey,
             deleteReason: deleteReason,
             deleteReasonDetails: deleteReasonDetails
-        })
-    });
+        }
+    );
 }
 
 export function annotateUser(userId: IdType, annotationDetails: string) {
-    return fetch(`/admin/users/${userId}/annotate`, {
-        method: 'POST',
-        body: getFormDataFromObject({
+    return fetchPostFormData(
+        `/admin/users/${userId}/annotate`,
+        {
             fkey: StackExchange.options.user.fkey,
             annotation: annotationDetails
-        })
-    });
+        }
+    );
 }
