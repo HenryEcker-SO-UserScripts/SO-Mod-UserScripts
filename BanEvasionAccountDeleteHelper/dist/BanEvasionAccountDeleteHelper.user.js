@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.8
+// @version      0.0.9
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -127,6 +127,7 @@
     ids: {
       modal: "beadh-modal",
       mainAccountIdInput: "beadh-main-account-id-input",
+      deletionReason: "beadh-delete-reason",
       deleteReasonDetails: "beadh-deleteReasonDetails",
       annotationDetails: "beadh-mod-menu-annotation",
       openMessageUser: "beadh-message-user-checkbox"
@@ -140,6 +141,10 @@
         min: 10,
         max: 300
       }
+    },
+    supportedDeleteOptions: {
+      "Ban evasion": "This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly",
+      "No longer welcome": "This user is no longer welcome to participate on the site"
     }
   };
   function getUserIdFromAccountInfoURL() {
@@ -151,10 +156,10 @@
     }
     return userId;
   }
-  function handleDeleteUser(userId, deletionDetails) {
+  function handleDeleteUser(userId, deletionReason, deletionDetails) {
     return deleteUser(
       userId,
-      "This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly",
+      deletionReason,
       deletionDetails
     ).then((res) => {
       if (res.status !== 200) {
@@ -222,6 +227,7 @@
     sockUrl;
     sockEmail;
     sockRealName;
+    deletionReason;
     deletionDetails;
     annotationDetails;
     modalBodyContainer;
@@ -261,9 +267,28 @@
     }
     async createStep2Fields() {
       this.createMainAccountDisplay();
+      this.createDeleteReasonControls();
       await this.createDeleteAndAnnotateControls();
       this.createFollowUpActionControls();
       this.onReady();
+    }
+    createDeleteReasonControls() {
+      const label = buildLabel("Reason for deleting this user:", {
+        htmlFor: config.ids.deletionReason
+      });
+      const select = $(`<select id="${config.ids.deletionReason}"></select>`);
+      Object.entries(config.supportedDeleteOptions).forEach(([label2, deletionReason]) => {
+        select.append($(`<option value="${deletionReason}">${label2}</option>`));
+      });
+      this.deletionReason = select.val();
+      select.on("change", () => {
+        this.deletionReason = select.val();
+      });
+      this.modalBodyContainer.append(
+        $('<div class="d-flex gy4 fd-column"></div>').append(label).append(
+          $('<div class="flex--item s-select"></div>').append(select)
+        )
+      );
     }
     createMainAccountDisplay() {
       this.modalBodyContainer.append(
@@ -361,6 +386,7 @@ ${buildDetailStringFromObject({
     getFields() {
       return {
         sockAccountId: this.sockAccountId,
+        deletionReason: this.deletionReason,
         deletionDetails: this.deletionDetails,
         mainAccountId: this.mainAccountId,
         annotationDetails: this.annotationDetails,
@@ -368,8 +394,8 @@ ${buildDetailStringFromObject({
       };
     }
   }
-  function handleDeleteAndAnnotateUsers(sockAccountId, deletionDetails, mainAccountId, annotationDetails) {
-    return handleDeleteUser(sockAccountId, deletionDetails).then(() => handleAnnotateUser(mainAccountId, annotationDetails));
+  function handleDeleteAndAnnotateUsers(sockAccountId, deletionReason, deletionDetails, mainAccountId, annotationDetails) {
+    return handleDeleteUser(sockAccountId, deletionReason, deletionDetails).then(() => handleAnnotateUser(mainAccountId, annotationDetails));
   }
   function handleSubmitActions(controller) {
     controller.validateFields();
@@ -383,12 +409,13 @@ ${buildDetailStringFromObject({
       }
       const {
         sockAccountId,
+        deletionReason,
         deletionDetails,
         mainAccountId,
         annotationDetails,
         shouldMessageAfter
       } = controller.getFields();
-      handleDeleteAndAnnotateUsers(sockAccountId, deletionDetails, mainAccountId, annotationDetails).then(() => {
+      handleDeleteAndAnnotateUsers(sockAccountId, deletionReason, deletionDetails, mainAccountId, annotationDetails).then(() => {
         if (shouldMessageAfter) {
           window.open(`/users/message/create/${mainAccountId}`, "_blank");
         }
