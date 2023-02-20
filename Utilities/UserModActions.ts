@@ -22,7 +22,12 @@ export function getUserPii(userId: IdType): Promise<{
 }
 
 
-export function deleteUser(userId: IdType, deleteReason: string, deleteReasonDetails: string) {
+export type DeleteReason = (
+    'This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly' |
+    'This user is no longer welcome to participate on the site'
+    );
+
+export function deleteUser(userId: IdType, deleteReason: DeleteReason, deleteReasonDetails: string) {
     return fetchPostFormData(
         `/admin/users/${userId}/delete`,
         {
