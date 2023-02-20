@@ -1,4 +1,4 @@
-import {annotateUser, deleteUser, getUserPii} from '../Utilities/UserModActions';
+import {annotateUser, type DeleteReason, deleteUser, getUserPii} from '../Utilities/UserModActions';
 import {fetchFullUrlFromUserId, fetchUserIdFromHref,} from '../Utilities/UserInfo';
 import {
     attachAttributes,
@@ -17,12 +17,14 @@ interface ValidationBounds {
 interface UserScriptConfig {
     ids: Record<string, string>;
     validationBounds: Record<string, ValidationBounds>;
+    supportedDeleteOptions: Record<string, DeleteReason>;
 }
 
 const config: UserScriptConfig = {
     ids: {
         modal: 'beadh-modal',
         mainAccountIdInput: 'beadh-main-account-id-input',
+        deletionReason: 'beadh-delete-reason',
         deleteReasonDetails: 'beadh-deleteReasonDetails',
         annotationDetails: 'beadh-mod-menu-annotation',
         openMessageUser: 'beadh-message-user-checkbox'
@@ -37,6 +39,10 @@ const config: UserScriptConfig = {
             max: 300
         },
 
+    },
+    supportedDeleteOptions: {
+        'Ban evasion': 'This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly',
+        'No longer welcome': 'This user is no longer welcome to participate on the site'
     }
 };
 
@@ -51,10 +57,10 @@ function getUserIdFromAccountInfoURL(): number {
     return userId;
 }
 
-function handleDeleteUser(userId: number, deletionDetails: string) {
+function handleDeleteUser(userId: number, deletionReason: DeleteReason, deletionDetails: string) {
     return deleteUser(
         userId,
-        'This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly',
+        deletionReason,
         deletionDetails
     )
         .then(res => {
@@ -144,6 +150,7 @@ class DeleteEvasionAccountControls {
     private sockUrl: string;
     private sockEmail: string;
     private sockRealName: string;
+    private deletionReason: DeleteReason;
     private deletionDetails: string;
     private annotationDetails: string;
     private readonly modalBodyContainer: JQuery<HTMLDivElement>;
@@ -210,9 +217,35 @@ class DeleteEvasionAccountControls {
 
     private async createStep2Fields() {
         this.createMainAccountDisplay();
+        this.createDeleteReasonControls();
         await this.createDeleteAndAnnotateControls();
         this.createFollowUpActionControls();
         this.onReady();
+    }
+
+    private createDeleteReasonControls(): void {
+        const label = buildLabel('Reason for deleting this user:', {
+            htmlFor: config.ids.deletionReason
+        });
+        const select = $(`<select id="${config.ids.deletionReason}"></select>`);
+        Object.entries(config.supportedDeleteOptions).forEach(([label, deletionReason]) => {
+            select.append($(`<option value="${deletionReason}">${label}</option>`));
+        });
+
+        this.deletionReason = select.val() as DeleteReason;
+        select.on('change', () => {
+            this.deletionReason = select.val() as DeleteReason;
+        });
+
+        this.modalBodyContainer
+            .append(
+                $('<div class="d-flex gy4 fd-column"></div>')
+                    .append(label)
+                    .append(
+                        $('<div class="flex--item s-select"></div>')
+                            .append(select)
+                    )
+            );
     }
 
 
@@ -330,6 +363,7 @@ class DeleteEvasionAccountControls {
     getFields() {
         return {
             sockAccountId: this.sockAccountId,
+            deletionReason: this.deletionReason,
             deletionDetails: this.deletionDetails,
             mainAccountId: this.mainAccountId,
             annotationDetails: this.annotationDetails,
@@ -341,11 +375,12 @@ class DeleteEvasionAccountControls {
 
 function handleDeleteAndAnnotateUsers(
     sockAccountId: number,
+    deletionReason: DeleteReason,
     deletionDetails: string,
     mainAccountId: number,
     annotationDetails: string
 ) {
-    return handleDeleteUser(sockAccountId, deletionDetails)
+    return handleDeleteUser(sockAccountId, deletionReason, deletionDetails)
         .then(() => handleAnnotateUser(mainAccountId, annotationDetails));
 }
 
@@ -362,13 +397,14 @@ function handleSubmitActions(controller: DeleteEvasionAccountControls) {
             }
             const {
                 sockAccountId,
+                deletionReason,
                 deletionDetails,
                 mainAccountId,
                 annotationDetails,
                 shouldMessageAfter
             } = controller.getFields();
 
-            handleDeleteAndAnnotateUsers(sockAccountId, deletionDetails, mainAccountId, annotationDetails)
+            handleDeleteAndAnnotateUsers(sockAccountId, deletionReason, deletionDetails, mainAccountId, annotationDetails)
                 .then(() => {
                     if (shouldMessageAfter) {
                         // Open new tab to send message to main account
