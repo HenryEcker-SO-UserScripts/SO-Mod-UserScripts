@@ -1,4 +1,6 @@
 // Simulated versions
+import {type DeleteReason} from '../Utilities/UserModActions';
+
 export function getUserPii(userId: number | string): Promise<{
     email: string;
     name: string;
@@ -13,7 +15,7 @@ export function getUserPii(userId: number | string): Promise<{
 }
 
 
-export function deleteUser(userId: number | string, deleteReason: string, deleteReasonDetails: string): Promise<{ status: number; }> {
+export function deleteUser(userId: number | string, deleteReason: DeleteReason, deleteReasonDetails: string): Promise<{ status: number; }> {
     console.log('Deletion', {
         userId,
         deleteReason,
