@@ -223,19 +223,19 @@
       sockAccountId: void 0,
       // Needs to be defined for typing reasons
       get mainAccountId() {
-        return Number($(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).val());
+        return Number(this[getTargetPropKey(config.data.target.mainAccountIdInput)].value);
       },
       get deletionReason() {
-        return $(this[getTargetPropKey(config.data.target.deletionReasonSelect)]).val();
+        return this[getTargetPropKey(config.data.target.deletionReasonSelect)].value;
       },
       get deletionDetails() {
-        return $(this[getTargetPropKey(config.data.target.deletionDetails)]).val();
+        return this[getTargetPropKey(config.data.target.deletionDetails)].value;
       },
       get annotationDetails() {
-        return $(this[getTargetPropKey(config.data.target.annotationDetails)]).val();
+        return this[getTargetPropKey(config.data.target.annotationDetails)].value;
       },
       get shouldMessageAfter() {
-        return $(this[getTargetPropKey(config.data.target.shouldMessageAfter)]).prop("checked");
+        return this[getTargetPropKey(config.data.target.shouldMessageAfter)].checked;
       },
       validateFields() {
         validateLength("Deletion reason details", this.deletionDetails, config.validationBounds.deleteReasonDetails);
@@ -274,8 +274,8 @@
           });
           return;
         }
-        $(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).prop("disabled", true);
-        $(this[getTargetPropKey(config.data.target.mainAccountIdInputButton)]).prop("disabled", true);
+        this[getTargetPropKey(config.data.target.mainAccountIdInput)].disabled = true;
+        this[getTargetPropKey(config.data.target.mainAccountIdInputButton)].disabled = true;
         void this.buildRemainingFormElements();
       },
       async buildRemainingFormElements() {
@@ -347,7 +347,7 @@ ${buildDetailStringFromObject({
           "Email": sockEmail,
           "Real name": sockRealName
         }, ": ", " | ");
-        $(this[getTargetPropKey(config.data.target.controllerSubmitButton)]).prop("disabled", false);
+        this[getTargetPropKey(config.data.target.controllerSubmitButton)].disabled = false;
       }
     };
     $("body").append(createModal());
