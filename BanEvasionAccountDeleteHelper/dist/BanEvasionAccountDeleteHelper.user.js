@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.1
+// @version      0.1.2
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -80,7 +80,7 @@
       modal: "beadh-modal",
       mainAccountIdInput: "beadh-main-account-id-input",
       deletionReason: "beadh-delete-reason",
-      deleteReasonDetails: "beadh-deleteReasonDetails",
+      deleteReasonDetails: "beadh-delete-reason-details",
       annotationDetails: "beadh-mod-menu-annotation",
       shouldMessageAfter: "beadh-message-user-checkbox"
     },
@@ -211,17 +211,24 @@
   function getTargetPropKey(s) {
     return `${s}Target`;
   }
+  function buildTextarea(labelText, textareaConfig, validationBounds) {
+    return `<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}">
+                <label class="s-label flex--item" for="${textareaConfig.id}">${labelText}</label>
+                <textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="${textareaConfig.id}" name="${textareaConfig.name}" placeholder="${textareaConfig.placeholder}" rows="${textareaConfig.rows}" data-${config.data.controller}-target="${textareaConfig.dataTarget}"></textarea>
+                <div data-se-char-counter-target="output"></div>
+            </div>`;
+  }
   function createModalAndAddController() {
     const banEvasionControllerConfiguration = {
       targets: [
-        ...Object.values(config.data.target)
         // Establishes access to all targets
+        ...Object.values(config.data.target)
       ],
       initialize() {
         this.sockAccountId = getUserIdFromAccountInfoURL();
       },
-      sockAccountId: void 0,
       // Needs to be defined for typing reasons
+      sockAccountId: void 0,
       get mainAccountId() {
         return Number(this[getTargetPropKey(config.data.target.mainAccountIdInput)].value);
       },
@@ -284,64 +291,52 @@
           fetchFullUrlFromUserId(this.sockAccountId),
           getUserPii(this.sockAccountId)
         ]);
-        $(this[getTargetPropKey(config.data.target.formElements)]).append(
-          $(`<div class="d-flex fd-row g6">
+        $(this[getTargetPropKey(config.data.target.formElements)]).append(`<div class="d-flex fd-row g6">
                 <label class="s-label">Main account located here:</label>
                 <a href="${mainUrl}" target="_blank">${mainUrl}</a>
             </div>
             <div class="d-flex gy4 fd-column">
                 <label class="s-label" for="${config.ids.deletionReason}">Reason for deleting this user:</label>
                 <div class="flex--item s-select">
-                    <select id="${config.ids.deletionReason}" data-${config.data.controller}-target="${config.data.target.deletionReasonSelect}">
-                        <option value="This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly">Ban evasion</option>
-                        <option value="This user is no longer welcome to participate on the site">No longer welcome</option>
-                    </select>
+                    <select id="${config.ids.deletionReason}" data-${config.data.controller}-target="${config.data.target.deletionReasonSelect}">${// Programatically build options from supported list
+        Object.entries(config.supportedDeleteOptions).map(([label, value]) => {
+          return `<option value="${value}">${label}</option>`;
+        }).join("\n")}</select>
                 </div>
             </div>
-            <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="15" data-se-char-counter-max="600">
-                <label class="s-label flex--item" for="${config.ids.deleteReasonDetails}">Please provide details leading to the deletion of this account (required):</label>
-                <textarea style="font-family:monospace" 
-                          class="flex--item s-textarea" 
-                          data-se-char-counter-target="field" 
-                          data-is-valid-length="false"
-                          id="${config.ids.deleteReasonDetails}" 
-                          name="deleteReasonDetails" 
-                          placeholder="Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later." 
-                          rows="6" 
-                          data-${config.data.controller}-target="${config.data.target.deletionDetails}"></textarea>
-                <div data-se-char-counter-target="output" class="cool"></div>
-            </div>
-            <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="300">
-                <label class="s-label flex--item" for="${config.ids.annotationDetails}">Annotate the main account (required): </label>
-                <textarea style="font-family:monospace" 
-                          class="flex--item s-textarea" 
-                          data-se-char-counter-target="field" 
-                          data-is-valid-length="false" 
-                          id="${config.ids.annotationDetails}" 
-                          name="annotation" 
-                          placeholder="Examples: &amp;quot;possible sock of /users/XXXX, see mod room [link] for discussion&amp;quot; or &amp;quot;left a series of abusive comments, suspend on next occurrence&amp;quot;" 
-                          rows="4" 
-                          data-${config.data.controller}-target="${config.data.target.annotationDetails}"></textarea>
-                <div data-se-char-counter-target="output" class="cool"></div>
-            </div>
+            ${buildTextarea(
+          "Please provide details leading to the deletion of this account (required):",
+          {
+            id: config.ids.deleteReasonDetails,
+            name: "deleteReasonDetails",
+            placeholder: "Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.",
+            rows: 4,
+            dataTarget: config.data.target.deletionDetails
+          },
+          config.validationBounds.deleteReasonDetails
+        )}
+            ${buildTextarea(
+          "Annotate the main account (required):",
+          {
+            id: config.ids.annotationDetails,
+            name: "annotation",
+            placeholder: "Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;",
+            rows: 4,
+            dataTarget: config.data.target.annotationDetails
+          },
+          config.validationBounds.annotationDetails
+        )}
             <div class="d-flex fd-row">
                 <div class="s-check-control">
-                    <input class="s-checkbox" 
-                           type="checkbox" 
-                           id="${config.ids.shouldMessageAfter}" 
-                           checked 
-                           data-${config.data.controller}-target="${config.data.target.shouldMessageAfter}">
+                    <input id="${config.ids.shouldMessageAfter}" class="s-checkbox" type="checkbox" checked data-${config.data.controller}-target="${config.data.target.shouldMessageAfter}">
                     <label class="s-label" for="${config.ids.shouldMessageAfter}">Open message user in new tab</label>
                 </div>
-            </div>`)
-        );
-        this[getTargetPropKey(config.data.target.deletionDetails)].value = `
-
-${buildDetailStringFromObject({
+            </div>`);
+        this[getTargetPropKey(config.data.target.deletionDetails)].value = "\n\n" + buildDetailStringFromObject({
           "Main Account": mainUrl,
           "Email": sockEmail,
           "Real name": sockRealName
-        }, ":  ", "\n", true)}`;
+        }, ":  ", "\n", true);
         this[getTargetPropKey(config.data.target.annotationDetails)].value = buildDetailStringFromObject({
           "Deleted evasion account": sockUrl,
           "Email": sockEmail,
