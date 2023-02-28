@@ -194,8 +194,11 @@ interface BanEvasionControllerHelperFunctions {
 type BanEvasionControllerType =
     BaseStacksControllerConfig
     & BanEvasionControllerValues
-    & BanEvasionControllerHelperFunctions
-    & { [actionKeyword: string]: (ev: ActionEvent) => void; };
+    & BanEvasionControllerHelperFunctions /*
+    & {[actionEventHandler: string]: (ev:ActionEvent) => void}
+    & {[htmlTargetKey: string]: HTMLElement}
+    */;
+
 
 function createModalAndAddController() {
     const banEvasionControllerConfiguration: BanEvasionControllerType = {
@@ -207,19 +210,19 @@ function createModalAndAddController() {
         },
         sockAccountId: undefined, // Needs to be defined for typing reasons
         get mainAccountId() {
-            return Number($(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).val());
+            return Number(this[getTargetPropKey(config.data.target.mainAccountIdInput)].value);
         },
         get deletionReason() {
-            return $(this[getTargetPropKey(config.data.target.deletionReasonSelect)]).val() as DeleteReason;
+            return this[getTargetPropKey(config.data.target.deletionReasonSelect)].value;
         },
         get deletionDetails() {
-            return $(this[getTargetPropKey(config.data.target.deletionDetails)]).val() as string;
+            return this[getTargetPropKey(config.data.target.deletionDetails)].value;
         },
         get annotationDetails() {
-            return $(this[getTargetPropKey(config.data.target.annotationDetails)]).val() as string;
+            return this[getTargetPropKey(config.data.target.annotationDetails)].value;
         },
         get shouldMessageAfter() {
-            return $(this[getTargetPropKey(config.data.target.shouldMessageAfter)]).prop('checked');
+            return (<HTMLInputElement>this[getTargetPropKey(config.data.target.shouldMessageAfter)]).checked;
         },
         validateFields() {
             validateLength('Deletion reason details', this.deletionDetails, config.validationBounds.deleteReasonDetails);
@@ -268,8 +271,8 @@ function createModalAndAddController() {
             }
 
             // Disable so that no changes are made with this information after the fact (a refresh is required to fix this)
-            $(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).prop('disabled', true);
-            $(this[getTargetPropKey(config.data.target.mainAccountIdInputButton)]).prop('disabled', true);
+            this[getTargetPropKey(config.data.target.mainAccountIdInput)].disabled = true;
+            this[getTargetPropKey(config.data.target.mainAccountIdInputButton)].disabled = true;
 
             void this.buildRemainingFormElements();
         },
@@ -344,7 +347,7 @@ function createModalAndAddController() {
                 'Real name': sockRealName
             }, ': ', ' | ');
             // Enable form submit button now that the fields are active
-            $(this[getTargetPropKey(config.data.target.controllerSubmitButton)]).prop('disabled', false);
+            this[getTargetPropKey(config.data.target.controllerSubmitButton)].disabled = false;
         },
     };
     $('body').append(createModal());
