@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.0
+// @version      0.1.1
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -82,7 +82,7 @@
       deletionReason: "beadh-delete-reason",
       deleteReasonDetails: "beadh-deleteReasonDetails",
       annotationDetails: "beadh-mod-menu-annotation",
-      openMessageUser: "beadh-message-user-checkbox"
+      shouldMessageAfter: "beadh-message-user-checkbox"
     },
     data: {
       controller: "ban-evasion-form",
@@ -93,7 +93,7 @@
         deletionReasonSelect: "delete-reason",
         deletionDetails: "delete-reason-detail-text",
         annotationDetails: "annotation-detail-text",
-        openMessageUser: "message-user-checkbox",
+        shouldMessageAfter: "message-user-checkbox",
         controllerSubmitButton: "submit-actions-button"
       },
       action: {
@@ -211,109 +211,81 @@
   function getTargetPropKey(s) {
     return `${s}Target`;
   }
-  const banEvasionControllerConfiguration = {
-    targets: [
-      ...Object.values(config.data.target)
-      // Establishes access to all targets
-    ],
-    initialize() {
-      this.sockAccountId = getUserIdFromAccountInfoURL();
-    },
-    get mainAccountId() {
-      return Number($(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).val());
-    },
-    get deletionReason() {
-      return $(this[getTargetPropKey(config.data.target.deletionReasonSelect)]).val();
-    },
-    get deletionDetails() {
-      return $(this[getTargetPropKey(config.data.target.deletionDetails)]).val();
-    },
-    get annotationDetails() {
-      return $(this[getTargetPropKey(config.data.target.annotationDetails)]).val();
-    },
-    get openMessageUser() {
-      return $(this[getTargetPropKey(config.data.target.openMessageUser)]).prop("checked");
-    },
-    get fields() {
-      return {
-        sockAccountId: this.sockAccountId,
-        deletionReason: this.deletionReason,
-        deletionDetails: this.deletionDetails,
-        mainAccountId: this.mainAccountId,
-        annotationDetails: this.annotationDetails,
-        shouldMessageAfter: this.openMessageUser
-      };
-    },
-    validateFields() {
-      validateLength("Deletion reason details", this.deletionDetails, config.validationBounds.deleteReasonDetails);
-      validateLength("Annotation details", this.annotationDetails, config.validationBounds.annotationDetails);
-    },
-    [config.data.action.handleSubmitActions](ev) {
-      ev.preventDefault();
-      this.validateFields();
-      void StackExchange.helpers.showConfirmModal({
-        title: "Are you sure you want to delete this account?",
-        body: "You will be deleting this account and placing an annotation on the main. This operation cannot be undone.",
-        buttonLabelHtml: "I'm sure"
-      }).then((actionConfirmed) => {
-        if (!actionConfirmed) {
+  function createModalAndAddController() {
+    const banEvasionControllerConfiguration = {
+      targets: [
+        ...Object.values(config.data.target)
+        // Establishes access to all targets
+      ],
+      initialize() {
+        this.sockAccountId = getUserIdFromAccountInfoURL();
+      },
+      sockAccountId: void 0,
+      // Needs to be defined for typing reasons
+      get mainAccountId() {
+        return Number($(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).val());
+      },
+      get deletionReason() {
+        return $(this[getTargetPropKey(config.data.target.deletionReasonSelect)]).val();
+      },
+      get deletionDetails() {
+        return $(this[getTargetPropKey(config.data.target.deletionDetails)]).val();
+      },
+      get annotationDetails() {
+        return $(this[getTargetPropKey(config.data.target.annotationDetails)]).val();
+      },
+      get shouldMessageAfter() {
+        return $(this[getTargetPropKey(config.data.target.shouldMessageAfter)]).prop("checked");
+      },
+      validateFields() {
+        validateLength("Deletion reason details", this.deletionDetails, config.validationBounds.deleteReasonDetails);
+        validateLength("Annotation details", this.annotationDetails, config.validationBounds.annotationDetails);
+      },
+      [config.data.action.handleSubmitActions](ev) {
+        ev.preventDefault();
+        this.validateFields();
+        void StackExchange.helpers.showConfirmModal({
+          title: "Are you sure you want to delete this account?",
+          body: "You will be deleting this account and placing an annotation on the main. This operation cannot be undone.",
+          buttonLabelHtml: "I'm sure"
+        }).then((actionConfirmed) => {
+          if (!actionConfirmed) {
+            return;
+          }
+          handleDeleteAndAnnotateUsers(this.sockAccountId, this.deletionReason, this.deletionDetails, this.mainAccountId, this.annotationDetails).then(() => {
+            if (this.shouldMessageAfter) {
+              window.open(`/users/message/create/${this.mainAccountId}`, "_blank");
+            }
+          }).catch((err) => {
+            console.error(err);
+          });
+        });
+      },
+      [config.data.action.handleCancelActions](ev) {
+        ev.preventDefault();
+        document.getElementById(config.ids.modal).remove();
+      },
+      [config.data.action.lookupMainAccountId](ev) {
+        ev.preventDefault();
+        if (this.mainAccountId === this.sockAccountId) {
+          StackExchange.helpers.showToast("Cannot enter current account ID in parent field.", {
+            type: "danger",
+            transientTimeout: 3e3
+          });
           return;
         }
-        const {
-          sockAccountId,
-          deletionReason,
-          deletionDetails,
-          mainAccountId,
-          annotationDetails,
-          shouldMessageAfter
-        } = this.fields;
-        handleDeleteAndAnnotateUsers(sockAccountId, deletionReason, deletionDetails, mainAccountId, annotationDetails).then(() => {
-          if (shouldMessageAfter) {
-            window.open(`/users/message/create/${mainAccountId}`, "_blank");
-          }
-          window.location.reload();
-        }).catch((err) => {
-          console.error(err);
-        });
-      });
-    },
-    [config.data.action.handleCancelActions](ev) {
-      ev.preventDefault();
-      document.getElementById(config.ids.modal).remove();
-    },
-    [config.data.action.lookupMainAccountId](ev) {
-      ev.preventDefault();
-      if (this.mainAccountId === this.sockAccountId) {
-        StackExchange.helpers.showToast("Cannot enter current account ID in parent field.", {
-          type: "danger",
-          transientTimeout: 3e3
-        });
-        return;
-      }
-      $(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).prop("disabled", true);
-      $(this[getTargetPropKey(config.data.target.mainAccountIdInputButton)]).prop("disabled", true);
-      void this.buildRemainingFormElements();
-    },
-    async buildRemainingFormElements() {
-      const [mainUrl, sockUrl, { email: sockEmail, name: sockRealName }] = await Promise.all([
-        fetchFullUrlFromUserId(this.mainAccountId),
-        fetchFullUrlFromUserId(this.sockAccountId),
-        getUserPii(this.sockAccountId)
-      ]);
-      const deletionDetails = `
-
-${buildDetailStringFromObject({
-        "Main Account": mainUrl,
-        "Email": sockEmail,
-        "Real name": sockRealName
-      }, ":  ", "\n", true)}`;
-      const annotationDetails = buildDetailStringFromObject({
-        "Deleted evasion account": sockUrl,
-        "Email": sockEmail,
-        "Real name": sockRealName
-      }, ": ", " | ");
-      $(this[getTargetPropKey(config.data.target.formElements)]).append(
-        $(`<div class="d-flex fd-row g6">
+        $(this[getTargetPropKey(config.data.target.mainAccountIdInput)]).prop("disabled", true);
+        $(this[getTargetPropKey(config.data.target.mainAccountIdInputButton)]).prop("disabled", true);
+        void this.buildRemainingFormElements();
+      },
+      async buildRemainingFormElements() {
+        const [mainUrl, sockUrl, { email: sockEmail, name: sockRealName }] = await Promise.all([
+          fetchFullUrlFromUserId(this.mainAccountId),
+          fetchFullUrlFromUserId(this.sockAccountId),
+          getUserPii(this.sockAccountId)
+        ]);
+        $(this[getTargetPropKey(config.data.target.formElements)]).append(
+          $(`<div class="d-flex fd-row g6">
                 <label class="s-label">Main account located here:</label>
                 <a href="${mainUrl}" target="_blank">${mainUrl}</a>
             </div>
@@ -336,7 +308,7 @@ ${buildDetailStringFromObject({
                           name="deleteReasonDetails" 
                           placeholder="Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later." 
                           rows="6" 
-                          data-${config.data.controller}-target="${config.data.target.deletionDetails}">${deletionDetails}</textarea>
+                          data-${config.data.controller}-target="${config.data.target.deletionDetails}"></textarea>
                 <div data-se-char-counter-target="output" class="cool"></div>
             </div>
             <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="300">
@@ -349,31 +321,45 @@ ${buildDetailStringFromObject({
                           name="annotation" 
                           placeholder="Examples: &amp;quot;possible sock of /users/XXXX, see mod room [link] for discussion&amp;quot; or &amp;quot;left a series of abusive comments, suspend on next occurrence&amp;quot;" 
                           rows="4" 
-                          data-${config.data.controller}-target="${config.data.target.annotationDetails}">${annotationDetails}</textarea>
+                          data-${config.data.controller}-target="${config.data.target.annotationDetails}"></textarea>
                 <div data-se-char-counter-target="output" class="cool"></div>
             </div>
             <div class="d-flex fd-row">
                 <div class="s-check-control">
                     <input class="s-checkbox" 
                            type="checkbox" 
-                           id="${config.ids.openMessageUser}" 
+                           id="${config.ids.shouldMessageAfter}" 
                            checked 
-                           data-${config.data.controller}-target="${config.data.target.openMessageUser}">
-                    <label class="s-label" for="${config.ids.openMessageUser}">Open message user in new tab</label>
+                           data-${config.data.controller}-target="${config.data.target.shouldMessageAfter}">
+                    <label class="s-label" for="${config.ids.shouldMessageAfter}">Open message user in new tab</label>
                 </div>
             </div>`)
-      );
-      $(this[getTargetPropKey(config.data.target.controllerSubmitButton)]).prop("disabled", false);
-    }
-  };
+        );
+        this[getTargetPropKey(config.data.target.deletionDetails)].value = `
+
+${buildDetailStringFromObject({
+          "Main Account": mainUrl,
+          "Email": sockEmail,
+          "Real name": sockRealName
+        }, ":  ", "\n", true)}`;
+        this[getTargetPropKey(config.data.target.annotationDetails)].value = buildDetailStringFromObject({
+          "Deleted evasion account": sockUrl,
+          "Email": sockEmail,
+          "Real name": sockRealName
+        }, ": ", " | ");
+        $(this[getTargetPropKey(config.data.target.controllerSubmitButton)]).prop("disabled", false);
+      }
+    };
+    $("body").append(createModal());
+    Stacks.addController(config.data.controller, banEvasionControllerConfiguration);
+  }
   function handleBanEvasionButtonClick(ev) {
     ev.preventDefault();
     const modal = document.getElementById(config.ids.modal);
     if (modal !== null) {
       Stacks.showModal(modal);
     } else {
-      $("body").append(createModal());
-      Stacks.addController(config.data.controller, banEvasionControllerConfiguration);
+      createModalAndAddController();
     }
   }
   function main() {
