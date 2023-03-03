@@ -267,7 +267,7 @@ function createModalAndAddController() {
                                 window.open(`/users/message/create/${this.mainAccountId}`, '_blank');
                             }
                             // Reload current page if delete and annotation is successful
-                            // window.location.reload();
+                            window.location.reload();
                         })
                         .catch(err => {
                             console.error(err);
