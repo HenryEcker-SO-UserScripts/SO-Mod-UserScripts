@@ -124,10 +124,12 @@ function createModal() {
 
 /*** Helper Functions for Stacks Controller ***/
 
-function buildDetailStringFromObject(obj: Record<string, string>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
+function buildDetailStringFromObject(obj: Record<string, string | null>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
     const filteredObj = Object.entries(obj)
         .reduce((acc, [key, value]) => {
-            if (value.length > 0) {
+            if (value === null /* null is for intentionally blank values */) {
+                acc[`${key}${keyValueSeparator}`] = '';
+            } else if (value.length > 0) {
                 acc[`${key}${keyValueSeparator}`] = value;
             }
             return acc;
@@ -345,10 +347,11 @@ function createModalAndAddController() {
                 </div>
             </div>`);
             // Set these string values directly
-            this[getTargetPropKey(config.data.target.deletionDetails)].value = '\n\n' + buildDetailStringFromObject({
-                'Main Account': mainUrl,
+            this[getTargetPropKey(config.data.target.deletionDetails)].value = buildDetailStringFromObject({
+                'Main Account': mainUrl + '\n',
                 'Email': sockEmail,
-                'Real name': sockRealName
+                'Real name': sockRealName,
+                'Details': null,
             }, ':  ', '\n', true);
 
             this[getTargetPropKey(config.data.target.annotationDetails)].value = buildDetailStringFromObject({
