@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.3
+// @version      0.1.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -176,7 +176,9 @@
   }
   function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
     const filteredObj = Object.entries(obj).reduce((acc, [key, value]) => {
-      if (value.length > 0) {
+      if (value === null) {
+        acc[`${key}${keyValueSeparator}`] = "";
+      } else if (value.length > 0) {
         acc[`${key}${keyValueSeparator}`] = value;
       }
       return acc;
@@ -333,10 +335,11 @@
                     <label class="s-label" for="${config.ids.shouldMessageAfter}">Open message user in new tab</label>
                 </div>
             </div>`);
-        this[getTargetPropKey(config.data.target.deletionDetails)].value = "\n\n" + buildDetailStringFromObject({
-          "Main Account": mainUrl,
+        this[getTargetPropKey(config.data.target.deletionDetails)].value = buildDetailStringFromObject({
+          "Main Account": mainUrl + "\n",
           "Email": sockEmail,
-          "Real name": sockRealName
+          "Real name": sockRealName,
+          "Details": null
         }, ":  ", "\n", true);
         this[getTargetPropKey(config.data.target.annotationDetails)].value = buildDetailStringFromObject({
           "Deleted evasion account": sockUrl,
