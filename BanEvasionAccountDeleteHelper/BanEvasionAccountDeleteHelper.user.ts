@@ -59,14 +59,10 @@ function getUserIdFromAccountInfoURL(): number {
 }
 
 function handleDeleteUser(userId: number, deletionReason: DeleteReason, deletionDetails: string) {
-    return deleteUser(
-        userId,
-        deletionReason,
-        deletionDetails
-    )
+    return deleteUser(userId, deletionReason, deletionDetails)
         .then(res => {
             if (res.status !== 200) {
-                const message = `Deletion on ${userId} unsuccessful.`;
+                const message = `Deletion of ${userId} unsuccessful.`;
                 StackExchange.helpers.showToast(message, {transient: false, type: 'danger'});
                 console.error(res);
                 throw Error(message);
@@ -101,13 +97,13 @@ function handleDeleteAndAnnotateUsers(
 
 function createModal() {
     // Build Modal
-    return $(`<aside class="s-modal s-modal__danger" id="${config.ids.modal}" tabindex="-1" role="dialog" aria-labelledby="${config.ids.modal}-title" aria-describedby="${config.ids.modal}-description" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
+    return $(`<aside class="s-modal s-modal__danger" id="${config.ids.modal}" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
     <div class="s-modal--dialog" role="document" data-controller="${config.data.controller}">
-        <h1 class="s-modal--header" id="${config.ids.modal}-title">Delete Ban Evasion Account</h1>
-        <div class="s-modal--body" id="${config.ids.modal}-description">
+        <h1 class="s-modal--header">Delete Ban Evasion Account</h1>
+        <div class="s-modal--body">
             <div class="d-flex fd-column g12 mx8" data-${config.data.controller}-target="${config.data.target.formElements}">
                 <div class="d-flex fd-row g4 jc-space-between ai-center">
-                    <label class="s-label" for="${config.ids.mainAccountIdInput}" style="min-width:fit-content;">Enter Id For Main Account: </label>
+                    <label class="s-label" for="${config.ids.mainAccountIdInput}" style="min-width:fit-content;">Enter ID For Main Account: </label>
                     <input data-${config.data.controller}-target="${config.data.target.mainAccountIdInput}" class="s-input" type="number" id="${config.ids.mainAccountIdInput}">
                     <button data-${config.data.controller}-target="${config.data.target.mainAccountIdInputButton}" class="s-btn s-btn__primary" type="button" style="min-width:max-content;" data-action="${config.data.controller}#${config.data.action.lookupMainAccountId}">Resolve User URL</button>
                 </div>
