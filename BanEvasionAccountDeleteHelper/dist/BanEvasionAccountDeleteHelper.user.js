@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.4
+// @version      0.1.5
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -176,9 +176,7 @@
   }
   function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
     const filteredObj = Object.entries(obj).reduce((acc, [key, value]) => {
-      if (value === null) {
-        acc[`${key}${keyValueSeparator}`] = "";
-      } else if (value.length > 0) {
+      if (value.length > 0) {
         acc[`${key}${keyValueSeparator}`] = value;
       }
       return acc;
@@ -313,7 +311,7 @@
             id: config.ids.deleteReasonDetails,
             name: "deleteReasonDetails",
             placeholder: "Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.",
-            rows: 4,
+            rows: 6,
             dataTarget: config.data.target.deletionDetails
           },
           config.validationBounds.deleteReasonDetails
@@ -335,12 +333,14 @@
                     <label class="s-label" for="${config.ids.shouldMessageAfter}">Open message user in new tab</label>
                 </div>
             </div>`);
-        this[getTargetPropKey(config.data.target.deletionDetails)].value = buildDetailStringFromObject({
+        const deleteDetailTextArea = this[getTargetPropKey(config.data.target.deletionDetails)];
+        deleteDetailTextArea.value = buildDetailStringFromObject({
           "Main Account": mainUrl + "\n",
           "Email": sockEmail,
-          "Real name": sockRealName,
-          "Details": null
-        }, ":  ", "\n", true);
+          "Real name": sockRealName
+        }, ":  ", "\n", true) + "\n\n";
+        deleteDetailTextArea.focus();
+        deleteDetailTextArea.setSelectionRange(deleteDetailTextArea.value.length, deleteDetailTextArea.value.length);
         this[getTargetPropKey(config.data.target.annotationDetails)].value = buildDetailStringFromObject({
           "Deleted evasion account": sockUrl,
           "Email": sockEmail,

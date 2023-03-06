@@ -124,12 +124,10 @@ function createModal() {
 
 /*** Helper Functions for Stacks Controller ***/
 
-function buildDetailStringFromObject(obj: Record<string, string | null>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
+function buildDetailStringFromObject(obj: Record<string, string>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
     const filteredObj = Object.entries(obj)
         .reduce((acc, [key, value]) => {
-            if (value === null /* null is for intentionally blank values */) {
-                acc[`${key}${keyValueSeparator}`] = '';
-            } else if (value.length > 0) {
+            if (value.length > 0) {
                 acc[`${key}${keyValueSeparator}`] = value;
             }
             return acc;
@@ -324,7 +322,7 @@ function createModalAndAddController() {
                     id: config.ids.deleteReasonDetails,
                     name: 'deleteReasonDetails',
                     placeholder: 'Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.',
-                    rows: 4,
+                    rows: 6,
                     dataTarget: config.data.target.deletionDetails
                 },
                 config.validationBounds.deleteReasonDetails
@@ -346,14 +344,21 @@ function createModalAndAddController() {
                     <label class="s-label" for="${config.ids.shouldMessageAfter}">Open message user in new tab</label>
                 </div>
             </div>`);
-            // Set these string values directly
-            this[getTargetPropKey(config.data.target.deletionDetails)].value = buildDetailStringFromObject({
+
+
+            const deleteDetailTextArea: HTMLTextAreaElement = this[getTargetPropKey(config.data.target.deletionDetails)];
+            // Prime delete detail text
+            deleteDetailTextArea.value = buildDetailStringFromObject({
                 'Main Account': mainUrl + '\n',
                 'Email': sockEmail,
                 'Real name': sockRealName,
-                'Details': null,
-            }, ':  ', '\n', true);
+            }, ':  ', '\n', true) + '\n\n';
 
+            // Focus cursor at end of textarea
+            deleteDetailTextArea.focus();
+            deleteDetailTextArea.setSelectionRange(deleteDetailTextArea.value.length, deleteDetailTextArea.value.length);
+
+            // Prime annotation detail text
             this[getTargetPropKey(config.data.target.annotationDetails)].value = buildDetailStringFromObject({
                 'Deleted evasion account': sockUrl,
                 'Email': sockEmail,
