@@ -190,31 +190,25 @@ function buildTextarea(
             </div>`;
 }
 
-interface BanEvasionControllerValues {
+interface BanEvasionController extends BaseStacksControllerConfig {
+    // Attributes/Variables
     sockAccountId: number;
     mainAccountId: number;
     deletionReason: DeleteReason;
     deletionDetails: string;
     annotationDetails: string;
     shouldMessageAfter: boolean;
-}
-
-interface BanEvasionControllerHelperFunctions {
+    // Helper Functions
     validateFields: () => void;
     buildRemainingFormElements: () => Promise<void>;
+    /*
+    {[actionEventHandler: string]: (ev:ActionEvent) => void}
+    {[htmlTargetKey: string]: HTMLElement}
+    */
 }
 
-type BanEvasionControllerType =
-    BaseStacksControllerConfig
-    & BanEvasionControllerValues
-    & BanEvasionControllerHelperFunctions /*
-    & {[actionEventHandler: string]: (ev:ActionEvent) => void}
-    & {[htmlTargetKey: string]: HTMLElement}
-    */;
-
-
 function createModalAndAddController() {
-    const banEvasionControllerConfiguration: BanEvasionControllerType = {
+    const banEvasionControllerConfiguration: BanEvasionController = {
         targets: [
             // Establishes access to all targets
             ...Object.values(config.data.target)
