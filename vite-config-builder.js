@@ -1,7 +1,7 @@
 import banner from 'vite-plugin-banner';
 
-export default (fileNameBase, bannerText, plugins) => {
-    const obj = {
+export default (fileNameBase, bannerText) => {
+    return {
         plugins: [
             banner(bannerText)
         ],
@@ -25,8 +25,4 @@ export default (fileNameBase, bannerText, plugins) => {
             reportCompressedSize: false
         }
     };
-    if (plugins !== undefined) {
-        obj.plugins = [...plugins, ...obj.plugins];
-    }
-    return obj;
 };

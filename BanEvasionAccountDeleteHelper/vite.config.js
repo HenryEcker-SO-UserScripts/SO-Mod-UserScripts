@@ -18,19 +18,24 @@ const banner = `// ==UserScript==
 /* globals StackExchange, Stacks, $ */`;
 
 export default ({mode}) => {
-    const plugins = mode === 'testing' ? [
-        filterReplace(
-            [
-                // Replace (potentially) dangerous mod actions with the testing equivalents (simulated operations)
-                {
-                    replace: {
-                        from: /\/Utilities\/UserModActions/g,
-                        to: '/Utilities-Testing/UserModActions'
+    const config = buildViteConfig('BanEvasionAccountDeleteHelper', banner);
+
+    if (mode === 'testing') {
+        config.plugins = [
+            ...config.plugins,
+            filterReplace(
+                [
+                    // Replace (potentially) dangerous mod actions with the testing equivalents (simulated operations)
+                    {
+                        replace: {
+                            from: /\/Utilities\/UserModActions/g,
+                            to: '/Utilities-Testing/UserModActions'
+                        }
                     }
-                }
-            ],
-            {enforce: 'pre'}
-        )
-    ] : [];
-    return buildViteConfig('BanEvasionAccountDeleteHelper', banner, plugins);
+                ],
+                {enforce: 'pre'}
+            )
+        ];
+    }
+    return config;
 };
