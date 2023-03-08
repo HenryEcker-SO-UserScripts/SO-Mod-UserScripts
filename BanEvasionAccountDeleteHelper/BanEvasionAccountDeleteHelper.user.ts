@@ -2,52 +2,10 @@ import {type ActionEvent} from '@hotwired/stimulus';
 import {fetchFullUrlFromUserId, fetchUserIdFromHref} from '../Utilities/UserInfo';
 import {annotateUser, type DeleteReason, deleteUser, getUserPii} from '../Utilities/UserModActions';
 import {type BaseStacksControllerConfig} from '../Utilities/Types';
+import {config, type ValidationBounds} from './util-beadh/Globals';
 
-const config = {
-    ids: {
-        modal: 'beadh-modal',
-        mainAccountIdInput: 'beadh-main-account-id-input',
-        deletionReason: 'beadh-delete-reason',
-        deleteReasonDetails: 'beadh-delete-reason-details',
-        annotationDetails: 'beadh-mod-menu-annotation',
-        shouldMessageAfter: 'beadh-message-user-checkbox'
-    },
-    data: {
-        controller: 'ban-evasion-form',
-        target: {
-            mainAccountIdInput: 'main-account-id',
-            mainAccountIdInputButton: 'main-account-id-button',
-            formElements: 'form-elements',
-            deletionReasonSelect: 'delete-reason',
-            deletionDetails: 'delete-reason-detail-text',
-            annotationDetails: 'annotation-detail-text',
-            shouldMessageAfter: 'message-user-checkbox',
-            controllerSubmitButton: 'submit-actions-button'
-        },
-        action: {
-            lookupMainAccountId: 'lookupMain',
-            handleSubmitActions: 'handleSubmitActions',
-            handleCancelActions: 'handleCancelActions'
-        }
-    },
-    validationBounds: {
-        deleteReasonDetails: {
-            min: 15,
-            max: 600
-        },
-        annotationDetails: {
-            min: 10,
-            max: 300
-        },
-    },
-    supportedDeleteOptions: {
-        'Ban evasion': 'This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly',
-        'No longer welcome': 'This user is no longer welcome to participate on the site'
-    }
-};
 
 /*** User Actions ***/
-
 function getUserIdFromAccountInfoURL(): number {
     const userId = fetchUserIdFromHref(window.location.pathname);
     if (userId === undefined) {
@@ -97,25 +55,7 @@ function handleDeleteAndAnnotateUsers(
 
 function createModal() {
     // Build Modal
-    return $(`<aside class="s-modal s-modal__danger" id="${config.ids.modal}" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
-    <div class="s-modal--dialog" role="document" data-controller="${config.data.controller}">
-        <h1 class="s-modal--header">Delete Ban Evasion Account</h1>
-        <div class="s-modal--body">
-            <div class="d-flex fd-column g12 mx8" data-${config.data.controller}-target="${config.data.target.formElements}">
-                <div class="d-flex fd-row g4 jc-space-between ai-center">
-                    <label class="s-label" for="${config.ids.mainAccountIdInput}" style="min-width:fit-content;">Enter ID For Main Account: </label>
-                    <input data-${config.data.controller}-target="${config.data.target.mainAccountIdInput}" class="s-input" type="number" id="${config.ids.mainAccountIdInput}">
-                    <button data-${config.data.controller}-target="${config.data.target.mainAccountIdInputButton}" class="s-btn s-btn__primary" type="button" style="min-width:max-content;" data-action="${config.data.controller}#${config.data.action.lookupMainAccountId}">Resolve User URL</button>
-                </div>
-            </div>
-        </div>
-        <div class="d-flex gx8 s-modal--footer">
-            <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" data-${config.data.controller}-target="${config.data.target.controllerSubmitButton}" data-action="click->${config.data.controller}#${config.data.action.handleSubmitActions}" disabled>Delete and Annotate</button>
-            <button class="s-btn flex--item s-btn__muted" type="button" data-action="click->${config.data.controller}#${config.data.action.handleCancelActions}">Cancel</button>
-        </div>
-        <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>
-    </div>
-</aside>`);
+    return $(INITIAL_MODAL_HTML);
 }
 
 /*** Helper Functions for Stacks Controller ***/
@@ -148,11 +88,6 @@ function buildDetailStringFromObject(obj: Record<string, string>, keyValueSepara
 
 }
 
-interface ValidationBounds {
-    min: number;
-    max: number;
-}
-
 function validateLength(label: string, s: string, bounds: ValidationBounds) {
     if (s.length < bounds.min || s.length > bounds.max) {
         const message = `${label} has ${s.length} characters which is outside the supported bounds of ${bounds.min} to ${bounds.max}`;
@@ -167,30 +102,11 @@ function validateLength(label: string, s: string, bounds: ValidationBounds) {
     }
 }
 
-function getTargetPropKey(s: string) {
-    return `${s}Target`;
-}
 
 /*** Stacks Controller Configuration ***/
-function buildTextarea(
-    labelText: string,
-    textareaConfig: {
-        id: string;
-        rows: number;
-        name: string;
-        placeholder: string;
-        dataTarget: string;
-    },
-    validationBounds: ValidationBounds
-) {
-    return `<div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}">
-                <label class="s-label flex--item" for="${textareaConfig.id}">${labelText}</label>
-                <textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="${textareaConfig.id}" name="${textareaConfig.name}" placeholder="${textareaConfig.placeholder}" rows="${textareaConfig.rows}" data-${config.data.controller}-target="${textareaConfig.dataTarget}"></textarea>
-                <div data-se-char-counter-target="output"></div>
-            </div>`;
-}
 
-interface BanEvasionController extends BaseStacksControllerConfig {
+
+interface BanEvasionControllerKnownTypes extends BaseStacksControllerConfig {
     // Attributes/Variables
     sockAccountId: number;
     mainAccountId: number;
@@ -201,43 +117,49 @@ interface BanEvasionController extends BaseStacksControllerConfig {
     // Helper Functions
     validateFields: () => void;
     buildRemainingFormElements: () => Promise<void>;
-    /*
-    {[actionEventHandler: string]: (ev:ActionEvent) => void}
-    {[htmlTargetKey: string]: HTMLElement}
-    */
 }
+
+interface BanEvasionControllerActionEventHandlers {
+    [actionEventHandler: string]: (ev: ActionEvent) => void;
+}
+
+interface BanEvasionControllerHTMLTargets {
+    [htmlTargetKey: string]: HTMLElement;
+}
+
+type BanEvasionController =
+    BanEvasionControllerKnownTypes
+    | BanEvasionControllerActionEventHandlers
+    | BanEvasionControllerHTMLTargets;
 
 function createModalAndAddController() {
     const banEvasionControllerConfiguration: BanEvasionController = {
-        targets: [
-            // Establishes access to all targets
-            ...Object.values(config.data.target)
-        ],
+        targets: CONTROLLER_TARGETS,
         initialize() {
             this.sockAccountId = getUserIdFromAccountInfoURL();
         },
         // Needs to be defined for typing reasons
         sockAccountId: undefined,
         get mainAccountId() {
-            return Number(this[getTargetPropKey(config.data.target.mainAccountIdInput)].value);
+            return Number(this[MAIN_ACCOUNT_ID_INPUT_TARGET].value);
         },
         get deletionReason() {
-            return this[getTargetPropKey(config.data.target.deletionReasonSelect)].value;
+            return this[DELETION_REASON_SELECT_TARGET].value;
         },
         get deletionDetails() {
-            return this[getTargetPropKey(config.data.target.deletionDetails)].value;
+            return this[DELETION_DETAILS_TARGET].value;
         },
         get annotationDetails() {
-            return this[getTargetPropKey(config.data.target.annotationDetails)].value;
+            return this[ANNOTATION_DETAILS_TARGET].value;
         },
         get shouldMessageAfter() {
-            return (<HTMLInputElement>this[getTargetPropKey(config.data.target.shouldMessageAfter)]).checked;
+            return (<HTMLInputElement>this[SHOULD_MESSAGE_AFTER_TARGET]).checked;
         },
         validateFields() {
             validateLength('Deletion reason details', this.deletionDetails, config.validationBounds.deleteReasonDetails);
             validateLength('Annotation details', this.annotationDetails, config.validationBounds.annotationDetails);
         },
-        [config.data.action.handleSubmitActions](ev: ActionEvent) {
+        HANDLE_SUBMIT_ACTION(ev: ActionEvent) {
             ev.preventDefault();
             this.validateFields(); // validate before confirming (it's more annoying to confirm, then get a message that the field needs fixed)
             void StackExchange.helpers.showConfirmModal({
@@ -264,12 +186,12 @@ function createModalAndAddController() {
                         });
                 });
         },
-        [config.data.action.handleCancelActions](ev: ActionEvent) {
+        HANDLE_CANCEL_ACTION(ev: ActionEvent) {
             ev.preventDefault();
             // Clear from DOM which will force click to rebuild and recreate controller
-            document.getElementById(config.ids.modal).remove();
+            document.getElementById(JS_MODAL_ID).remove();
         },
-        [config.data.action.lookupMainAccountId](ev: ActionEvent) {
+        HANDLE_LOOKUP_MAIN_ACCOUNT(ev: ActionEvent) {
             ev.preventDefault();
             if (this.mainAccountId === this.sockAccountId) {
                 StackExchange.helpers.showToast('Cannot enter current account ID in parent field.', {
@@ -280,8 +202,8 @@ function createModalAndAddController() {
             }
 
             // Disable so that no changes are made with this information after the fact (a refresh is required to fix this)
-            this[getTargetPropKey(config.data.target.mainAccountIdInput)].disabled = true;
-            this[getTargetPropKey(config.data.target.mainAccountIdInputButton)].disabled = true;
+            this[MAIN_ACCOUNT_ID_INPUT_TARGET].disabled = true;
+            this[MAIN_ACCOUNT_ID_INPUT_BUTTON_TARGET].disabled = true;
 
             void this.buildRemainingFormElements();
         },
@@ -292,51 +214,15 @@ function createModalAndAddController() {
                 getUserPii(this.sockAccountId)
             ]);
 
-            $(this[getTargetPropKey(config.data.target.formElements)]).append(`<div class="d-flex fd-row g6">
-                <label class="s-label">Main account located here:</label>
-                <a href="${mainUrl}" target="_blank">${mainUrl}</a>
-            </div>
-            <div class="d-flex gy4 fd-column">
-                <label class="s-label" for="${config.ids.deletionReason}">Reason for deleting this user:</label>
-                <div class="flex--item s-select">
-                    <select id="${config.ids.deletionReason}" data-${config.data.controller}-target="${config.data.target.deletionReasonSelect}">${
-                // Programatically build options from supported list
-                Object.entries(config.supportedDeleteOptions).map(([label, value]) => {
-                    return `<option value="${value}">${label}</option>`;
-                }).join('\n')}</select>
-                </div>
-            </div>
-            ${buildTextarea(
-                'Please provide details leading to the deletion of this account (required):',
-                {
-                    id: config.ids.deleteReasonDetails,
-                    name: 'deleteReasonDetails',
-                    placeholder: 'Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later.',
-                    rows: 6,
-                    dataTarget: config.data.target.deletionDetails
-                },
-                config.validationBounds.deleteReasonDetails
-            )}
-            ${buildTextarea(
-                'Annotate the main account (required):',
-                {
-                    id: config.ids.annotationDetails,
-                    name: 'annotation',
-                    placeholder: 'Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;',
-                    rows: 4,
-                    dataTarget: config.data.target.annotationDetails
-                },
-                config.validationBounds.annotationDetails
-            )}
-            <div class="d-flex fd-row">
-                <div class="s-check-control">
-                    <input id="${config.ids.shouldMessageAfter}" class="s-checkbox" type="checkbox" checked data-${config.data.controller}-target="${config.data.target.shouldMessageAfter}">
-                    <label class="s-label" for="${config.ids.shouldMessageAfter}">Open message user in new tab</label>
-                </div>
-            </div>`);
+            $(this[FORM_ELEMENTS_TARGET])
+                .append(`<div class="d-flex fd-row g6">
+                            <label class="s-label">Main account located here:</label>
+                            <a href="${mainUrl}" target="_blank">${mainUrl}</a>
+                        </div>`)
+                .append(MODAL_FORM_HTML);
 
 
-            const deleteDetailTextArea: HTMLTextAreaElement = this[getTargetPropKey(config.data.target.deletionDetails)];
+            const deleteDetailTextArea: HTMLTextAreaElement = this[DELETION_DETAILS_TARGET];
             // Prime delete detail text
             deleteDetailTextArea.value = buildDetailStringFromObject({
                 'Main Account': mainUrl + '\n',
@@ -349,24 +235,24 @@ function createModalAndAddController() {
             deleteDetailTextArea.setSelectionRange(deleteDetailTextArea.value.length, deleteDetailTextArea.value.length);
 
             // Prime annotation detail text
-            this[getTargetPropKey(config.data.target.annotationDetails)].value = buildDetailStringFromObject({
+            this[ANNOTATION_DETAILS_TARGET].value = buildDetailStringFromObject({
                 'Deleted evasion account': sockUrl,
                 'Email': sockEmail,
                 'Real name': sockRealName
             }, ': ', ' | ');
             // Enable form submit button now that the fields are active
-            this[getTargetPropKey(config.data.target.controllerSubmitButton)].disabled = false;
+            this[CONTROLLER_SUBMIT_BUTTON_TARGET].disabled = false;
         },
     };
     $('body').append(createModal());
-    Stacks.addController(config.data.controller, banEvasionControllerConfiguration);
+    Stacks.addController(DATA_CONTROLLER, banEvasionControllerConfiguration);
 }
 
 
 /*** Create and connect open modal link ***/
 function handleBanEvasionButtonClick(ev: JQuery.Event) {
     ev.preventDefault();
-    const modal = document.getElementById(config.ids.modal);
+    const modal = document.getElementById(JS_MODAL_ID);
     if (modal !== null) {
         Stacks.showModal(modal);
     } else {
