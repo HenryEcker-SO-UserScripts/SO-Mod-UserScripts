@@ -90,7 +90,8 @@
         "selector": "variable",
         "format": [
           "strictCamelCase",
-          "StrictPascalCase"
+          "StrictPascalCase",
+          "UPPER_CASE"
         ],
         "leadingUnderscore": "forbid",
         "trailingUnderscore": "forbid",
