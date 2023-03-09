@@ -4,7 +4,7 @@
     "@types/jquery": "^3.5.16",
     "@types/tampermonkey": "^4.0.9",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.48.2",
+    "@typescript-eslint/parser": "^5.54.1",
     "@userscripters/stackexchange-global-types": "^2.6.1",
     "eslint": "^8.35.0",
     "jquery": "^3.6.0",
