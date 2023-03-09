@@ -9,13 +9,14 @@ import {
     remainingFormFields,
     targets
 } from './util-beadh/stimulus-html-components';
+import beautifyPlugin from '../vite-plugin-beautify-output';
 
 const banner = `// ==UserScript==
 // @name         Ban Evasion Account Delete Helper
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.6
+// @version      0.1.7
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -28,6 +29,13 @@ const banner = `// ==UserScript==
 
 export default ({mode}) => {
     const config = buildViteConfig('BanEvasionAccountDeleteHelper', banner);
+
+    config.plugins.push(
+        beautifyPlugin({
+            brace_style: 'collapse,preserve-inline',
+            break_chained_methods: true
+        })
+    );
 
     if (mode === 'testing') {
         config.plugins.push(
