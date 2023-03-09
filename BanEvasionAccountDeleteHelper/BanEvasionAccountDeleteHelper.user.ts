@@ -1,6 +1,12 @@
 import {type ActionEvent} from '@hotwired/stimulus';
 import {fetchFullUrlFromUserId, fetchUserIdFromHref} from '../Utilities/UserInfo';
-import {annotateUser, type DeleteReason, deleteUser, getUserPii} from '../Utilities/UserModActions';
+import {
+    annotateUser,
+    buildDetailStringFromObject,
+    type DeleteReason,
+    deleteUser,
+    getUserPii
+} from '../Utilities/UserModActions';
 import {type BaseStacksControllerConfig} from '../Utilities/Types';
 import {config, type ValidationBounds} from './util-beadh/Globals';
 
@@ -59,35 +65,6 @@ function createModal() {
 }
 
 /*** Helper Functions for Stacks Controller ***/
-
-function buildDetailStringFromObject(obj: Record<string, string>, keyValueSeparator: string, recordSeparator: string, alignColumns = false) {
-    const filteredObj = Object.entries(obj)
-        .reduce((acc, [key, value]) => {
-            if (value.length > 0) {
-                acc[`${key}${keyValueSeparator}`] = value;
-            }
-            return acc;
-        }, {} as Record<string, string>);
-
-    const getPaddingStr = (function () {
-        if (alignColumns) {
-            const maxLabelLength = Math.max(...Object.keys(filteredObj).map(k => k.length));
-            return function (key: string) {
-                return new Array(maxLabelLength - key.length + 1).join(' ');
-            };
-        } else {
-            return function (_: unknown) {
-                return '';
-            };
-        }
-    }());
-
-    return Object.entries(filteredObj)
-        .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
-        .join(recordSeparator);
-
-}
-
 function validateLength(label: string, s: string, bounds: ValidationBounds) {
     if (s.length < bounds.min || s.length > bounds.max) {
         const message = `${label} has ${s.length} characters which is outside the supported bounds of ${bounds.min} to ${bounds.max}`;

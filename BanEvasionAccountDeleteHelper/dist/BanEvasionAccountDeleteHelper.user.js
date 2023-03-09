@@ -71,6 +71,33 @@
             });
     }
 
+    function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
+        const filteredObj = Object.entries(obj)
+            .reduce((acc, [key, value]) => {
+                if (value.length > 0) {
+                    acc[`${key}${keyValueSeparator}`] = value;
+                }
+                return acc;
+            }, {});
+        const getPaddingStr = function() {
+            if (alignColumns) {
+                const maxLabelLength = Math.max(...Object.keys(filteredObj)
+                    .map((k) => k.length));
+                return function(key) {
+                    return new Array(maxLabelLength - key.length + 1)
+                        .join(" ");
+                };
+            } else {
+                return function(_) {
+                    return "";
+                };
+            }
+        }();
+        return Object.entries(filteredObj)
+            .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
+            .join(recordSeparator);
+    }
+
     function deleteUser(userId, deleteReason, deleteReasonDetails) {
         return fetchPostFormData(
             `/admin/users/${userId}/delete`, {
@@ -162,33 +189,6 @@
         <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>
     </div>
 </aside>`);
-    }
-
-    function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
-        const filteredObj = Object.entries(obj)
-            .reduce((acc, [key, value]) => {
-                if (value.length > 0) {
-                    acc[`${key}${keyValueSeparator}`] = value;
-                }
-                return acc;
-            }, {});
-        const getPaddingStr = function() {
-            if (alignColumns) {
-                const maxLabelLength = Math.max(...Object.keys(filteredObj)
-                    .map((k) => k.length));
-                return function(key) {
-                    return new Array(maxLabelLength - key.length + 1)
-                        .join(" ");
-                };
-            } else {
-                return function(_) {
-                    return "";
-                };
-            }
-        }();
-        return Object.entries(filteredObj)
-            .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
-            .join(recordSeparator);
     }
 
     function validateLength(label, s, bounds) {
