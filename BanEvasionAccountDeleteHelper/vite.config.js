@@ -30,8 +30,7 @@ export default ({mode}) => {
     const config = buildViteConfig('BanEvasionAccountDeleteHelper', banner);
 
     if (mode === 'testing') {
-        config.plugins = [
-            ...config.plugins,
+        config.plugins.push(
             filterReplace(
                 [
                     // Replace (potentially) dangerous mod actions with the testing equivalents (simulated operations)
@@ -44,7 +43,7 @@ export default ({mode}) => {
                 ],
                 {enforce: 'pre'}
             )
-        ];
+        );
     }
 
     config.define = {
