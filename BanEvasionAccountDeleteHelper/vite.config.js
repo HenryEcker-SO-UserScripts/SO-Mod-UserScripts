@@ -10,6 +10,7 @@ import {
     targets
 } from './util-beadh/stimulus-html-components';
 import beautifyPlugin from '../vite-plugin-beautify-output';
+import {buildMatchPatterns} from '../banner-build-util';
 
 const banner = `// ==UserScript==
 // @name         Ban Evasion Account Delete Helper
@@ -20,7 +21,7 @@ const banner = `// ==UserScript==
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
-// @match        *://*.stackoverflow.com/users/account-info/*
+${buildMatchPatterns('// @match        ', '/users/account-info/*')}
 //
 // @grant        none
 //

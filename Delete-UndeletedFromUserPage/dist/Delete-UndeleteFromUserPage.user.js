@@ -7,8 +7,20 @@
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Delete-UndeletedFromUserPage/dist/Delete-UndeleteFromUserPage.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Delete-UndeletedFromUserPage/dist/Delete-UndeleteFromUserPage.user.js
 //
+// @match        *://*.askubuntu.com/users/*/*?tab=answers*
+// @match        *://*.askubuntu.com/users/*/*?tab=questions*
+// @match        *://*.mathoverflow.net/users/*/*?tab=answers*
+// @match        *://*.mathoverflow.net/users/*/*?tab=questions*
+// @match        *://*.serverfault.com/users/*/*?tab=answers*
+// @match        *://*.serverfault.com/users/*/*?tab=questions*
+// @match        *://*.stackapps.com/users/*/*?tab=answers*
+// @match        *://*.stackapps.com/users/*/*?tab=questions*
+// @match        *://*.stackexchange.com/users/*/*?tab=answers*
+// @match        *://*.stackexchange.com/users/*/*?tab=questions*
 // @match        *://*.stackoverflow.com/users/*/*?tab=answers*
 // @match        *://*.stackoverflow.com/users/*/*?tab=questions*
+// @match        *://*.superuser.com/users/*/*?tab=answers*
+// @match        *://*.superuser.com/users/*/*?tab=questions*
 //
 // @grant        none
 //
