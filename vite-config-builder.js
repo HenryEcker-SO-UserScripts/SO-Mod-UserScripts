@@ -11,8 +11,7 @@ export default (fileNameBase, bannerText) => {
                     main: `${fileNameBase}.user.ts`
                 },
                 output: {
-                    banner: '(function() {"use strict";',
-                    footer: '})();',
+                    format: 'iife',
                     manualChunks: undefined,
                     entryFileNames: `${fileNameBase}.user.js`
                 }
