@@ -1,4 +1,5 @@
 import buildViteConfig from '../vite-config-builder';
+import {buildMatchPatterns} from '../banner-build-util';
 
 
 export default buildViteConfig(
@@ -12,8 +13,7 @@ export default buildViteConfig(
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Delete-UndeletedFromUserPage/dist/Delete-UndeleteFromUserPage.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Delete-UndeletedFromUserPage/dist/Delete-UndeleteFromUserPage.user.js
 //
-// @match        *://*.stackoverflow.com/users/*/*?tab=answers*
-// @match        *://*.stackoverflow.com/users/*/*?tab=questions*
+${buildMatchPatterns('// @match        ', '/users/*/*?tab=answers*', '/users/*/*?tab=questions*')}
 //
 // @grant        none
 //

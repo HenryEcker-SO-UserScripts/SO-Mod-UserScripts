@@ -8,12 +8,12 @@
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/ReviewHistoryLinks/dist/ReviewHistoryLinks.user.js
 //
 // @match        *://*.askubuntu.com/review/*
+// @match        *://*.mathoverflow.net/review/*
 // @match        *://*.serverfault.com/review/*
 // @match        *://*.stackapps.com/review/*
 // @match        *://*.stackexchange.com/review/*
 // @match        *://*.stackoverflow.com/review/*
 // @match        *://*.superuser.com/review/*
-// @match        *://*.mathoverflow.net/review/*
 //
 // @exclude      /^https?:\/\/.*((askubuntu|serverfault|stackapps|stackexchange|stackoverflow|superuser)\.com|mathoverflow\.net)\/review\/.*\/(stats|history)/
 //

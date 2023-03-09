@@ -8,12 +8,12 @@
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/SuggestedEditStatusChecker/dist/SuggestedEditQueueStatusChecker.user.js
 //
 // @match        *://*.askubuntu.com/questions/*
+// @match        *://*.mathoverflow.net/questions/*
 // @match        *://*.serverfault.com/questions/*
 // @match        *://*.stackapps.com/questions/*
 // @match        *://*.stackexchange.com/questions/*
 // @match        *://*.stackoverflow.com/questions/*
 // @match        *://*.superuser.com/questions/*
-// @match        *://*.mathoverflow.net/questions/*
 //
 // ==/UserScript==
 /* globals $, StackExchange */

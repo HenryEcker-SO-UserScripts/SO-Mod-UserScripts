@@ -1,4 +1,5 @@
 import buildViteConfig from '../vite-config-builder';
+import {buildMatchPatterns} from '../banner-build-util';
 
 const banner = `// ==UserScript==
 // @name         Suggested Edit Queue Status Checker
@@ -9,13 +10,7 @@ const banner = `// ==UserScript==
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/SuggestedEditStatusChecker/dist/SuggestedEditQueueStatusChecker.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/SuggestedEditStatusChecker/dist/SuggestedEditQueueStatusChecker.user.js
 //
-// @match        *://*.askubuntu.com/questions/*
-// @match        *://*.serverfault.com/questions/*
-// @match        *://*.stackapps.com/questions/*
-// @match        *://*.stackexchange.com/questions/*
-// @match        *://*.stackoverflow.com/questions/*
-// @match        *://*.superuser.com/questions/*
-// @match        *://*.mathoverflow.net/questions/*
+${buildMatchPatterns('// @match        ', '/questions/*')}
 //
 // ==/UserScript==
 /* globals $, StackExchange */`;

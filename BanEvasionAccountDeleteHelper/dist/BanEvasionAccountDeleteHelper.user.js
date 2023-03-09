@@ -7,7 +7,13 @@
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
+// @match        *://*.askubuntu.com/users/account-info/*
+// @match        *://*.mathoverflow.net/users/account-info/*
+// @match        *://*.serverfault.com/users/account-info/*
+// @match        *://*.stackapps.com/users/account-info/*
+// @match        *://*.stackexchange.com/users/account-info/*
 // @match        *://*.stackoverflow.com/users/account-info/*
+// @match        *://*.superuser.com/users/account-info/*
 //
 // @grant        none
 //
