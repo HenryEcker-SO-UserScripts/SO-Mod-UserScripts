@@ -15,35 +15,66 @@
 // @match        *://*.stackoverflow.com/posts/*/timeline*
 // @match        *://*.superuser.com/posts/*/timeline*
 //
-// @grant        none
+// @grant        GM_getValue
+// @grant        GM_setValue
 //
 // ==/UserScript==
 /* globals StackExchange, $ */
 (function() {
   "use strict";
-  function addControllerAttributes(e, timestamp) {
+  function addControllerAttributes(e, timestamp, typeOfEvent, eventInitiator, linkToEvent, additionalEventDetails) {
     e.attr("data-controller", "etb-timeline-event");
     e.attr("data-action", "click->etb-timeline-event#handleTimestampClick");
     e.attr("data-etb-timeline-event-timestamp-param", timestamp);
+    e.attr("data-etb-timeline-event-event-param", typeOfEvent);
+    e.attr("data-etb-timeline-event-initiator-param", eventInitiator);
+    e.attr("data-etb-timeline-event-link-param", linkToEvent);
+    if (additionalEventDetails !== void 0) {
+      e.attr("data-etb-timeline-event-details-param", additionalEventDetails);
+    }
+  }
+  function parseTr(tr) {
+    const typeOfEvent = tr.find("td:eq(1)").text().trim();
+    const linkToEvent = tr.find("td:eq(2) a").attr("href");
+    const eventInitiator = tr.find("td:eq(3)").html().trim();
+    const details = tr.find("td:eq(5) span").html().trim();
+    return {
+      typeOfEvent,
+      linkToEvent,
+      eventInitiator,
+      details
+    };
   }
   function handleTimelinePage() {
-    $(".relativetime").each((i, n) => {
-      const e = $(n);
+    const timeElements = $(".relativetime");
+    for (let i = 0; i < timeElements.length; i++) {
+      const e = $(timeElements[i]);
+      const timestamp = e.attr("title");
+      const currentTr = e.closest("tr");
+      const parsedTr = parseTr(currentTr);
+      if ((parsedTr.typeOfEvent === void 0 || parsedTr.typeOfEvent.length === 0) && (parsedTr.linkToEvent === void 0 || parsedTr.linkToEvent.length === 0)) {
+        const prevTr = $(timeElements[i - 1]).closest("tr");
+        const { typeOfEvent: prevTypeOfEvent, linkToEvent: prevLinkToEvent } = parseTr(prevTr);
+        parsedTr.typeOfEvent = `${prevTypeOfEvent} ${currentTr.find("td:eq(2)").text().trim()}`;
+        parsedTr.linkToEvent = prevLinkToEvent;
+      }
       addControllerAttributes(
         e,
-        e.attr("title")
+        timestamp,
+        parsedTr.typeOfEvent,
+        parsedTr.eventInitiator,
+        parsedTr.linkToEvent,
+        parsedTr.details
       );
-    });
+    }
   }
   function buildStacksController() {
-    Stacks.addController(
-      "etb-timeline-event",
-      {
-        handleTimestampClick(ev) {
-          console.log(ev.params);
-        }
+    const controllerConfig = {
+      handleTimestampClick(ev) {
+        console.log(ev.params);
       }
-    );
+    };
+    Stacks.addController("etb-timeline-event", controllerConfig);
   }
   function main() {
     buildStacksController();
