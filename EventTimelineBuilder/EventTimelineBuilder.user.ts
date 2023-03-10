@@ -1,6 +1,33 @@
 import {type ActionEvent} from '@hotwired/stimulus';
 
 
+type TimelineEventType =
+    'asked'
+    | 'answer'
+    | 'flag'
+    | 'flag-clear'
+    | 'made wiki'
+    | 'wiki removed'
+    | 'edit'
+    | 'comment'
+    | 'accept-vote'
+    | 'question-protected';
+
+function convertEventTypeToHTMLBadge(t: TimelineEventType) {
+    switch (t) {
+        case 'accept-vote':
+            return '<span class="event-type vote">accept</span>';
+        case 'answer':
+            return '<span class="event-type answer-type">answer</span>';
+        case 'comment':
+            return '<span class="event-type comment">comment</span>';
+        case 'flag':
+            return '<span class="event-type flag">flag</span>';
+        default:
+            return `<span class="event-type history">${t}</span>`;
+    }
+}
+
 function addControllerAttributes(e: JQuery, timestamp: string) {
     /*
     TODO 1: Add additional fields
