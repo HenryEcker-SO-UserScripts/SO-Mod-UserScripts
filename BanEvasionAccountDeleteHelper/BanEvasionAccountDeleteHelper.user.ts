@@ -1,14 +1,9 @@
 import {type ActionEvent} from '@hotwired/stimulus';
 import {fetchFullUrlFromUserId, fetchUserIdFromHref} from '../Utilities/UserInfo';
-import {
-    annotateUser,
-    buildDetailStringFromObject,
-    type DeleteReason,
-    deleteUser,
-    getUserPii
-} from '../Utilities/UserModActions';
+import {annotateUser, type DeleteReason, deleteUser, getUserPii} from '../Utilities/UserModActions';
 import {type BaseStacksControllerConfig} from '../Utilities/Types';
 import {config, type ValidationBounds} from './util-beadh/Globals';
+import {buildDetailStringFromObject} from '../Utilities/General';
 
 
 /*** User Actions ***/

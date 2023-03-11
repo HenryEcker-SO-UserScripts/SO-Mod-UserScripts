@@ -56,21 +56,6 @@
         });
     }
 
-    function getUserPii(userId) {
-        return fetchPostFormData(
-                "/admin/all-pii", { id: userId, fkey: StackExchange.options.user.fkey }
-            )
-            .then((res) => res.text())
-            .then((resText) => {
-                const html = $(resText);
-                return {
-                    email: html[1].children[1].innerText.trim(),
-                    name: html[1].children[3].innerText.trim(),
-                    ip: html[3].children[1].innerText.trim()
-                };
-            });
-    }
-
     function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
         const filteredObj = Object.entries(obj)
             .reduce((acc, [key, value]) => {
@@ -96,6 +81,21 @@
         return Object.entries(filteredObj)
             .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
             .join(recordSeparator);
+    }
+
+    function getUserPii(userId) {
+        return fetchPostFormData(
+                "/admin/all-pii", { id: userId, fkey: StackExchange.options.user.fkey }
+            )
+            .then((res) => res.text())
+            .then((resText) => {
+                const html = $(resText);
+                return {
+                    email: html[1].children[1].innerText.trim(),
+                    name: html[1].children[3].innerText.trim(),
+                    ip: html[3].children[1].innerText.trim()
+                };
+            });
     }
 
     function deleteUser(userId, deleteReason, deleteReasonDetails) {
