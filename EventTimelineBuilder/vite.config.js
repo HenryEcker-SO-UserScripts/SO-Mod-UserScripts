@@ -23,7 +23,7 @@ ${buildMatchPatterns('// @match        ', '/posts/*/timeline*')}
 
 config.define = {
     DATA_CONTROLLER: 'etb-timeline-event',
-    DATA_ACTION_HANDLE_TIMESTAMP_CLICK: 'handleTimestampClick',
-}
+    DATA_ACTION_POST_TIMELINE_TIMESTAMP_CLICK: 'handlePostTimelineTimestampClick',
+};
 
 export default config;
