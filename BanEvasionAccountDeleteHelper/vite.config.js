@@ -48,6 +48,12 @@ export default ({mode}) => {
                             from: /\/Utilities\/UserModActions/g,
                             to: '/Utilities-Testing/UserModActions'
                         }
+                    },
+                    {
+                        replace: {
+                            from: 'window.location.reload();',
+                            to: 'console.log(\'window.location.reload()\');'
+                        }
                     }
                 ],
                 {enforce: 'pre'}
