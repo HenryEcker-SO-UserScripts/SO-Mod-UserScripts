@@ -77,29 +77,61 @@ export const initialModal = `
 </aside>`;
 
 
+type LabelStatus = 'Optional' | 'Required' | 'New' | 'Beta';
+
+interface LabelConfig {
+    htmlFor: string;
+    text: string;
+    status?: LabelStatus;
+    description?: string;
+}
+
+interface TextareaConfig {
+    id: string;
+    rows: number;
+    name: string;
+    placeholder: string;
+    dataTarget: string;
+}
+
+function buildLabelStatus(status?: LabelStatus) {
+    switch (status) {
+        case 'Optional':
+            return ' <span class="s-label--status">Optional</span>';
+        case'Required':
+            return ' <span class="s-label--status s-label--status__required">Required</span>';
+        case 'New':
+            return ' <span class="s-label--status s-label--status__new">New</span>';
+        case 'Beta':
+            return ' <span class="s-label--status s-label--status__beta">Beta</span>';
+        default:
+            return '';
+    }
+}
+
+function buildLabel(labelConfig: LabelConfig) {
+    return `<label class="s-label flex--item" for="${labelConfig.htmlFor}">${labelConfig.text}${buildLabelStatus(labelConfig.status)}${labelConfig.description === undefined ? '' : `<p class="s-description mt2">${labelConfig.description}</p>`}</label>`;
+}
+
 function buildTextarea(
-    labelText: string,
-    textareaConfig: {
-        id: string;
-        rows: number;
-        name: string;
-        placeholder: string;
-        dataTarget: string;
-    },
+    labelConfig: LabelConfig,
+    textareaConfig: TextareaConfig,
     validationBounds: ValidationBounds
 ) {
     return `
 <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="${validationBounds.min}" data-se-char-counter-max="${validationBounds.max}">
-    <label class="s-label flex--item" for="${textareaConfig.id}">${labelText}</label>
+    ${buildLabel(labelConfig)}
     <textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="${textareaConfig.id}" name="${textareaConfig.name}" placeholder="${textareaConfig.placeholder}" rows="${textareaConfig.rows}" data-${data.controller}-target="${textareaConfig.dataTarget}"></textarea>
     <div data-se-char-counter-target="output"></div>
 </div>
 `.trim();
 }
 
+const markdownNotSupportedMessage = '<span class="fw-bold">Reminder</span>: Markdown is not supported!';
+
 export const remainingFormFields = `
 <div class="d-flex gy4 fd-column">
-    <label class="s-label" for="${ids.deletionReason}">Reason for deleting this user:</label>
+    ${buildLabel({htmlFor: ids.deletionReason, text: 'Reason for deleting this user'})}
     <div class="flex--item s-select">
         <select id="${ids.deletionReason}" data-${data.controller}-target="${data.target.deletionReasonSelect}">${
     // Programatically build options from supported list
@@ -112,7 +144,12 @@ export const remainingFormFields = `
     </div>
 </div>
 ${buildTextarea(
-    'Please provide details leading to the deletion of this account (required):',
+    {
+        htmlFor: ids.deleteReasonDetails,
+        text: 'Please provide details leading to the deletion of this account',
+        status: 'Required',
+        description: markdownNotSupportedMessage
+    },
     {
         id: ids.deleteReasonDetails,
         name: 'deleteReasonDetails',
@@ -123,7 +160,12 @@ ${buildTextarea(
     config.validationBounds.deleteReasonDetails
 )}
 ${buildTextarea(
-    'Annotate the main account (required):',
+    {
+        htmlFor: ids.annotationDetails,
+        text: 'Annotate the main account',
+        status: 'Required',
+        description: markdownNotSupportedMessage
+    },
     {
         id: ids.annotationDetails,
         name: 'annotation',
@@ -136,7 +178,7 @@ ${buildTextarea(
 <div class="d-flex fd-row">
     <div class="s-check-control">
         <input id="${ids.shouldMessageAfter}" class="s-checkbox" type="checkbox" checked data-${data.controller}-target="${data.target.shouldMessageAfter}">
-        <label class="s-label" for="${ids.shouldMessageAfter}">Open message user in new tab</label>
+        ${buildLabel({htmlFor: ids.shouldMessageAfter, text: 'Open message user in new tab', status: 'Optional'})}
     </div>
 </div>`;
 
