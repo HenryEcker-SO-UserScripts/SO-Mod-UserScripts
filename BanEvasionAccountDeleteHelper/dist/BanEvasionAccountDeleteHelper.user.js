@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.7
+// @version      0.1.8
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -286,25 +286,25 @@
                         </div>`)
                     .append(`
 <div class="d-flex gy4 fd-column">
-    <label class="s-label" for="beadh-delete-reason">Reason for deleting this user:</label>
+    <label class="s-label flex--item" for="beadh-delete-reason">Reason for deleting this user</label>
     <div class="flex--item s-select">
         <select id="beadh-delete-reason" data-beadh-form-target="delete-reason"><option value="This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly">Ban evasion</option><option value="This user is no longer welcome to participate on the site">No longer welcome</option></select>
     </div>
 </div>
 <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="15" data-se-char-counter-max="600">
-    <label class="s-label flex--item" for="beadh-delete-reason-details">Please provide details leading to the deletion of this account (required):</label>
+    <label class="s-label flex--item" for="beadh-delete-reason-details">Please provide details leading to the deletion of this account <span class="s-label--status s-label--status__required">Required</span><p class="s-description mt2"><span class="fw-bold">Reminder</span>: Markdown is not supported!</p></label>
     <textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="beadh-delete-reason-details" name="deleteReasonDetails" placeholder="Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later." rows="6" data-beadh-form-target="delete-reason-detail-text"></textarea>
     <div data-se-char-counter-target="output"></div>
 </div>
 <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="300">
-    <label class="s-label flex--item" for="beadh-mod-menu-annotation">Annotate the main account (required):</label>
+    <label class="s-label flex--item" for="beadh-mod-menu-annotation">Annotate the main account <span class="s-label--status s-label--status__required">Required</span><p class="s-description mt2"><span class="fw-bold">Reminder</span>: Markdown is not supported!</p></label>
     <textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="beadh-mod-menu-annotation" name="annotation" placeholder="Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;" rows="4" data-beadh-form-target="annotation-detail-text"></textarea>
     <div data-se-char-counter-target="output"></div>
 </div>
 <div class="d-flex fd-row">
     <div class="s-check-control">
         <input id="beadh-message-user-checkbox" class="s-checkbox" type="checkbox" checked data-beadh-form-target="message-user-checkbox">
-        <label class="s-label" for="beadh-message-user-checkbox">Open message user in new tab</label>
+        <label class="s-label flex--item" for="beadh-message-user-checkbox">Open message user in new tab <span class="s-label--status">Optional</span></label>
     </div>
 </div>`);
                 const deleteDetailTextArea = this["delete-reason-detail-textTarget"];
