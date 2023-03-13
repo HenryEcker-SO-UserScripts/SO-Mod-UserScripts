@@ -1,4 +1,4 @@
-import {config, type ValidationBounds} from './Globals';
+import {config, type ValidationBounds} from '../Globals';
 
 const ids = {
     modal: 'beadh-modal',
