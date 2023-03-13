@@ -38,7 +38,6 @@ function convertKeyToTargetAccessor(s: string) {
 }
 
 
-
 const initialModal = `
 <aside class="s-modal s-modal__danger" id="${ids.modal}" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
     <div class="s-modal--dialog" role="document" data-controller="${data.controller}">
@@ -167,7 +166,6 @@ ${buildTextarea(
 </div>`;
 
 
-
 export default {
     // HTML
     JS_MODAL_ID: JSON.stringify(ids.modal),
@@ -175,6 +173,8 @@ export default {
     MODAL_FORM_HTML: `\`${remainingFormFields}\``,
     // STIMULUS DATA CONTROLLER STRINGS
     DATA_CONTROLLER: JSON.stringify(data.controller),
+    CONTROLLER_TARGETS: JSON.stringify(Object.values(data.target)), // <- string[] not string!!
+    //     - DATA CONTROLLER TARGETS
     MAIN_ACCOUNT_ID_INPUT_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.mainAccountIdInput)),
     MAIN_ACCOUNT_ID_INPUT_BUTTON_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.mainAccountIdInputButton)),
     FORM_ELEMENTS_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.formElements)),
@@ -183,8 +183,8 @@ export default {
     ANNOTATION_DETAILS_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.annotationDetails)),
     SHOULD_MESSAGE_AFTER_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.shouldMessageAfter)),
     CONTROLLER_SUBMIT_BUTTON_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.controllerSubmitButton)),
-    CONTROLLER_TARGETS: JSON.stringify(Object.values(data.target)), // <- string[] not string!!
-    // String Replacement of function name (not in vite-define.d)
+
+    // String Replacement of function name (not in vite-define.d.ts)
     HANDLE_SUBMIT_ACTION: data.action.handleSubmitActions,
     HANDLE_CANCEL_ACTION: data.action.handleCancelActions,
     HANDLE_LOOKUP_MAIN_ACCOUNT: data.action.handleLookupMainAccount,
