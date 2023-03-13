@@ -32,30 +32,14 @@ const supportedDeleteOptions = {
     'No longer welcome': 'This user is no longer welcome to participate on the site'
 };
 
-export const modalId = ids.modal;
-export const dataController = data.controller;
-export const controllerTargets = Object.values(data.target);
 
 function convertKeyToTargetAccessor(s: string) {
     return `${s}Target`;
 }
 
 
-export const targets = {
-    mainAccountIdInput: convertKeyToTargetAccessor(data.target.mainAccountIdInput),
-    mainAccountIdInputButton: convertKeyToTargetAccessor(data.target.mainAccountIdInputButton),
-    formElements: convertKeyToTargetAccessor(data.target.formElements),
-    deletionReasonSelect: convertKeyToTargetAccessor(data.target.deletionReasonSelect),
-    deletionDetails: convertKeyToTargetAccessor(data.target.deletionDetails),
-    annotationDetails: convertKeyToTargetAccessor(data.target.annotationDetails),
-    shouldMessageAfter: convertKeyToTargetAccessor(data.target.shouldMessageAfter),
-    controllerSubmitButton: convertKeyToTargetAccessor(data.target.controllerSubmitButton),
-};
 
-export const actions = data.action;
-
-
-export const initialModal = `
+const initialModal = `
 <aside class="s-modal s-modal__danger" id="${ids.modal}" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
     <div class="s-modal--dialog" role="document" data-controller="${data.controller}">
         <h1 class="s-modal--header">Delete Ban Evasion Account</h1>
@@ -129,7 +113,7 @@ function buildTextarea(
 
 const markdownNotSupportedMessage = '<span class="fw-bold">Reminder</span>: Markdown is not supported!';
 
-export const remainingFormFields = `
+const remainingFormFields = `
 <div class="d-flex gy4 fd-column">
     ${buildLabel({htmlFor: ids.deletionReason, text: 'Reason for deleting this user'})}
     <div class="flex--item s-select">
@@ -181,4 +165,28 @@ ${buildTextarea(
         ${buildLabel({htmlFor: ids.shouldMessageAfter, text: 'Open message user in new tab', status: 'Optional'})}
     </div>
 </div>`;
+
+
+
+export default {
+    // HTML
+    JS_MODAL_ID: JSON.stringify(ids.modal),
+    INITIAL_MODAL_HTML: `\`${initialModal}\``,
+    MODAL_FORM_HTML: `\`${remainingFormFields}\``,
+    // STIMULUS DATA CONTROLLER STRINGS
+    DATA_CONTROLLER: JSON.stringify(data.controller),
+    MAIN_ACCOUNT_ID_INPUT_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.mainAccountIdInput)),
+    MAIN_ACCOUNT_ID_INPUT_BUTTON_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.mainAccountIdInputButton)),
+    FORM_ELEMENTS_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.formElements)),
+    DELETION_REASON_SELECT_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.deletionReasonSelect)),
+    DELETION_DETAILS_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.deletionDetails)),
+    ANNOTATION_DETAILS_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.annotationDetails)),
+    SHOULD_MESSAGE_AFTER_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.shouldMessageAfter)),
+    CONTROLLER_SUBMIT_BUTTON_TARGET: JSON.stringify(convertKeyToTargetAccessor(data.target.controllerSubmitButton)),
+    CONTROLLER_TARGETS: JSON.stringify(Object.values(data.target)), // <- string[] not string!!
+    // String Replacement of function name (not in vite-define.d)
+    HANDLE_SUBMIT_ACTION: data.action.handleSubmitActions,
+    HANDLE_CANCEL_ACTION: data.action.handleCancelActions,
+    HANDLE_LOOKUP_MAIN_ACCOUNT: data.action.handleLookupMainAccount,
+};
 
