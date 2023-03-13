@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.8
+// @version      0.1.9
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -171,7 +171,7 @@
     function createModal() {
         return $(`
 <aside class="s-modal s-modal__danger" id="beadh-modal" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
-    <div class="s-modal--dialog" role="document" data-controller="beadh-form">
+    <div class="s-modal--dialog" style="width: max-content; max-width: 65vw;" role="document" data-controller="beadh-form">
         <h1 class="s-modal--header">Delete Ban Evasion Account</h1>
         <div class="s-modal--body">
             <div class="d-flex fd-column g12 mx8" data-beadh-form-target="form-elements">
