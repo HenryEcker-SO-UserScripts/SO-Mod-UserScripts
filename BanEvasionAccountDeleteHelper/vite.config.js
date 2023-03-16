@@ -1,6 +1,6 @@
 import buildViteConfig from '../vite-config-builder';
 import filterReplace from 'vite-plugin-filter-replace';
-import stimulusHtmlDefineObj from './util-beadh/stimulus-html-components';
+import stimulusHtmlDefineObj from './stimulus-components/prebuildable-stimulus-components';
 import beautifyPlugin from '../vite-plugin-beautify-output';
 import {buildMatchPatterns} from '../banner-build-util';
 
@@ -9,7 +9,7 @@ const banner = `// ==UserScript==
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.9
+// @version      0.2.0
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
