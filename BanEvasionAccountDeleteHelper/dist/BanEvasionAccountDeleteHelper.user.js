@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.9
+// @version      0.2.0
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -21,25 +21,6 @@
 /* globals StackExchange, Stacks, $ */
 (function() {
     "use strict";
-
-    function fetchFullUrlFromUserId(userId) {
-        return fetch(`/users/${userId}`, { method: "OPTIONS" })
-            .then((res) => res.url);
-    }
-
-    function fetchUserIdFromHref(href, convertToNumber = true) {
-        let match = href.match(/\/users\/(\d+)\/.*/i);
-        if (match === null) {
-            match = href.match(/users\/account-info\/(\d+)/i);
-        }
-        if (match === null || match.length < 2) {
-            return void 0;
-        }
-        if (!convertToNumber) {
-            return match[1];
-        }
-        return Number(match[1]);
-    }
 
     function getFormDataFromObject(obj) {
         return Object.entries(obj)
@@ -129,6 +110,25 @@
         }
     };
 
+    function fetchFullUrlFromUserId(userId) {
+        return fetch(`/users/${userId}`, { method: "OPTIONS" })
+            .then((res) => res.url);
+    }
+
+    function fetchUserIdFromHref(href, convertToNumber = true) {
+        let match = href.match(/\/users\/(\d+)\/.*/i);
+        if (match === null) {
+            match = href.match(/users\/account-info\/(\d+)/i);
+        }
+        if (match === null || match.length < 2) {
+            return void 0;
+        }
+        if (!convertToNumber) {
+            return match[1];
+        }
+        return Number(match[1]);
+    }
+
     function getUserIdFromAccountInfoURL() {
         const userId = fetchUserIdFromHref(window.location.pathname);
         if (userId === void 0) {
@@ -168,29 +168,6 @@
             .then(() => handleAnnotateUser(mainAccountId, annotationDetails));
     }
 
-    function createModal() {
-        return $(`
-<aside class="s-modal s-modal__danger" id="beadh-modal" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
-    <div class="s-modal--dialog" style="width: max-content; max-width: 65vw;" role="document" data-controller="beadh-form">
-        <h1 class="s-modal--header">Delete Ban Evasion Account</h1>
-        <div class="s-modal--body">
-            <div class="d-flex fd-column g12 mx8" data-beadh-form-target="form-elements">
-                <div class="d-flex fd-row g4 jc-space-between ai-center">
-                    <label class="s-label" for="beadh-main-account-id-input" style="min-width:fit-content;">Enter ID For Main Account: </label>
-                    <input data-beadh-form-target="main-account-id" class="s-input" type="number" id="beadh-main-account-id-input">
-                    <button data-beadh-form-target="main-account-id-button" class="s-btn s-btn__primary" type="button" style="min-width:max-content;" data-action="beadh-form#handleLookupMainAccount">Resolve User URL</button>
-                </div>
-            </div>
-        </div>
-        <div class="d-flex gx8 s-modal--footer">
-            <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" data-beadh-form-target="submit-actions-button" data-action="click->beadh-form#handleSubmitActions" disabled>Delete and Annotate</button>
-            <button class="s-btn flex--item s-btn__muted" type="button" data-action="click->beadh-form#handleCancelActions">Cancel</button>
-        </div>
-        <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>
-    </div>
-</aside>`);
-    }
-
     function validateLength(label, s, bounds) {
         if (s.length < bounds.min || s.length > bounds.max) {
             const message = `${label} has ${s.length} characters which is outside the supported bounds of ${bounds.min} to ${bounds.max}`;
@@ -204,7 +181,7 @@
         }
     }
 
-    function createModalAndAddController() {
+    function addBanEvasionModalController() {
         const banEvasionControllerConfiguration = {
             targets: ["main-account-id", "main-account-id-button", "form-elements", "delete-reason", "delete-reason-detail-text", "annotation-detail-text", "message-user-checkbox", "submit-actions-button"],
             initialize() {
@@ -323,9 +300,36 @@
                 this["submit-actions-buttonTarget"].disabled = false;
             }
         };
+        Stacks.addController("beadh-form", banEvasionControllerConfiguration);
+    }
+
+    function createModal() {
+        return $(`
+<aside class="s-modal s-modal__danger" id="beadh-modal" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
+    <div class="s-modal--dialog" style="width: max-content; max-width: 65vw;" role="document" data-controller="beadh-form">
+        <h1 class="s-modal--header">Delete Ban Evasion Account</h1>
+        <div class="s-modal--body">
+            <div class="d-flex fd-column g12 mx8" data-beadh-form-target="form-elements">
+                <div class="d-flex fd-row g4 jc-space-between ai-center">
+                    <label class="s-label" for="beadh-main-account-id-input" style="min-width:fit-content;">Enter ID For Main Account: </label>
+                    <input data-beadh-form-target="main-account-id" class="s-input" type="number" id="beadh-main-account-id-input">
+                    <button data-beadh-form-target="main-account-id-button" class="s-btn s-btn__primary" type="button" style="min-width:max-content;" data-action="beadh-form#handleLookupMainAccount">Resolve User URL</button>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gx8 s-modal--footer">
+            <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" data-beadh-form-target="submit-actions-button" data-action="click->beadh-form#handleSubmitActions" disabled>Delete and Annotate</button>
+            <button class="s-btn flex--item s-btn__muted" type="button" data-action="click->beadh-form#handleCancelActions">Cancel</button>
+        </div>
+        <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>
+    </div>
+</aside>`);
+    }
+
+    function createModalAndAddController() {
+        addBanEvasionModalController();
         $("body")
             .append(createModal());
-        Stacks.addController("beadh-form", banEvasionControllerConfiguration);
     }
 
     function handleBanEvasionButtonClick(ev) {
