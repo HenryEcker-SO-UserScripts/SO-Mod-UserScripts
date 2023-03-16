@@ -13,6 +13,6 @@
     "typescript": "^5.0.2",
     "vite": "^4.1.4",
     "vite-plugin-banner": "^0.7.0",
-    "vite-plugin-filter-replace": "^0.1.10"
+    "vite-plugin-filter-replace": "^0.1.11"
   }
 }
