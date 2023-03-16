@@ -11,7 +11,7 @@
     "js-beautify": "^1.14.7",
     "terser": "^5.16.6",
     "typescript": "^5.0.2",
-    "vite": "^4.1.4",
+    "vite": "^4.2.0",
     "vite-plugin-banner": "^0.7.0",
     "vite-plugin-filter-replace": "^0.1.11"
   }
