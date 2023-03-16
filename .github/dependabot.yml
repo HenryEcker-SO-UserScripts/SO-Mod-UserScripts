@@ -8,3 +8,4 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 20
+    versioning-strategy: increase
