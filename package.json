@@ -6,7 +6,7 @@
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.55.0",
     "@userscripters/stackexchange-global-types": "^2.6.1",
-    "eslint": "^8.35.0",
+    "eslint": "^8.36.0",
     "jquery": "^3.6.4",
     "js-beautify": "^1.14.7",
     "terser": "^5.16.6",
