@@ -17,6 +17,13 @@ export function deleteComment(commentId: IdType) {
         });
 }
 
+export function undeleteComment(postId: IdType, commentId: IdType) {
+    return fetchPostFormDataBodyJsonResponse<{ Success: boolean; }>(
+        `/admin/posts/${postId}/comments/${commentId}/undelete`, {
+            fkey: StackExchange.options.user.fkey
+        });
+}
+
 
 export function retrieveCommentEditHistory(commendId: IdType) {
     // Returns a HTML component
