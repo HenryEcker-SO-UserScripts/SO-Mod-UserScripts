@@ -96,13 +96,16 @@ function main() {
     }
 }
 
-StackExchange.ready(() => {
-    // Run Function
-    main();
-    // Restore buttons on tab/page navigation
-    $(document).on('ajaxComplete', (_0, _1, {url}) => {
-        if (url.match(/users\/tab\/\d+\?tab=(answers|questions)/gi)) {
-            main();
-        }
+
+if (StackExchange.options.user.isModerator === true) {
+    StackExchange.ready(() => {
+        // Run Function
+        main();
+        // Restore buttons on tab/page navigation
+        $(document).on('ajaxComplete', (_0, _1, {url}) => {
+            if (url.match(/users\/tab\/\d+\?tab=(answers|questions)/gi)) {
+                main();
+            }
+        });
     });
-});
+}
