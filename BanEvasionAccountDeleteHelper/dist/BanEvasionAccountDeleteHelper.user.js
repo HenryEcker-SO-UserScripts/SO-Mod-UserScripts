@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.2.0
+// @version      0.2.1
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -21,6 +21,16 @@
 /* globals StackExchange, Stacks, $ */
 (function() {
     "use strict";
+
+    function runVoidOnce(fn) {
+        let hasRun = false;
+        return function(...args) {
+            if (hasRun === false) {
+                Reflect.apply(fn, this, args);
+                hasRun = true;
+            }
+        };
+    }
 
     function getFormDataFromObject(obj) {
         return Object.entries(obj)
@@ -302,9 +312,17 @@
         };
         Stacks.addController("beadh-form", banEvasionControllerConfiguration);
     }
+    const onceAddBanEvasionModalController = runVoidOnce(addBanEvasionModalController);
 
-    function createModal() {
-        return $(`
+    function handleBanEvasionButtonClick(ev) {
+        ev.preventDefault();
+        onceAddBanEvasionModalController();
+        const modal = document.getElementById("beadh-modal");
+        if (modal !== null) {
+            Stacks.showModal(modal);
+        } else {
+            $("body")
+                .append(`
 <aside class="s-modal s-modal__danger" id="beadh-modal" tabindex="-1" role="dialog" aria-hidden="false" data-controller="s-modal" data-s-modal-target="modal">
     <div class="s-modal--dialog" style="width: max-content; max-width: 65vw;" role="document" data-controller="beadh-form">
         <h1 class="s-modal--header">Delete Ban Evasion Account</h1>
@@ -324,21 +342,6 @@
         <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>
     </div>
 </aside>`);
-    }
-
-    function createModalAndAddController() {
-        addBanEvasionModalController();
-        $("body")
-            .append(createModal());
-    }
-
-    function handleBanEvasionButtonClick(ev) {
-        ev.preventDefault();
-        const modal = document.getElementById("beadh-modal");
-        if (modal !== null) {
-            Stacks.showModal(modal);
-        } else {
-            createModalAndAddController();
         }
     }
 
