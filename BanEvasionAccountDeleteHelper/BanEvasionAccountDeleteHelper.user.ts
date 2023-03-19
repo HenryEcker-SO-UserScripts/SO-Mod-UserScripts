@@ -1,26 +1,18 @@
 import {addBanEvasionModalController} from './stimulus-components/stimulus-controller';
+import {runVoidOnce} from '../Utilities/General';
 
-
-/*** Build Base Modal (Only includes the first part of the form) ***/
-function createModal() {
-    // Build Modal
-    return $(INITIAL_MODAL_HTML);
-}
-
-function createModalAndAddController() {
-    addBanEvasionModalController();
-    $('body').append(createModal());
-}
-
+const onceAddBanEvasionModalController = runVoidOnce(addBanEvasionModalController);
 
 /*** Create and connect open modal link ***/
 function handleBanEvasionButtonClick(ev: JQuery.Event) {
     ev.preventDefault();
+    onceAddBanEvasionModalController();
     const modal = document.getElementById(JS_MODAL_ID);
     if (modal !== null) {
         Stacks.showModal(modal);
     } else {
-        createModalAndAddController();
+        // Attach modal to DOM
+        $('body').append(INITIAL_MODAL_HTML);
     }
 }
 

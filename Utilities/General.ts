@@ -1,3 +1,13 @@
+export function runVoidOnce(fn: (...args: unknown[]) => void) {
+    let hasRun = false;
+    return function (...args: unknown[]) {
+        if (hasRun === false) {
+            Reflect.apply(fn, this, args);
+            hasRun = true;
+        }
+    };
+}
+
 export function getFormDataFromObject(obj: Record<string, unknown>) {
     return Object.entries(obj).reduce((acc, [key, value]) => {
         acc.set(key, value as string);
