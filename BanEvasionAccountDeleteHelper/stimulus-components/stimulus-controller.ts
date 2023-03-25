@@ -8,7 +8,7 @@ import {
 import {type ActionEvent} from '@hotwired/stimulus';
 import {config, type ValidationBounds} from '../Globals';
 import {fetchFullUrlFromUserId, fetchUserIdFromHref} from 'se-ts-userscript-utilities/Utilities/UserInfo';
-import {buildDetailStringFromObject} from 'se-ts-userscript-utilities/Utilities/General';
+import {buildDetailStringFromObject} from 'se-ts-userscript-utilities/Formatters/TextFormatting';
 
 
 /*** User Actions ***/
