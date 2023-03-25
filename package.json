@@ -12,7 +12,7 @@
     "se-ts-userscript-utilities": "github:HenryEcker/SE-TS-UserScript-Utilities#semver:^1.0.1",
     "terser": "^5.16.6",
     "typescript": "^5.0.2",
-    "vite": "^4.2.0",
+    "vite": "^4.2.1",
     "vite-plugin-banner": "^0.7.0",
     "vite-plugin-filter-replace": "^0.1.11"
   }
