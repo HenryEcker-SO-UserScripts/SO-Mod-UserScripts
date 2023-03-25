@@ -22,6 +22,16 @@
 (function() {
     "use strict";
 
+    function runVoidOnce(fn) {
+        let hasRun = false;
+        return function(...args) {
+            if (hasRun === false) {
+                Reflect.apply(fn, this, args);
+                hasRun = true;
+            }
+        };
+    }
+
     function getFormDataFromObject(obj) {
         return Object.entries(obj)
             .reduce((acc, [key, value]) => {
@@ -35,33 +45,6 @@
             method: "POST",
             body: getFormDataFromObject(data)
         });
-    }
-
-    function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
-        const filteredObj = Object.entries(obj)
-            .reduce((acc, [key, value]) => {
-                if (value.length > 0) {
-                    acc[`${key}${keyValueSeparator}`] = value;
-                }
-                return acc;
-            }, {});
-        const getPaddingStr = function() {
-            if (alignColumns) {
-                const maxLabelLength = Math.max(...Object.keys(filteredObj)
-                    .map((k) => k.length));
-                return function(key) {
-                    return new Array(maxLabelLength - key.length + 1)
-                        .join(" ");
-                };
-            } else {
-                return function(_) {
-                    return "";
-                };
-            }
-        }();
-        return Object.entries(filteredObj)
-            .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
-            .join(recordSeparator);
     }
 
     function getUserPii(userId) {
@@ -127,6 +110,33 @@
             return match[1];
         }
         return Number(match[1]);
+    }
+
+    function buildDetailStringFromObject(obj, keyValueSeparator, recordSeparator, alignColumns = false) {
+        const filteredObj = Object.entries(obj)
+            .reduce((acc, [key, value]) => {
+                if (value.length > 0) {
+                    acc[`${key}${keyValueSeparator}`] = value;
+                }
+                return acc;
+            }, {});
+        const getPaddingStr = function() {
+            if (alignColumns) {
+                const maxLabelLength = Math.max(...Object.keys(filteredObj)
+                    .map((k) => k.length));
+                return function(key) {
+                    return new Array(maxLabelLength - key.length + 1)
+                        .join(" ");
+                };
+            } else {
+                return function(_) {
+                    return "";
+                };
+            }
+        }();
+        return Object.entries(filteredObj)
+            .map(([key, value]) => `${key}${getPaddingStr(key)}${value}`)
+            .join(recordSeparator);
     }
 
     function getUserIdFromAccountInfoURL() {
@@ -301,16 +311,6 @@
             }
         };
         Stacks.addController("beadh-form", banEvasionControllerConfiguration);
-    }
-
-    function runVoidOnce(fn) {
-        let hasRun = false;
-        return function(...args) {
-            if (hasRun === false) {
-                Reflect.apply(fn, this, args);
-                hasRun = true;
-            }
-        };
     }
     const onceAddBanEvasionModalController = runVoidOnce(addBanEvasionModalController);
 

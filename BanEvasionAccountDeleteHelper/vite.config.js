@@ -37,8 +37,8 @@ export default ({mode}) => {
                     // Replace (potentially) dangerous mod actions with the testing equivalents (simulated operations)
                     {
                         replace: {
-                            from: /\/Utilities\/UserModActions/g,
-                            to: '/Utilities-Testing/UserModActions'
+                            from: /se-ts-userscript-utilities\/Moderators\/UserModActions/g,
+                            to: 'se-ts-userscript-utilities/Moderators-Testing/UserModActions'
                         }
                     },
                     {

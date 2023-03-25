@@ -1,11 +1,6 @@
-import {castPostsVote} from 'se-ts-userscript-utilities/Utilities/PostFlagsAndVotes';
+import {castPostsVote} from 'se-ts-userscript-utilities/FlaggingAndVoting/Helpers';
 
-interface UserScriptConfig {
-    deleteVoteCode: number;
-    undeleteVoteCode: number;
-}
-
-const config: UserScriptConfig = {
+const config: Record<string, 10 | 11> = {
     deleteVoteCode: 10,
     undeleteVoteCode: 11
 };
@@ -33,7 +28,7 @@ function toggleVoteType(voteType: number) {
 }
 
 // Make a click handler for the btn;
-function makeBtnClickHandler(postId: string, voteType: number, jSummary: JQuery, jSummaryParent: JQuery, btn: JQuery, updatePostStyle: () => void) {
+function makeBtnClickHandler(postId: string, voteType: 10 | 11, jSummary: JQuery, jSummaryParent: JQuery, btn: JQuery, updatePostStyle: () => void) {
     return (ev: JQuery.Event) => {
         ev.preventDefault();
         void castPostsVote(postId, voteType)
