@@ -1,5 +1,5 @@
-import {isSuggestedEditQueueFull} from '../Utilities/EditPosts';
-import {type IdType} from '../Utilities/Types';
+import {isSuggestedEditQueueFull} from 'se-ts-userscript-utilities/Utilities/EditPosts';
+import {type IdType} from 'se-ts-userscript-utilities/Utilities/Types';
 
 function buildCheckEditQueueButton(postId: IdType, editHref: string) {
     const checkButton = $('<a title="Check if it is possible to suggest edits">Edit Queue</a>');

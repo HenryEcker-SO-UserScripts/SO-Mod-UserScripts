@@ -1,9 +1,14 @@
-import {type BaseStacksControllerConfig} from '../../Utilities/Types';
-import {annotateUser, type DeleteReason, deleteUser, getUserPii} from '../../Utilities/UserModActions';
+import {type BaseStacksControllerConfig} from 'se-ts-userscript-utilities/Utilities/Types';
+import {
+    annotateUser,
+    type DeleteReason,
+    deleteUser,
+    getUserPii
+} from 'se-ts-userscript-utilities/Utilities/UserModActions';
 import {type ActionEvent} from '@hotwired/stimulus';
 import {config, type ValidationBounds} from '../Globals';
-import {fetchFullUrlFromUserId, fetchUserIdFromHref} from '../../Utilities/UserInfo';
-import {buildDetailStringFromObject} from '../../Utilities/General';
+import {fetchFullUrlFromUserId, fetchUserIdFromHref} from 'se-ts-userscript-utilities/Utilities/UserInfo';
+import {buildDetailStringFromObject} from 'se-ts-userscript-utilities/Utilities/General';
 
 
 /*** User Actions ***/

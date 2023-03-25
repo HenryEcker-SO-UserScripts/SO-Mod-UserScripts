@@ -1,5 +1,5 @@
 import {addBanEvasionModalController} from './stimulus-components/stimulus-controller';
-import {runVoidOnce} from '../Utilities/General';
+import {runVoidOnce} from 'se-ts-userscript-utilities/Utilities/General';
 
 const onceAddBanEvasionModalController = runVoidOnce(addBanEvasionModalController);
 

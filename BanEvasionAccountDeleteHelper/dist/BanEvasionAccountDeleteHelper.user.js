@@ -22,16 +22,6 @@
 (function() {
     "use strict";
 
-    function runVoidOnce(fn) {
-        let hasRun = false;
-        return function(...args) {
-            if (hasRun === false) {
-                Reflect.apply(fn, this, args);
-                hasRun = true;
-            }
-        };
-    }
-
     function getFormDataFromObject(obj) {
         return Object.entries(obj)
             .reduce((acc, [key, value]) => {
@@ -311,6 +301,16 @@
             }
         };
         Stacks.addController("beadh-form", banEvasionControllerConfiguration);
+    }
+
+    function runVoidOnce(fn) {
+        let hasRun = false;
+        return function(...args) {
+            if (hasRun === false) {
+                Reflect.apply(fn, this, args);
+                hasRun = true;
+            }
+        };
     }
     const onceAddBanEvasionModalController = runVoidOnce(addBanEvasionModalController);
 
