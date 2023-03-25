@@ -1,4 +1,4 @@
-import {isSuggestedEditQueueFull} from 'se-ts-userscript-utilities/Utilities/EditPosts';
+import {isSuggestedEditQueueFull} from 'se-ts-userscript-utilities/Edits/EditPosts';
 import {type IdType} from 'se-ts-userscript-utilities/Utilities/Types';
 
 function buildCheckEditQueueButton(postId: IdType, editHref: string) {

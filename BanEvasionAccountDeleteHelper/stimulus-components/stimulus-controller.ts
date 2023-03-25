@@ -4,7 +4,7 @@ import {
     type DeleteReason,
     deleteUser,
     getUserPii
-} from 'se-ts-userscript-utilities/Utilities/UserModActions';
+} from 'se-ts-userscript-utilities/Moderators/UserModActions';
 import {type ActionEvent} from '@hotwired/stimulus';
 import {config, type ValidationBounds} from '../Globals';
 import {fetchFullUrlFromUserId, fetchUserIdFromHref} from 'se-ts-userscript-utilities/Utilities/UserInfo';
