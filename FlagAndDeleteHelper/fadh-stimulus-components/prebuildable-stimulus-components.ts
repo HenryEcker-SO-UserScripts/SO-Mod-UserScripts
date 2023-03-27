@@ -1,5 +1,10 @@
-import {type ModFlagRadioType, textAreaLimits} from '../Globals';
+import {type ModFlagRadioType} from '../Globals';
 import {html_beautify} from 'js-beautify';
+import {
+    commentTextLengthBounds,
+    modFlagTextLengthBounds,
+    plagiarismFlagLengthBounds
+} from 'se-ts-userscript-utilities/cjs/Validators/TextLengthValidators';
 
 const ids = {
     modal: 'fadh-nuke-post-form-{postId}',
@@ -169,7 +174,7 @@ ${buildFieldControlArea(
         data.controller,
         data.target.modFlagTextarea,
         'A problem that requires action by a moderator.',
-        textAreaLimits.modFlag),
+        modFlagTextLengthBounds),
     true)
 }
 ${buildFieldControlArea(
@@ -188,7 +193,7 @@ ${buildFieldControlArea(
         data.controller,
         data.target.plagiarismFlagDetailTextarea,
         'Why do you consider this answer to be plagiarized?',
-        textAreaLimits.plagiarismExplanation),
+        plagiarismFlagLengthBounds.explanation),
     true)
 }
 ${modalDivider}
@@ -207,7 +212,7 @@ ${buildToggle(
         data.controller,
         data.target.commentTextarea,
         'Comment Text',
-        textAreaLimits.comment),
+        commentTextLengthBounds),
     true
 )}</div>
         </div>
