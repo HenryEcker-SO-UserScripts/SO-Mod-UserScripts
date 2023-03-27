@@ -170,7 +170,7 @@ ${buildFieldControlArea(
         5,
         data.controller,
         data.target.modFlagTextarea,
-        'A problem not listed above that requires action by a moderator.',
+        'A problem that requires action by a moderator.',
         textAreaLimits.modFlag),
     false)
 }
