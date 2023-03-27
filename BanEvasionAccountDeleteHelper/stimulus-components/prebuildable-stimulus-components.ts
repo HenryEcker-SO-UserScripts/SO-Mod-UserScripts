@@ -1,4 +1,5 @@
 import {config, type ValidationBounds} from '../Globals';
+import {html_beautify} from 'js-beautify';
 
 const ids = {
     modal: 'beadh-modal',
@@ -165,12 +166,12 @@ ${buildTextarea(
     </div>
 </div>`;
 
-
+const htmlBeautifyConfig = {preserve_newlines: false};
 export default {
     // HTML
     JS_MODAL_ID: JSON.stringify(ids.modal),
-    INITIAL_MODAL_HTML: `\`${initialModal}\``,
-    MODAL_FORM_HTML: `\`${remainingFormFields}\``,
+    INITIAL_MODAL_HTML: `\`\n${html_beautify(initialModal, htmlBeautifyConfig)}\``,
+    MODAL_FORM_HTML: `\`\n${html_beautify(remainingFormFields, htmlBeautifyConfig)}\``,
     // STIMULUS DATA CONTROLLER STRINGS
     DATA_CONTROLLER: JSON.stringify(data.controller),
     CONTROLLER_TARGETS: JSON.stringify(Object.values(data.target)), // <- string[] not string!!
