@@ -229,11 +229,13 @@ function registerFlagAndRemoveController() {
                 commentTextTemplate: shouldComment ? this.commentText : ''
             };
             GM_setValue(gmConfigKey, JSON.stringify(currentConfig));
+            StackExchange.helpers.showToast('Successfully saved the current configuration. The form will now open in this state until updated or wiped.', {type: 'success'});
         },
         HANDLE_CLEAR_CONFIG(ev: ActionEvent) {
             ev.preventDefault();
             GM_deleteValue(gmConfigKey);
             this.connect(); // Rebuild without defaults
+            StackExchange.helpers.showToast('The saved configuration has been wiped. The form will now open in the default state until a new configuration is saved.', {type: 'info'});
         }
     };
     Stacks.addController(FADHNS.CONTROLLER_NAME, controllerConfig);
