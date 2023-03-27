@@ -3,7 +3,7 @@
 // @description  Adds a "Flag and remove" button to all posts that assists in raising text flags and immediately handling them
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/FlagAndDeleteHelper/dist/FlagAndDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/FlagAndDeleteHelper/dist/FlagAndDeleteHelper.user.js
 //
@@ -24,18 +24,18 @@
 (function() {
     "use strict";
     const textAreaLimits = {
-        plagiarism: {
+        plagiarismExplanation: {
             min: 10,
             max: 500
         },
         plagiarismSource: {
             min: 10
         },
-        mod: {
+        modFlag: {
             min: 10,
             max: 500
         },
-        comments: {
+        comment: {
             min: 15,
             max: 600
         }
@@ -134,176 +134,175 @@
         });
     }
 
-    function registerNukeWithFlagController() {
-        Stacks.addController(
-            "fadh-nuke-post-form", {
-                targets: ["submit-button", "mod-flag-radio", "plagiarism-flag-radio", "comment-enable-toggle", "mod-flag-info-area", "plagiarism-flag-info-area", "comment-info-area", "plagiarism-original-source-area", "plagiarism-detail-area", "mod-flag-area", "comment-area"],
-                getFlagType(postId) {
-                    return document.querySelector(`input[name="${"fadh-flag-type-{postId}".formatUnicorn({ postId })}"]:checked`).value;
-                },
-                get plagiarismFlagOriginalSourceText() {
-                    return this["plagiarism-original-source-areaTarget"].value ?? "";
-                },
-                get plagiarismFlagDetailText() {
-                    return this["plagiarism-detail-areaTarget"].value ?? "";
-                },
-                get modFlagDetailText() {
-                    return this["mod-flag-areaTarget"].value ?? "";
-                },
-                get shouldComment() {
-                    return this["comment-enable-toggleTarget"].checked;
-                },
-                get commentText() {
-                    return this["comment-areaTarget"].value ?? "";
-                },
-                _getRadioTargetFromFlagType(flagType) {
-                    switch (flagType) {
-                        case "mod-flag":
-                            return "mod-flag-radioTarget";
-                        case "plagiarism":
-                            return "plagiarism-flag-radioTarget";
-                        default:
-                            throw new Error("Invalid flag type");
-                    }
-                },
-                connect() {
-                    const loadedConfig = JSON.parse(
-                        GM_getValue(gmConfigKey, defaultFlagTemplateConfig)
-                    );
-                    const isCommentChecked = this["comment-enable-toggleTarget"].checked;
-                    if (loadedConfig.enableComment && !isCommentChecked || !loadedConfig.enableComment && isCommentChecked) {
-                        $(this["comment-enable-toggleTarget"]).trigger("click");
-                        this["comment-areaTarget"].value = loadedConfig.commentTextTemplate ?? "";
-                    }
-                    if (![1].includes(StackExchange.options.site.id)) {
-                        this["plagiarism-flag-radioTarget"].disabled = true;
-                    }
-                    const currentFlagTypeRadio = this[this._getRadioTargetFromFlagType(loadedConfig.flagType)];
-                    if (!currentFlagTypeRadio.disabled) {
-                        $(currentFlagTypeRadio).trigger("click");
-                    }
-                    if (loadedConfig.flagType === "mod-flag") {
-                        this["mod-flag-areaTarget"].value = loadedConfig.flagDetailTemplate ?? "";
-                    } else if (loadedConfig.flagType === "plagiarism") {
-                        this["plagiarism-detail-areaTarget"].value = loadedConfig.flagDetailTemplate ?? "";
-                    }
-                },
-                _removeModal(postId) {
-                    const existingModal = document.getElementById(getModalId(postId));
-                    if (existingModal !== null) {
-                        Stacks.hideModal(existingModal);
-                        setTimeout(() => {
-                            existingModal.remove();
-                        }, 125);
-                    }
-                },
-                _validateCharacterLengths(flagType) {
-                    if (flagType === "mod-flag") {
-                        if (!isInValidationBounds(this.modFlagDetailText.length, textAreaLimits.mod)) {
-                            throw new Error(`Mod flag text must be between ${textAreaLimits.mod.min} and ${textAreaLimits.mod.max} characters.`);
-                        }
-                    } else if (flagType === "plagiarism") {
-                        if (!isInValidationBounds(this.plagiarismFlagOriginalSourceText.length, textAreaLimits.plagiarismSource)) {
-                            throw new Error(`Plagiarism flag source must be more than ${textAreaLimits.plagiarismSource.min} characters.`);
-                        }
-                        if (!isInValidationBounds(this.plagiarismFlagDetailText.length, textAreaLimits.plagiarism)) {
-                            throw new Error(`Plagiarism flag explanation text must be between ${textAreaLimits.plagiarism.min} and ${textAreaLimits.plagiarism.max} characters.`);
-                        }
-                    } else {
-                        throw new Error("Cannot validate bounds for invalid flag type.");
-                    }
-                    if (this.shouldComment === true) {
-                        if (!isInValidationBounds(this.commentText.length, textAreaLimits.comments)) {
-                            throw new Error(`Comment text must be between ${textAreaLimits.comments.min} and ${textAreaLimits.comments.max} characters. Either update the text or disable the comment option.`);
-                        }
-                    }
-                },
-                _handleFlag(flagType, postId) {
-                    switch (flagType) {
-                        case "mod-flag":
-                            return handleNukeAsModFlag(postId, this.modFlagDetailText);
-                        case "plagiarism":
-                            return handleNukeAsPlagiarism(postId, this.plagiarismFlagOriginalSourceText, this.plagiarismFlagDetailText);
-                        default:
-                            throw new Error("Cannot run flag operation for invalid flag type");
-                    }
-                },
-                async handleNukeSubmitActions(ev) {
-                    ev.preventDefault();
-                    const jSubmitButton = $(this["submit-buttonTarget"]);
-                    jSubmitButton.prop("disabled", true);
-                    jSubmitButton.addClass("is-loading");
-                    const { postId } = ev.params;
-                    const flagType = this.getFlagType(postId);
-                    try {
-                        this._validateCharacterLengths(flagType);
-                        await this._handleFlag(flagType, postId);
-                        if (this.shouldComment) {
-                            await addComment(postId, this.commentText);
-                        }
-                        window.location.reload();
-                    } catch (e) {
-                        StackExchange.helpers.showToast(e.message, { type: "danger" });
-                        jSubmitButton.prop("disabled", false);
-                        jSubmitButton.removeClass("is-loading");
-                    }
-                },
-                cancelHandleForm(ev) {
-                    ev.preventDefault();
-                    const { postId } = ev.params;
-                    this._removeModal(postId);
-                },
-                _hideTargetDiv(name) {
-                    $(this[`${name}Target`]).addClass("d-none");
-                },
-                _showTargetDiv(name) {
-                    $(this[`${name}Target`]).removeClass("d-none");
-                },
-                handleUpdateFlagSelection(ev) {
-                    ev.preventDefault();
-                    const { shows, hides } = ev.params;
-                    this._showTargetDiv(shows);
-                    this._hideTargetDiv(hides);
-                },
-                handleUpdateControlledField(ev) {
-                    ev.preventDefault();
-                    const { controls } = ev.params;
-                    if (ev.target.checked) {
-                        this._showTargetDiv(controls);
-                    } else {
-                        this._hideTargetDiv(controls);
-                    }
-                },
-                _getRelevantDetailText(flagType) {
-                    switch (flagType) {
-                        case "mod-flag":
-                            return this["mod-flag-areaTarget"].value ?? "";
-                        case "plagiarism":
-                            return this["plagiarism-detail-areaTarget"].value ?? "";
-                        default:
-                            throw new Error("Invalid flag type; no corresponding text field found");
-                    }
-                },
-                handleSaveCurrentConfig(ev) {
-                    ev.preventDefault();
-                    const { postId } = ev.params;
-                    const flagType = this.getFlagType(postId);
-                    const shouldComment = this.shouldComment;
-                    const currentConfig = {
-                        flagType,
-                        flagDetailTemplate: this._getRelevantDetailText(flagType),
-                        enableComment: shouldComment,
-                        commentTextTemplate: shouldComment ? this.commentText : ""
-                    };
-                    GM_setValue(gmConfigKey, JSON.stringify(currentConfig));
-                },
-                handleDeleteCurrentConfig(ev) {
-                    ev.preventDefault();
-                    GM_deleteValue(gmConfigKey);
-                    this.connect();
+    function registerFlagAndRemoveController() {
+        const controllerConfig = {
+            targets: ["submit-button", "mod-flag-radio", "plagiarism-flag-radio", "comment-enable-toggle", "mod-flag-info-area", "plagiarism-flag-info-area", "comment-info-area", "plagiarism-original-source-area", "plagiarism-detail-area", "mod-flag-area", "comment-area"],
+            getFlagType(postId) {
+                return document.querySelector(`input[name="${"fadh-flag-type-{postId}".formatUnicorn({ postId })}"]:checked`).value;
+            },
+            get plagiarismFlagOriginalSourceText() {
+                return this["plagiarism-original-source-areaTarget"].value ?? "";
+            },
+            get plagiarismFlagDetailText() {
+                return this["plagiarism-detail-areaTarget"].value ?? "";
+            },
+            get modFlagDetailText() {
+                return this["mod-flag-areaTarget"].value ?? "";
+            },
+            get shouldComment() {
+                return this["comment-enable-toggleTarget"].checked;
+            },
+            get commentText() {
+                return this["comment-areaTarget"].value ?? "";
+            },
+            _getRadioTargetFromFlagType(flagType) {
+                switch (flagType) {
+                    case "mod-flag":
+                        return "mod-flag-radioTarget";
+                    case "plagiarism":
+                        return "plagiarism-flag-radioTarget";
+                    default:
+                        throw new Error("Invalid flag type");
                 }
+            },
+            connect() {
+                const loadedConfig = JSON.parse(
+                    GM_getValue(gmConfigKey, defaultFlagTemplateConfig)
+                );
+                const isCommentChecked = this["comment-enable-toggleTarget"].checked;
+                if (loadedConfig.enableComment && !isCommentChecked || !loadedConfig.enableComment && isCommentChecked) {
+                    $(this["comment-enable-toggleTarget"]).trigger("click");
+                    this["comment-areaTarget"].value = loadedConfig.commentTextTemplate ?? "";
+                }
+                if (![1].includes(StackExchange.options.site.id)) {
+                    this["plagiarism-flag-radioTarget"].disabled = true;
+                }
+                const currentFlagTypeRadio = this[this._getRadioTargetFromFlagType(loadedConfig.flagType)];
+                if (!currentFlagTypeRadio.disabled) {
+                    $(currentFlagTypeRadio).trigger("click");
+                }
+                if (loadedConfig.flagType === "mod-flag") {
+                    this["mod-flag-areaTarget"].value = loadedConfig.flagDetailTemplate ?? "";
+                } else if (loadedConfig.flagType === "plagiarism") {
+                    this["plagiarism-detail-areaTarget"].value = loadedConfig.flagDetailTemplate ?? "";
+                }
+            },
+            _validateCharacterLengths(flagType) {
+                if (flagType === "mod-flag") {
+                    if (!isInValidationBounds(this.modFlagDetailText.length, textAreaLimits.modFlag)) {
+                        throw new Error(`Mod flag text must be between ${textAreaLimits.modFlag.min} and ${textAreaLimits.modFlag.max} characters.`);
+                    }
+                } else if (flagType === "plagiarism") {
+                    if (!isInValidationBounds(this.plagiarismFlagOriginalSourceText.length, textAreaLimits.plagiarismSource)) {
+                        throw new Error(`Plagiarism flag source must be more than ${textAreaLimits.plagiarismSource.min} characters.`);
+                    }
+                    if (!isInValidationBounds(this.plagiarismFlagDetailText.length, textAreaLimits.plagiarismExplanation)) {
+                        throw new Error(`Plagiarism flag explanation text must be between ${textAreaLimits.plagiarismExplanation.min} and ${textAreaLimits.plagiarismExplanation.max} characters.`);
+                    }
+                } else {
+                    throw new Error("Cannot validate bounds for invalid flag type.");
+                }
+                if (this.shouldComment === true) {
+                    if (!isInValidationBounds(this.commentText.length, textAreaLimits.comment)) {
+                        throw new Error(`Comment text must be between ${textAreaLimits.comment.min} and ${textAreaLimits.comment.max} characters. Either update the text or disable the comment option.`);
+                    }
+                }
+            },
+            _handleFlag(flagType, postId) {
+                switch (flagType) {
+                    case "mod-flag":
+                        return handleNukeAsModFlag(postId, this.modFlagDetailText);
+                    case "plagiarism":
+                        return handleNukeAsPlagiarism(postId, this.plagiarismFlagOriginalSourceText, this.plagiarismFlagDetailText);
+                    default:
+                        throw new Error("Cannot run flag operation for invalid flag type");
+                }
+            },
+            async handleNukeSubmitActions(ev) {
+                ev.preventDefault();
+                const jSubmitButton = $(this["submit-buttonTarget"]);
+                jSubmitButton.prop("disabled", true);
+                jSubmitButton.addClass("is-loading");
+                const { postId } = ev.params;
+                const flagType = this.getFlagType(postId);
+                try {
+                    this._validateCharacterLengths(flagType);
+                    await this._handleFlag(flagType, postId);
+                    if (this.shouldComment) {
+                        await addComment(postId, this.commentText);
+                    }
+                    window.location.reload();
+                } catch (e) {
+                    StackExchange.helpers.showToast(e.message, { type: "danger" });
+                    jSubmitButton.prop("disabled", false);
+                    jSubmitButton.removeClass("is-loading");
+                }
+            },
+            _removeModal(postId) {
+                const existingModal = document.getElementById(getModalId(postId));
+                if (existingModal !== null) {
+                    Stacks.hideModal(existingModal);
+                    setTimeout(() => {
+                        existingModal.remove();
+                    }, 125);
+                }
+            },
+            cancelHandleForm(ev) {
+                ev.preventDefault();
+                const { postId } = ev.params;
+                this._removeModal(postId);
+            },
+            _hideTargetDiv(name) {
+                $(this[`${name}Target`]).addClass("d-none");
+            },
+            _showTargetDiv(name) {
+                $(this[`${name}Target`]).removeClass("d-none");
+            },
+            handleUpdateFlagSelection(ev) {
+                ev.preventDefault();
+                const { shows, hides } = ev.params;
+                this._showTargetDiv(shows);
+                this._hideTargetDiv(hides);
+            },
+            handleUpdateControlledField(ev) {
+                ev.preventDefault();
+                const { controls } = ev.params;
+                if (ev.target.checked) {
+                    this._showTargetDiv(controls);
+                } else {
+                    this._hideTargetDiv(controls);
+                }
+            },
+            _getRelevantDetailText(flagType) {
+                switch (flagType) {
+                    case "mod-flag":
+                        return this.modFlagDetailText;
+                    case "plagiarism":
+                        return this.plagiarismFlagDetailText;
+                    default:
+                        throw new Error("Invalid flag type; no corresponding text field found");
+                }
+            },
+            handleSaveCurrentConfig(ev) {
+                ev.preventDefault();
+                const { postId } = ev.params;
+                const flagType = this.getFlagType(postId);
+                const shouldComment = this.shouldComment;
+                const currentConfig = {
+                    flagType,
+                    flagDetailTemplate: this._getRelevantDetailText(flagType),
+                    enableComment: shouldComment,
+                    commentTextTemplate: shouldComment ? this.commentText : ""
+                };
+                GM_setValue(gmConfigKey, JSON.stringify(currentConfig));
+            },
+            handleDeleteCurrentConfig(ev) {
+                ev.preventDefault();
+                GM_deleteValue(gmConfigKey);
+                this.connect();
             }
-        );
+        };
+        Stacks.addController("fadh-nuke-post-form", controllerConfig);
     }
     async function handleNukeAsModFlag(postId, otherText) {
         const flagFetch = await flagInNeedOfModeratorIntervention(postId, otherText);
@@ -334,7 +333,7 @@
         if (existingModal !== null) {
             Stacks.showModal(existingModal);
         } else {
-            $("body").append('<aside class="s-modal s-modal__danger" id="{modalId}" tabindex="-1" role="dialog" aria-hidden="true" data-controller="s-modal" data-s-modal-target="modal"><div class="s-modal--dialog" style="min-width:550px; width: max-content; max-width: 65vw;" role="document" data-controller="fadh-nuke-post-form se-draggable"><h1 class="s-modal--header c-move" data-se-draggable-target="handle">Flag and remove {postId}</h1><div class="s-modal--body" style="margin-bottom: 0;"><div class="d-flex fd-column g12"><fieldset class="s-check-group s-check-group__horizontal"><legend class="s-label">I am flagging this answer as...</legend><div class="s-check-control"><input class="s-radio" type="radio" name="fadh-flag-type-{postId}" id="fadh-flag-type-{postId}-1" value="mod-flag" data-fadh-nuke-post-form-target="mod-flag-radio" data-fadh-nuke-post-form-shows-param="mod-flag-info-area" data-fadh-nuke-post-form-hides-param="plagiarism-flag-info-area" data-action="fadh-nuke-post-form#handleUpdateFlagSelection" checked /><label class="s-label" for="fadh-flag-type-{postId}-1">In need of moderator intervention</label></div><div class="s-check-control"><input class="s-radio" type="radio" name="fadh-flag-type-{postId}" id="fadh-flag-type-{postId}-2" value="plagiarism" data-fadh-nuke-post-form-target="plagiarism-flag-radio" data-fadh-nuke-post-form-shows-param="plagiarism-flag-info-area" data-fadh-nuke-post-form-hides-param="mod-flag-info-area" data-action="fadh-nuke-post-form#handleUpdateFlagSelection" /><label class="s-label" for="fadh-flag-type-{postId}-2">Plagiarized content</label></div></fieldset><div class="d-flex fd-column g8" data-fadh-nuke-post-form-target="mod-flag-info-area"><div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="500"><label class="s-label flex--item" for="fadh-mod-flag-area-{postId}">A problem not listed above that requires action by a moderator.</label><textarea class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="fadh-mod-flag-area-{postId}" name="otherText" rows="5" data-fadh-nuke-post-form-target="mod-flag-area"></textarea><div data-se-char-counter-target="output"></div></div></div><div class="d-flex fd-column g8 d-none" data-fadh-nuke-post-form-target="plagiarism-flag-info-area"><div class="d-flex ff-column-nowrap gs4 gsy"><div class="flex--item"><label class="d-block s-label" for="fadh-plagiarism-original-source-area-{postId}">Link(s) to original content</label></div><div class="d-flex ps-relative"><input type="text" id="fadh-plagiarism-original-source-area-{postId}" class="s-input" name="plagiarizedSource" data-fadh-nuke-post-form-target="plagiarism-original-source-area"></div></div><div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="500"><label class="s-label flex--item" for="fadh-plagiarism-detail-area-{postId}">Why do you consider this answer to be plagiarized?</label><textarea class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="fadh-plagiarism-detail-area-{postId}" name="plagiarizedExplanation" rows="5" data-fadh-nuke-post-form-target="plagiarism-detail-area"></textarea><div data-se-char-counter-target="output"></div></div></div><div class="my6 bb bc-black-400"></div><div class="d-flex ai-center g8 jc-space-between"><label class="s-label" for="fadh-comment-enable-toggle-{postId}">Comment after deletion</label><input class="s-toggle-switch" id="fadh-comment-enable-toggle-{postId}" data-fadh-nuke-post-form-target="comment-enable-toggle" data-fadh-nuke-post-form-controls-param="comment-info-area" data-action="change->fadh-nuke-post-form#handleUpdateControlledField" type="checkbox"></div><div class="d-flex fd-column g8 d-none" data-fadh-nuke-post-form-target="comment-info-area"><div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="15" data-se-char-counter-max="600"><label class="s-label flex--item" for="fadh-comment-area-{postId}">Comment Text</label><textarea class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="fadh-comment-area-{postId}" name="comment text" rows="5" data-fadh-nuke-post-form-target="comment-area"></textarea><div data-se-char-counter-target="output"></div></div></div></div></div><div class="d-flex gx8 s-modal--footer ai-center"><button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" data-fadh-nuke-post-form-target="submit-button" data-action="click->fadh-nuke-post-form#handleNukeSubmitActions" data-fadh-nuke-post-form-post-id-param="{postId}">Nuke Post</button><button class="s-btn flex--item s-btn__muted" type="button" data-action="click->fadh-nuke-post-form#cancelHandleForm" data-fadh-nuke-post-form-post-id-param="{postId}">Cancel</button><button class="ml-auto s-btn flex--item" type="button" data-action="click->fadh-nuke-post-form#handleSaveCurrentConfig" data-fadh-nuke-post-form-post-id-param="{postId}">Save template</button><button class="s-btn s-btn__danger flex--item" type="button" data-action="click->fadh-nuke-post-form#handleDeleteCurrentConfig">Clear template</button></div><button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button></div></aside>'.formatUnicorn({ modalId, postId }));
+            $("body").append('<aside class="s-modal s-modal__danger" id="{modalId}" tabindex="-1" role="dialog" aria-hidden="true" data-controller="s-modal" data-s-modal-target="modal"><div class="s-modal--dialog" style="min-width:550px; width: max-content; max-width: 65vw;" role="document" data-controller="fadh-nuke-post-form se-draggable"><h1 class="s-modal--header c-move" data-se-draggable-target="handle">Flag and remove {postId}</h1><div class="s-modal--body" style="margin-bottom: 0;"><div class="d-flex fd-column g12"><fieldset class="s-check-group s-check-group__horizontal"><legend class="s-label">I am flagging this answer as...</legend><div class="s-check-control"><input class="s-radio" type="radio" name="fadh-flag-type-{postId}" id="fadh-flag-type-{postId}-1" value="mod-flag" data-fadh-nuke-post-form-target="mod-flag-radio" data-fadh-nuke-post-form-shows-param="mod-flag-info-area" data-fadh-nuke-post-form-hides-param="plagiarism-flag-info-area" data-action="fadh-nuke-post-form#handleUpdateFlagSelection" checked /><label class="s-label" for="fadh-flag-type-{postId}-1">In need of moderator intervention</label></div><div class="s-check-control"><input class="s-radio" type="radio" name="fadh-flag-type-{postId}" id="fadh-flag-type-{postId}-2" value="plagiarism" data-fadh-nuke-post-form-target="plagiarism-flag-radio" data-fadh-nuke-post-form-shows-param="plagiarism-flag-info-area" data-fadh-nuke-post-form-hides-param="mod-flag-info-area" data-action="fadh-nuke-post-form#handleUpdateFlagSelection" /><label class="s-label" for="fadh-flag-type-{postId}-2">Plagiarized content</label></div></fieldset><div class="d-flex fd-column g8" data-fadh-nuke-post-form-target="mod-flag-info-area"><div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="500"><label class="s-label flex--item" for="fadh-mod-flag-area-{postId}">A problem not listed above that requires action by a moderator.</label><textarea class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="fadh-mod-flag-area-{postId}" name="otherText" rows="5" data-fadh-nuke-post-form-target="mod-flag-area"></textarea><div data-se-char-counter-target="output"></div></div></div><div class="d-flex fd-column g8 d-none" data-fadh-nuke-post-form-target="plagiarism-flag-info-area"><div class="d-flex ff-column-nowrap gs4 gsy"><div class="flex--item"><label class="d-block s-label" for="fadh-plagiarism-original-source-area-{postId}">Link(s) to original content</label></div><div class="d-flex ps-relative"><input type="text" id="fadh-plagiarism-original-source-area-{postId}" class="s-input" name="plagiarizedSource" data-fadh-nuke-post-form-target="plagiarism-original-source-area"></div></div><div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="500"><label class="s-label flex--item" for="fadh-plagiarism-detail-area-{postId}">Why do you consider this answer to be plagiarized?</label><textarea class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="fadh-plagiarism-detail-area-{postId}" name="plagiarizedExplanation" rows="5" data-fadh-nuke-post-form-target="plagiarism-detail-area"></textarea><div data-se-char-counter-target="output"></div></div></div><div class="my6 bb bc-black-400"></div><div class="d-flex ai-center g8 jc-space-between"><label class="s-label" for="fadh-comment-enable-toggle-{postId}">Comment after deletion</label><input class="s-toggle-switch" id="fadh-comment-enable-toggle-{postId}" data-fadh-nuke-post-form-target="comment-enable-toggle" data-fadh-nuke-post-form-controls-param="comment-info-area" data-action="change->fadh-nuke-post-form#handleUpdateControlledField" type="checkbox"></div><div class="d-flex fd-column g8 d-none" data-fadh-nuke-post-form-target="comment-info-area"><div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="15" data-se-char-counter-max="600"><label class="s-label flex--item" for="fadh-comment-area-{postId}">Comment Text</label><textarea class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="fadh-comment-area-{postId}" name="comment text" rows="5" data-fadh-nuke-post-form-target="comment-area"></textarea><div data-se-char-counter-target="output"></div></div></div></div></div><div class="d-flex gx8 s-modal--footer ai-center"><button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" data-fadh-nuke-post-form-target="submit-button" data-action="click->fadh-nuke-post-form#handleNukeSubmitActions" data-fadh-nuke-post-form-post-id-param="{postId}">Nuke Post</button><button class="s-btn flex--item s-btn__muted" type="button" data-action="click->fadh-nuke-post-form#cancelHandleForm" data-fadh-nuke-post-form-post-id-param="{postId}">Cancel</button><button class="ml-auto s-btn flex--item" type="button" data-action="click->fadh-nuke-post-form#handleSaveCurrentConfig" data-fadh-nuke-post-form-post-id-param="{postId}" title="Save the current modal configuration as a template. These values will populate by default every time the modal is opened.">Save</button><button class="s-btn s-btn__danger flex--item" type="button" data-action="click->fadh-nuke-post-form#handleDeleteCurrentConfig" title="Empty the modal and delete any template data from memory. This cannot be undone.">Wipe</button></div><button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button></div></aside>'.formatUnicorn({ modalId, postId }));
             window.setTimeout(() => {
                 const modal = document.getElementById(modalId);
                 Stacks.showModal(modal);
@@ -360,7 +359,7 @@
     }
     StackExchange.ready(() => {
         if (StackExchange.options.user.isModerator) {
-            registerNukeWithFlagController();
+            registerFlagAndRemoveController();
             addButtonToPosts();
         }
     });
