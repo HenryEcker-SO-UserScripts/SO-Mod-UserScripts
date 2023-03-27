@@ -41,7 +41,9 @@ const data = {
         handleNukeSubmitActions: 'handleNukeSubmitActions',
         handleCancelActions: 'cancelHandleForm',
         handleUpdateFlagTypeSelection: 'handleUpdateFlagSelection',
-        handleUpdateControlledField: 'handleUpdateControlledField'
+        handleUpdateControlledField: 'handleUpdateControlledField',
+        handleSaveConfig: 'handleSaveCurrentConfig',
+        handleDeleteConfig: 'handleDeleteCurrentConfig',
     }
 };
 
@@ -198,23 +200,23 @@ ${buildFieldControlArea(
     true)
 }
 ${modalDivider}
-${
-    buildFieldControlToggle(
-        'Comment after deletion',
-        ids.enableCommentToggle,
-        data.target.enableCommentToggle,
-        data.target.commentControlFields
-    ) + '\n' + buildFieldControlArea(
-        data.target.commentControlFields,
-        buildTextarea(
-            ids.commentTextarea,
-            'comment text',
-            5,
-            data.controller,
-            data.target.commentTextarea,
-            'Comment Text',
-            textAreaLimits.comments)
-    )}</div>
+${buildFieldControlToggle(
+    'Comment after deletion',
+    ids.enableCommentToggle,
+    data.target.enableCommentToggle,
+    data.target.commentControlFields
+) + '\n' + buildFieldControlArea(
+    data.target.commentControlFields,
+    buildTextarea(
+        ids.commentTextarea,
+        'comment text',
+        5,
+        data.controller,
+        data.target.commentTextarea,
+        'Comment Text',
+        textAreaLimits.comments),
+    true
+)}</div>
         </div>
     <div class="d-flex gx8 s-modal--footer ai-center">
         <button class="s-btn flex--item s-btn__filled s-btn__danger" 
@@ -226,6 +228,13 @@ ${
                 type="button" 
                 data-action="click->${data.controller}#${data.action.handleCancelActions}"
                 data-${data.controller}-${data.params.postId}-param="{postId}">Cancel</button>
+        <button class="ml-auto s-btn flex--item" 
+                type="button" 
+                data-action="click->${data.controller}#${data.action.handleSaveConfig}"
+                data-${data.controller}-${data.params.postId}-param="{postId}">Save template</button>
+        <button class="s-btn s-btn__danger flex--item" 
+                type="button" 
+                data-action="click->${data.controller}#${data.action.handleDeleteConfig}">Clear template</button>
     </div>        
     <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>
     </div>
@@ -250,5 +259,7 @@ export default {
     HANDLE_NUKE_SUBMIT_ACTIONS: data.action.handleNukeSubmitActions,
     HANDLE_CANCEL_ACTION: data.action.handleCancelActions,
     HANDLE_UPDATE_FLAG_TYPE_SELECTION: data.action.handleUpdateFlagTypeSelection,
-    HANDLE_UPDATE_CONTROLLED_FIELD: data.action.handleUpdateControlledField
+    HANDLE_UPDATE_CONTROLLED_FIELD: data.action.handleUpdateControlledField,
+    HANDLE_SAVE_CONFIG: data.action.handleSaveConfig,
+    HANDLE_CLEAR_CONFIG: data.action.handleDeleteConfig
 };
