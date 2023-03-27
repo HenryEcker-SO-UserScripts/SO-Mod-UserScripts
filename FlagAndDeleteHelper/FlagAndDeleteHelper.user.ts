@@ -7,7 +7,24 @@ import {
 import {deletePost} from 'se-ts-userscript-utilities/FlaggingAndVoting/PostVotes';
 import {deleteAsPlagiarism} from 'se-ts-userscript-utilities/Moderators/HandleFlags';
 import {addComment} from 'se-ts-userscript-utilities/Comments/Comments';
+import MOD_FLAG_DETAIL_TEXT_TARGET = FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET;
+import PLAGIARISM_FLAG_DETAIL_TEXT_TARGET = FADHNS.PLAGIARISM_FLAG_DETAIL_TEXT_TARGET;
 
+
+interface FlagTemplateConfig {
+    flagType: ModFlagRadioType;
+    flagDetailTemplate: string;
+    enableComment: boolean;
+    commentTextTemplate: string;
+}
+
+const gmConfigKey = 'fadh-config';
+const defaultFlagTemplateConfig = JSON.stringify(<FlagTemplateConfig>{
+    flagType: 'mod-flag',
+    flagDetailTemplate: '',
+    enableComment: false,
+    commentTextTemplate: ''
+});
 
 function getModalId(postId: number) {
     return FADHNS.JS_MODAL_ID.formatUnicorn({
@@ -38,16 +55,46 @@ function registerNukeWithFlagController() {
             get commentText(): string {
                 return this[FADHNS.COMMENT_TEXT_TARGET].value ?? '';
             },
-            connect() {
-                this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked = false;
-
-                if (!this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked) {
-                    $(this[FADHNS.COMMENT_CONTROL_FIELDS_TARGET]).addClass('d-none');
+            _getRadioTargetFromFlagType(flagType: ModFlagRadioType) {
+                switch (flagType) {
+                    case 'mod-flag':
+                        return FADHNS.ENABLE_MOD_FLAG_RADIO;
+                    case 'plagiarism':
+                        return FADHNS.ENABLE_PLAGIARISM_FLAG_RADIO;
+                    default:
+                        throw new Error('Invalid flag type');
                 }
+            },
+            connect() {
+                const loadedConfig: FlagTemplateConfig = JSON.parse(
+                    GM_getValue(gmConfigKey, defaultFlagTemplateConfig)
+                );
+
+                const isCommentChecked = this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked;
+                if (
+                    loadedConfig.enableComment && !isCommentChecked ||
+                    !loadedConfig.enableComment && isCommentChecked
+                ) {
+                    $(this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET]).trigger('click');
+                    this[FADHNS.COMMENT_TEXT_TARGET].value = loadedConfig.commentTextTemplate ?? '';
+                }
+
                 // Right now Stack Overflow (id:1) is the only site with the plagiarism flag enabled
                 // Disable this radio option for any other site
                 if (!FADHNS.SUPPORTS_PLAGIARISM_FLAG_TYPE.includes(StackExchange.options.site.id)) {
                     this[FADHNS.ENABLE_PLAGIARISM_FLAG_RADIO].disabled = true;
+                }
+
+                const currentFlagTypeRadio: HTMLInputElement = this[this._getRadioTargetFromFlagType(loadedConfig.flagType)];
+                // Only enable radio if it's not disabled
+                if (!currentFlagTypeRadio.disabled) {
+                    $(currentFlagTypeRadio).trigger('click');
+                }
+
+                if (loadedConfig.flagType === 'mod-flag') {
+                    this[FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET].value = loadedConfig.flagDetailTemplate ?? '';
+                } else if (loadedConfig.flagType === 'plagiarism') {
+                    this[FADHNS.PLAGIARISM_FLAG_DETAIL_TEXT_TARGET].value = loadedConfig.flagDetailTemplate ?? '';
                 }
             },
             _removeModal(postId: number) {
@@ -92,7 +139,9 @@ function registerNukeWithFlagController() {
             },
             async HANDLE_NUKE_SUBMIT_ACTIONS(ev: ActionEvent) {
                 ev.preventDefault();
-                this[FADHNS.FORM_SUBMIT_BUTTON_TARGET].disabled = true;
+                const jSubmitButton = $(this[FADHNS.FORM_SUBMIT_BUTTON_TARGET]);
+                jSubmitButton.prop('disabled', true);
+                jSubmitButton.addClass('is-loading');
                 const {postId} = ev.params;
                 const flagType = this.getFlagType(postId);
                 try {
@@ -104,7 +153,8 @@ function registerNukeWithFlagController() {
                     window.location.reload();
                 } catch (e) {
                     StackExchange.helpers.showToast(e.message, {type: 'danger'});
-                    this[FADHNS.FORM_SUBMIT_BUTTON_TARGET].disabled = false;
+                    jSubmitButton.prop('disabled', false);
+                    jSubmitButton.removeClass('is-loading');
                 }
             },
             HANDLE_CANCEL_ACTION(ev: ActionEvent) {
@@ -134,6 +184,36 @@ function registerNukeWithFlagController() {
                 } else {
                     this._hideTargetDiv(controls);
                 }
+            },
+            _getRelevantDetailText(flagType: ModFlagRadioType) {
+                switch (flagType) {
+                    case 'mod-flag':
+                        return this[MOD_FLAG_DETAIL_TEXT_TARGET].value ?? '';
+                    case 'plagiarism':
+                        return this[PLAGIARISM_FLAG_DETAIL_TEXT_TARGET].value ?? '';
+                    default:
+                        throw new Error('Invalid flag type; no corresponding text field found');
+                }
+            },
+            HANDLE_SAVE_CONFIG(ev: ActionEvent) {
+                ev.preventDefault();
+
+                const {postId} = ev.params;
+                const flagType = this.getFlagType(postId);
+                const shouldComment = this.shouldComment;
+
+                const currentConfig: FlagTemplateConfig = {
+                    flagType: flagType,
+                    flagDetailTemplate: this._getRelevantDetailText(flagType),
+                    enableComment: shouldComment,
+                    commentTextTemplate: shouldComment ? this.commentText : ''
+                };
+                GM_setValue(gmConfigKey, JSON.stringify(currentConfig));
+            },
+            HANDLE_CLEAR_CONFIG(ev: ActionEvent) {
+                ev.preventDefault();
+                GM_deleteValue(gmConfigKey);
+                this.connect(); // Rebuild without defaults
             }
         }
     );
