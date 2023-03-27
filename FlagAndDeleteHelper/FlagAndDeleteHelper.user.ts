@@ -188,9 +188,9 @@ function registerNukeWithFlagController() {
             _getRelevantDetailText(flagType: ModFlagRadioType) {
                 switch (flagType) {
                     case 'mod-flag':
-                        return this[MOD_FLAG_DETAIL_TEXT_TARGET].value ?? '';
+                        return this.modFlagDetailText;
                     case 'plagiarism':
-                        return this[PLAGIARISM_FLAG_DETAIL_TEXT_TARGET].value ?? '';
+                        return this.plagiarismFlagDetailText;
                     default:
                         throw new Error('Invalid flag type; no corresponding text field found');
                 }

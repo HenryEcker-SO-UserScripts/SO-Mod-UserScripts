@@ -177,7 +177,7 @@ ${buildFieldControlArea(
         data.controller,
         data.target.modFlagTextarea,
         'A problem not listed above that requires action by a moderator.',
-        textAreaLimits.mod),
+        textAreaLimits.modFlag),
     false)
 }
 ${buildFieldControlArea(
@@ -196,7 +196,7 @@ ${buildFieldControlArea(
         data.controller,
         data.target.plagiarismFlagDetailTextarea,
         'Why do you consider this answer to be plagiarized?',
-        textAreaLimits.plagiarism),
+        textAreaLimits.plagiarismExplanation),
     true)
 }
 ${modalDivider}
@@ -214,7 +214,7 @@ ${buildFieldControlToggle(
         data.controller,
         data.target.commentTextarea,
         'Comment Text',
-        textAreaLimits.comments),
+        textAreaLimits.comment),
     true
 )}</div>
         </div>
