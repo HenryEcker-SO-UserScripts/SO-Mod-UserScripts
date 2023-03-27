@@ -104,26 +104,26 @@ type BanEvasionController =
 
 export function addBanEvasionModalController() {
     const banEvasionControllerConfiguration: BanEvasionController = {
-        targets: CONTROLLER_TARGETS,
+        targets: BEADHNS.CONTROLLER_TARGETS,
         initialize() {
             this.sockAccountId = getUserIdFromAccountInfoURL();
         },
         // Needs to be defined for typing reasons
         sockAccountId: undefined,
         get mainAccountId() {
-            return Number(this[MAIN_ACCOUNT_ID_INPUT_TARGET].value);
+            return Number(this[BEADHNS.MAIN_ACCOUNT_ID_INPUT_TARGET].value);
         },
         get deletionReason() {
-            return this[DELETION_REASON_SELECT_TARGET].value;
+            return this[BEADHNS.DELETION_REASON_SELECT_TARGET].value;
         },
         get deletionDetails() {
-            return this[DELETION_DETAILS_TARGET].value;
+            return this[BEADHNS.DELETION_DETAILS_TARGET].value;
         },
         get annotationDetails() {
-            return this[ANNOTATION_DETAILS_TARGET].value;
+            return this[BEADHNS.ANNOTATION_DETAILS_TARGET].value;
         },
         get shouldMessageAfter() {
-            return (<HTMLInputElement>this[SHOULD_MESSAGE_AFTER_TARGET]).checked;
+            return (<HTMLInputElement>this[BEADHNS.SHOULD_MESSAGE_AFTER_TARGET]).checked;
         },
         validateFields() {
             validateLength('Deletion reason details', this.deletionDetails, config.validationBounds.deleteReasonDetails);
@@ -159,7 +159,7 @@ export function addBanEvasionModalController() {
         HANDLE_CANCEL_ACTION(ev: ActionEvent) {
             ev.preventDefault();
             // Clear from DOM which will force click to rebuild and recreate controller
-            document.getElementById(JS_MODAL_ID).remove();
+            document.getElementById(BEADHNS.JS_MODAL_ID).remove();
         },
         HANDLE_LOOKUP_MAIN_ACCOUNT(ev: ActionEvent) {
             ev.preventDefault();
@@ -172,8 +172,8 @@ export function addBanEvasionModalController() {
             }
 
             // Disable so that no changes are made with this information after the fact (a refresh is required to fix this)
-            this[MAIN_ACCOUNT_ID_INPUT_TARGET].disabled = true;
-            this[MAIN_ACCOUNT_ID_INPUT_BUTTON_TARGET].disabled = true;
+            this[BEADHNS.MAIN_ACCOUNT_ID_INPUT_TARGET].disabled = true;
+            this[BEADHNS.MAIN_ACCOUNT_ID_INPUT_BUTTON_TARGET].disabled = true;
 
             void this.buildRemainingFormElements();
         },
@@ -184,15 +184,15 @@ export function addBanEvasionModalController() {
                 getUserPii(this.sockAccountId)
             ]);
 
-            $(this[FORM_ELEMENTS_TARGET])
+            $(this[BEADHNS.FORM_ELEMENTS_TARGET])
                 .append(`<div class="d-flex fd-row g6">
                             <label class="s-label">Main account located here:</label>
                             <a href="${mainUrl}" target="_blank">${mainUrl}</a>
                         </div>`)
-                .append(MODAL_FORM_HTML);
+                .append(BEADHNS.MODAL_FORM_HTML);
 
 
-            const deleteDetailTextArea: HTMLTextAreaElement = this[DELETION_DETAILS_TARGET];
+            const deleteDetailTextArea: HTMLTextAreaElement = this[BEADHNS.DELETION_DETAILS_TARGET];
             // Prime delete detail text
             deleteDetailTextArea.value = buildDetailStringFromObject({
                 'Main Account': mainUrl + '\n',
@@ -205,14 +205,14 @@ export function addBanEvasionModalController() {
             deleteDetailTextArea.setSelectionRange(deleteDetailTextArea.value.length, deleteDetailTextArea.value.length);
 
             // Prime annotation detail text
-            this[ANNOTATION_DETAILS_TARGET].value = buildDetailStringFromObject({
+            this[BEADHNS.ANNOTATION_DETAILS_TARGET].value = buildDetailStringFromObject({
                 'Deleted evasion account': sockUrl,
                 'Email': sockEmail,
                 'Real name': sockRealName
             }, ': ', ' | ');
             // Enable form submit button now that the fields are active
-            this[CONTROLLER_SUBMIT_BUTTON_TARGET].disabled = false;
+            this[BEADHNS.CONTROLLER_SUBMIT_BUTTON_TARGET].disabled = false;
         },
     };
-    Stacks.addController(DATA_CONTROLLER, banEvasionControllerConfiguration);
+    Stacks.addController(BEADHNS.DATA_CONTROLLER, banEvasionControllerConfiguration);
 }
