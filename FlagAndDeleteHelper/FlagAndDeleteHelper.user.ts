@@ -7,8 +7,6 @@ import {
 import {deletePost} from 'se-ts-userscript-utilities/FlaggingAndVoting/PostVotes';
 import {deleteAsPlagiarism} from 'se-ts-userscript-utilities/Moderators/HandleFlags';
 import {addComment} from 'se-ts-userscript-utilities/Comments/Comments';
-import MOD_FLAG_DETAIL_TEXT_TARGET = FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET;
-import PLAGIARISM_FLAG_DETAIL_TEXT_TARGET = FADHNS.PLAGIARISM_FLAG_DETAIL_TEXT_TARGET;
 
 
 interface FlagTemplateConfig {
@@ -108,22 +106,22 @@ function registerNukeWithFlagController() {
             },
             _validateCharacterLengths(flagType: ModFlagRadioType) {
                 if (flagType === 'mod-flag') {
-                    if (!isInValidationBounds(this.modFlagDetailText.length, textAreaLimits.mod)) {
-                        throw new Error(`Mod flag text must be between ${textAreaLimits.mod.min} and ${textAreaLimits.mod.max} characters.`);
+                    if (!isInValidationBounds(this.modFlagDetailText.length, textAreaLimits.modFlag)) {
+                        throw new Error(`Mod flag text must be between ${textAreaLimits.modFlag.min} and ${textAreaLimits.modFlag.max} characters.`);
                     }
                 } else if (flagType === 'plagiarism') {
                     if (!isInValidationBounds(this.plagiarismFlagOriginalSourceText.length, textAreaLimits.plagiarismSource)) {
                         throw new Error(`Plagiarism flag source must be more than ${textAreaLimits.plagiarismSource.min} characters.`);
                     }
-                    if (!isInValidationBounds(this.plagiarismFlagDetailText.length, textAreaLimits.plagiarism)) {
-                        throw new Error(`Plagiarism flag explanation text must be between ${textAreaLimits.plagiarism.min} and ${textAreaLimits.plagiarism.max} characters.`);
+                    if (!isInValidationBounds(this.plagiarismFlagDetailText.length, textAreaLimits.plagiarismExplanation)) {
+                        throw new Error(`Plagiarism flag explanation text must be between ${textAreaLimits.plagiarismExplanation.min} and ${textAreaLimits.plagiarismExplanation.max} characters.`);
                     }
                 } else {
                     throw new Error('Cannot validate bounds for invalid flag type.');
                 }
                 if (this.shouldComment === true) {
-                    if (!isInValidationBounds(this.commentText.length, textAreaLimits.comments)) {
-                        throw new Error(`Comment text must be between ${textAreaLimits.comments.min} and ${textAreaLimits.comments.max} characters. Either update the text or disable the comment option.`);
+                    if (!isInValidationBounds(this.commentText.length, textAreaLimits.comment)) {
+                        throw new Error(`Comment text must be between ${textAreaLimits.comment.min} and ${textAreaLimits.comment.max} characters. Either update the text or disable the comment option.`);
                     }
                 }
             },
