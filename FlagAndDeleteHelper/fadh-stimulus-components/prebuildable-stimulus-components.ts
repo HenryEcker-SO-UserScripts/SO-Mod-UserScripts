@@ -1,4 +1,5 @@
 import {type ModFlagRadioType, textAreaLimits} from '../Globals';
+import {html_beautify} from 'js-beautify';
 
 const ids = {
     modal: 'fadh-nuke-post-form-{postId}',
@@ -46,13 +47,6 @@ const data = {
         handleDeleteConfig: 'handleDeleteCurrentConfig',
     }
 };
-
-function cleanWhitespace(s: string) {
-    return s
-        .replace(/\s{2,}/gi, ' ')
-        .replace(/\s*<\s*/gi, '<')
-        .replace(/\s*>\s*/gi, '>');
-}
 
 function buildFieldControlToggle(labelText: string, inputId: string, inputTarget: string, controlParam: string) {
     return buildToggle(labelText, inputId, data.controller, inputTarget,
@@ -245,7 +239,7 @@ ${buildFieldControlToggle(
 
 export default {
     JS_MODAL_ID: JSON.stringify(ids.modal),
-    NUKE_FORM: JSON.stringify(cleanWhitespace(nukeWithFlagForm)),
+    NUKE_FORM: `\`\n${html_beautify(nukeWithFlagForm, {preserve_newlines: false})}\``,
     FORM_SUBMIT_BUTTON_TARGET: JSON.stringify(`${data.target.submitButton}Target`),
     CONTROLLER_NAME: JSON.stringify(data.controller),
     DATA_TARGETS: [...Object.values(data.target)],

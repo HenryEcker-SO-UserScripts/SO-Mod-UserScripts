@@ -22,7 +22,8 @@
       "jquery",
       "tampermonkey",
       "@userscripters/stackexchange-global-types",
-      "format-unicorn"
+      "format-unicorn",
+      "js-beautify"
     ]
   },
   "include": [
