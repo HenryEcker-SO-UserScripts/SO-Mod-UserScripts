@@ -37,6 +37,7 @@ function registerFlagAndRemoveController() {
         plagiarismFlagOriginalSourceText: string;
         plagiarismFlagDetailText: string;
         modFlagDetailText: string;
+        _getRelevantDetailText: (fT: ModFlagRadioType) => string;
         shouldComment: boolean;
         commentText: string;
         _getRadioTargetFromFlagType: (fT: ModFlagRadioType) => string;
@@ -50,7 +51,6 @@ function registerFlagAndRemoveController() {
         _showTargetDiv: (name: string) => void;
         HANDLE_UPDATE_FLAG_TYPE_SELECTION: (ev: ActionEvent) => void;
         HANDLE_UPDATE_CONTROLLED_FIELD: (ev: ActionEvent) => void;
-        _getRelevantDetailText: (fT: ModFlagRadioType) => string;
         HANDLE_SAVE_CONFIG: (ev: ActionEvent) => void;
         HANDLE_CLEAR_CONFIG: (ev: ActionEvent) => void;
     }
@@ -68,6 +68,16 @@ function registerFlagAndRemoveController() {
         },
         get modFlagDetailText() {
             return this[FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET].value ?? '';
+        },
+        _getRelevantDetailText(flagType: ModFlagRadioType) {
+            switch (flagType) {
+                case 'mod-flag':
+                    return this.modFlagDetailText;
+                case 'plagiarism':
+                    return this.plagiarismFlagDetailText;
+                default:
+                    throw new Error('Invalid flag type; no corresponding text field found');
+            }
         },
         get shouldComment() {
             return this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked as boolean;
@@ -203,16 +213,6 @@ function registerFlagAndRemoveController() {
                 this._showTargetDiv(controls);
             } else {
                 this._hideTargetDiv(controls);
-            }
-        },
-        _getRelevantDetailText(flagType: ModFlagRadioType) {
-            switch (flagType) {
-                case 'mod-flag':
-                    return this.modFlagDetailText;
-                case 'plagiarism':
-                    return this.plagiarismFlagDetailText;
-                default:
-                    throw new Error('Invalid flag type; no corresponding text field found');
             }
         },
         HANDLE_SAVE_CONFIG(ev: ActionEvent) {
