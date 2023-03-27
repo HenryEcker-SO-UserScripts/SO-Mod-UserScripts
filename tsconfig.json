@@ -21,7 +21,8 @@
     "types": [
       "jquery",
       "tampermonkey",
-      "@userscripters/stackexchange-global-types"
+      "@userscripters/stackexchange-global-types",
+      "format-unicorn"
     ]
   },
   "include": [
