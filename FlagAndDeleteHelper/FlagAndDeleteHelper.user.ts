@@ -56,7 +56,7 @@ function registerNukeWithFlagController() {
                     Stacks.hideModal(existingModal);
                     setTimeout(() => {
                         existingModal.remove();
-                    }, 50);
+                    }, 125);
                 }
             },
             _validateCharacterLengths(flagType: ModFlagRadioType) {
