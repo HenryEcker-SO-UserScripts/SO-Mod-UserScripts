@@ -149,6 +149,16 @@
             get modFlagDetailText() {
                 return this["mod-flag-areaTarget"].value ?? "";
             },
+            _getRelevantDetailText(flagType) {
+                switch (flagType) {
+                    case "mod-flag":
+                        return this.modFlagDetailText;
+                    case "plagiarism":
+                        return this.plagiarismFlagDetailText;
+                    default:
+                        throw new Error("Invalid flag type; no corresponding text field found");
+                }
+            },
             get shouldComment() {
                 return this["comment-enable-toggleTarget"].checked;
             },
@@ -271,16 +281,6 @@
                     this._showTargetDiv(controls);
                 } else {
                     this._hideTargetDiv(controls);
-                }
-            },
-            _getRelevantDetailText(flagType) {
-                switch (flagType) {
-                    case "mod-flag":
-                        return this.modFlagDetailText;
-                    case "plagiarism":
-                        return this.plagiarismFlagDetailText;
-                    default:
-                        throw new Error("Invalid flag type; no corresponding text field found");
                 }
             },
             handleSaveCurrentConfig(ev) {
