@@ -3,7 +3,7 @@
 // @description  Adds a "Flag and remove" button to all posts that assists in raising text flags and immediately handling them
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/FlagAndDeleteHelper/dist/FlagAndDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/FlagAndDeleteHelper/dist/FlagAndDeleteHelper.user.js
 //
@@ -295,11 +295,13 @@
                     commentTextTemplate: shouldComment ? this.commentText : ""
                 };
                 GM_setValue(gmConfigKey, JSON.stringify(currentConfig));
+                StackExchange.helpers.showToast("Successfully saved the current configuration. The form will now open in this state until updated or wiped.", { type: "success" });
             },
             handleDeleteCurrentConfig(ev) {
                 ev.preventDefault();
                 GM_deleteValue(gmConfigKey);
                 this.connect();
+                StackExchange.helpers.showToast("The saved configuration has been wiped. The form will now open in the default state until a new configuration is saved.", { type: "info" });
             }
         };
         Stacks.addController("fadh-nuke-post-form", controllerConfig);
