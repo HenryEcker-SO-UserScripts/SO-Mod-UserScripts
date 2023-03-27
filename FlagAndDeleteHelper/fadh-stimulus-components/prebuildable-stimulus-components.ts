@@ -23,7 +23,8 @@ const data = {
         postId: 'post-id',
         controls: 'controls',
         shows: 'shows',
-        hides: 'hides'
+        hides: 'hides',
+        textarea: 'textarea'
     },
     target: {
         submitButton: 'submit-button',
@@ -42,18 +43,11 @@ const data = {
         handleNukeSubmitActions: 'handleNukeSubmitActions',
         handleCancelActions: 'cancelHandleForm',
         handleUpdateFlagTypeSelection: 'handleUpdateFlagSelection',
-        handleUpdateControlledField: 'handleUpdateControlledField',
+        handleUpdateCommentControlledField: 'handleUpdateCommentControlledField',
         handleSaveConfig: 'handleSaveCurrentConfig',
         handleDeleteConfig: 'handleDeleteCurrentConfig',
     }
 };
-
-function buildFieldControlToggle(labelText: string, inputId: string, inputTarget: string, controlParam: string) {
-    return buildToggle(labelText, inputId, data.controller, inputTarget,
-        `data-${data.controller}-${data.params.controls}-param="${controlParam}"
-           data-action="change->${data.controller}#${data.action.handleUpdateControlledField}"`
-    );
-}
 
 function buildFieldControlArea(target: string, innerHTML: string, isHidden = false) {
     return `
@@ -110,7 +104,7 @@ function buildTextarea(
 }
 
 
-function buildFlagTypeCheckbox(labelText: string, isChecked: boolean, inputValue: ModFlagRadioType, radioGroupName: string, radioId: string, dataTarget: string, shows: string, hides: string) {
+function buildFlagTypeCheckbox(labelText: string, isChecked: boolean, inputValue: ModFlagRadioType, radioGroupName: string, radioId: string, dataTarget: string, shows: string, hides: string, textarea: string) {
     return `
 <div class="s-check-control">
     <input class="s-radio" 
@@ -121,6 +115,7 @@ function buildFlagTypeCheckbox(labelText: string, isChecked: boolean, inputValue
            data-${data.controller}-target="${dataTarget}"
            data-${data.controller}-${data.params.shows}-param="${shows}" 
            data-${data.controller}-${data.params.hides}-param="${hides}" 
+           data-${data.controller}-${data.params.textarea}-param="${textarea}" 
            data-action="${data.controller}#${data.action.handleUpdateFlagTypeSelection}"
            ${isChecked ? ' checked' : ''}
     />
@@ -135,7 +130,8 @@ const nukeWithFlagForm = `
        data-s-modal-target="modal">
     <div class="s-modal--dialog" style="min-width:550px; width: max-content; max-width: 65vw;" 
          role="document" 
-         data-controller="${data.controller} se-draggable">
+         data-controller="${data.controller} se-draggable"
+         data-${data.controller}-post-id-value="{postId}">
         <h1 class="s-modal--header c-move" data-se-draggable-target="handle">Flag and remove {postId}</h1>
         <div class="s-modal--body" style="margin-bottom: 0;">
             <div class="d-flex fd-column g12">
@@ -143,13 +139,14 @@ const nukeWithFlagForm = `
                 <legend class="s-label">I am flagging this answer as...</legend>
                 ${buildFlagTypeCheckbox(
     'In need of moderator intervention',
-    true,
+    false,
     'mod-flag',
     radio.flagType.name,
     radio.flagType.baseId + '-1',
     data.target.enableModFlagRadio,
     data.target.modFlagControlFields,
-    data.target.plagiarismFlagControlFields
+    data.target.plagiarismFlagControlFields,
+    data.target.modFlagTextarea
 )}
                 ${buildFlagTypeCheckbox(
     'Plagiarized content',
@@ -159,7 +156,8 @@ const nukeWithFlagForm = `
     radio.flagType.baseId + '-2',
     data.target.enablePlagiarismFlagRadio,
     data.target.plagiarismFlagControlFields,
-    data.target.modFlagControlFields
+    data.target.modFlagControlFields,
+    data.target.plagiarismFlagDetailTextarea
 )}
             </fieldset>
 ${buildFieldControlArea(
@@ -172,7 +170,7 @@ ${buildFieldControlArea(
         data.target.modFlagTextarea,
         'A problem that requires action by a moderator.',
         textAreaLimits.modFlag),
-    false)
+    true)
 }
 ${buildFieldControlArea(
     data.target.plagiarismFlagControlFields,
@@ -194,11 +192,12 @@ ${buildFieldControlArea(
     true)
 }
 ${modalDivider}
-${buildFieldControlToggle(
+${buildToggle(
     'Comment after deletion',
     ids.enableCommentToggle,
+    data.controller,
     data.target.enableCommentToggle,
-    data.target.commentControlFields
+    `data-action="change->${data.controller}#${data.action.handleUpdateCommentControlledField}"`
 ) + '\n' + buildFieldControlArea(
     data.target.commentControlFields,
     buildTextarea(
@@ -255,7 +254,7 @@ export default {
     HANDLE_NUKE_SUBMIT_ACTIONS: data.action.handleNukeSubmitActions,
     HANDLE_CANCEL_ACTION: data.action.handleCancelActions,
     HANDLE_UPDATE_FLAG_TYPE_SELECTION: data.action.handleUpdateFlagTypeSelection,
-    HANDLE_UPDATE_CONTROLLED_FIELD: data.action.handleUpdateControlledField,
+    HANDLE_UPDATE_COMMENT_CONTROL_FIELD: data.action.handleUpdateCommentControlledField,
     HANDLE_SAVE_CONFIG: data.action.handleSaveConfig,
     HANDLE_CLEAR_CONFIG: data.action.handleDeleteConfig
 };
