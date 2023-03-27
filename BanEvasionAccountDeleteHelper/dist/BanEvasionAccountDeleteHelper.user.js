@@ -3,7 +3,7 @@
 // @description  Adds streamlined interface for deleting evasion accounts, then annotating and messaging the main accounts
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.2.1
+// @version      0.2.2
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/BanEvasionAccountDeleteHelper/dist/BanEvasionAccountDeleteHelper.user.js
 //
@@ -275,16 +275,23 @@
 <div class="d-flex gy4 fd-column">
     <label class="s-label flex--item" for="beadh-delete-reason">Reason for deleting this user</label>
     <div class="flex--item s-select">
-        <select id="beadh-delete-reason" data-beadh-form-target="delete-reason"><option value="This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly">Ban evasion</option><option value="This user is no longer welcome to participate on the site">No longer welcome</option></select>
+        <select id="beadh-delete-reason" data-beadh-form-target="delete-reason">
+            <option value="This user was created to circumvent system or moderator imposed restrictions and continues to contribute poorly">Ban evasion</option>
+            <option value="This user is no longer welcome to participate on the site">No longer welcome</option>
+        </select>
     </div>
 </div>
 <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="15" data-se-char-counter-max="600">
-    <label class="s-label flex--item" for="beadh-delete-reason-details">Please provide details leading to the deletion of this account <span class="s-label--status s-label--status__required">Required</span><p class="s-description mt2"><span class="fw-bold">Reminder</span>: Markdown is not supported!</p></label>
+    <label class="s-label flex--item" for="beadh-delete-reason-details">Please provide details leading to the deletion of this account <span class="s-label--status s-label--status__required">Required</span>
+        <p class="s-description mt2"><span class="fw-bold">Reminder</span>: Markdown is not supported!</p>
+    </label>
     <textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="beadh-delete-reason-details" name="deleteReasonDetails" placeholder="Please provide at least a brief explanation of what this user has done; this will be logged with the action and may need to be referenced later." rows="6" data-beadh-form-target="delete-reason-detail-text"></textarea>
     <div data-se-char-counter-target="output"></div>
 </div>
 <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="300">
-    <label class="s-label flex--item" for="beadh-mod-menu-annotation">Annotate the main account <span class="s-label--status s-label--status__required">Required</span><p class="s-description mt2"><span class="fw-bold">Reminder</span>: Markdown is not supported!</p></label>
+    <label class="s-label flex--item" for="beadh-mod-menu-annotation">Annotate the main account <span class="s-label--status s-label--status__required">Required</span>
+        <p class="s-description mt2"><span class="fw-bold">Reminder</span>: Markdown is not supported!</p>
+    </label>
     <textarea style="font-family:monospace" class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="beadh-mod-menu-annotation" name="annotation" placeholder="Examples: &quot;possible sock of /users/XXXX, see mod room [link] for discussion&quot; or &quot;left a series of abusive comments, suspend on next occurrence&quot;" rows="4" data-beadh-form-target="annotation-detail-text"></textarea>
     <div data-se-char-counter-target="output"></div>
 </div>
@@ -339,7 +346,9 @@
             <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" data-beadh-form-target="submit-actions-button" data-action="click->beadh-form#handleSubmitActions" disabled>Delete and Annotate</button>
             <button class="s-btn flex--item s-btn__muted" type="button" data-action="click->beadh-form#handleCancelActions">Cancel</button>
         </div>
-        <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14"><path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path></svg></button>
+        <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide"><svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
+                <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
+            </svg></button>
     </div>
 </aside>`);
         }
