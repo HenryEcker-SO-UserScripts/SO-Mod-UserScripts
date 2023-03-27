@@ -30,191 +30,213 @@ function getModalId(postId: number) {
     });
 }
 
-function registerNukeWithFlagController() {
-    Stacks.addController(
-        FADHNS.CONTROLLER_NAME,
-        {
-            targets: FADHNS.DATA_TARGETS,
-            getFlagType(postId: number): ModFlagRadioType {
-                return document.querySelector<HTMLInputElement>(`input[name="${FADHNS.FLAG_RADIO_NAME.formatUnicorn({postId})}"]:checked`).value as ModFlagRadioType;
-            },
-            get plagiarismFlagOriginalSourceText(): string {
-                return this[FADHNS.PLAGIARISM_FLAG_ORIGINAL_SOURCE_TEXT_TARGET].value ?? '';
-            },
-            get plagiarismFlagDetailText(): string {
-                return this[FADHNS.PLAGIARISM_FLAG_DETAIL_TEXT_TARGET].value ?? '';
-            },
-            get modFlagDetailText(): string {
-                return this[FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET].value ?? '';
-            },
-            get shouldComment(): boolean {
-                return this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked as boolean;
-            },
-            get commentText(): string {
-                return this[FADHNS.COMMENT_TEXT_TARGET].value ?? '';
-            },
-            _getRadioTargetFromFlagType(flagType: ModFlagRadioType) {
-                switch (flagType) {
-                    case 'mod-flag':
-                        return FADHNS.ENABLE_MOD_FLAG_RADIO;
-                    case 'plagiarism':
-                        return FADHNS.ENABLE_PLAGIARISM_FLAG_RADIO;
-                    default:
-                        throw new Error('Invalid flag type');
-                }
-            },
-            connect() {
-                const loadedConfig: FlagTemplateConfig = JSON.parse(
-                    GM_getValue(gmConfigKey, defaultFlagTemplateConfig)
-                );
+function registerFlagAndRemoveController() {
+    interface FadhConfig {
+        targets: string[];
+        getFlagType: (postId: number) => ModFlagRadioType;
+        plagiarismFlagOriginalSourceText: string;
+        plagiarismFlagDetailText: string;
+        modFlagDetailText: string;
+        shouldComment: boolean;
+        commentText: string;
+        _getRadioTargetFromFlagType: (fT: ModFlagRadioType) => string;
+        connect: () => void;
+        _validateCharacterLengths: (fT: ModFlagRadioType) => void;
+        _handleFlag: (fT: ModFlagRadioType, postId: number) => Promise<void>;
+        HANDLE_NUKE_SUBMIT_ACTIONS: (ev: ActionEvent) => Promise<void>;
+        _removeModal: (postId: number) => void;
+        HANDLE_CANCEL_ACTION: (ev: ActionEvent) => void;
+        _hideTargetDiv: (name: string) => void;
+        _showTargetDiv: (name: string) => void;
+        HANDLE_UPDATE_FLAG_TYPE_SELECTION: (ev: ActionEvent) => void;
+        HANDLE_UPDATE_CONTROLLED_FIELD: (ev: ActionEvent) => void;
+        _getRelevantDetailText: (fT: ModFlagRadioType) => string;
+        HANDLE_SAVE_CONFIG: (ev: ActionEvent) => void;
+        HANDLE_CLEAR_CONFIG: (ev: ActionEvent) => void;
+    }
 
-                const isCommentChecked = this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked;
-                if (
-                    loadedConfig.enableComment && !isCommentChecked ||
-                    !loadedConfig.enableComment && isCommentChecked
-                ) {
-                    $(this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET]).trigger('click');
-                    this[FADHNS.COMMENT_TEXT_TARGET].value = loadedConfig.commentTextTemplate ?? '';
-                }
-
-                // Right now Stack Overflow (id:1) is the only site with the plagiarism flag enabled
-                // Disable this radio option for any other site
-                if (!FADHNS.SUPPORTS_PLAGIARISM_FLAG_TYPE.includes(StackExchange.options.site.id)) {
-                    this[FADHNS.ENABLE_PLAGIARISM_FLAG_RADIO].disabled = true;
-                }
-
-                const currentFlagTypeRadio: HTMLInputElement = this[this._getRadioTargetFromFlagType(loadedConfig.flagType)];
-                // Only enable radio if it's not disabled
-                if (!currentFlagTypeRadio.disabled) {
-                    $(currentFlagTypeRadio).trigger('click');
-                }
-
-                if (loadedConfig.flagType === 'mod-flag') {
-                    this[FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET].value = loadedConfig.flagDetailTemplate ?? '';
-                } else if (loadedConfig.flagType === 'plagiarism') {
-                    this[FADHNS.PLAGIARISM_FLAG_DETAIL_TEXT_TARGET].value = loadedConfig.flagDetailTemplate ?? '';
-                }
-            },
-            _removeModal(postId: number) {
-                const existingModal = document.getElementById(getModalId(postId));
-                if (existingModal !== null) {
-                    Stacks.hideModal(existingModal);
-                    setTimeout(() => {
-                        existingModal.remove();
-                    }, 125);
-                }
-            },
-            _validateCharacterLengths(flagType: ModFlagRadioType) {
-                if (flagType === 'mod-flag') {
-                    if (!isInValidationBounds(this.modFlagDetailText.length, textAreaLimits.modFlag)) {
-                        throw new Error(`Mod flag text must be between ${textAreaLimits.modFlag.min} and ${textAreaLimits.modFlag.max} characters.`);
-                    }
-                } else if (flagType === 'plagiarism') {
-                    if (!isInValidationBounds(this.plagiarismFlagOriginalSourceText.length, textAreaLimits.plagiarismSource)) {
-                        throw new Error(`Plagiarism flag source must be more than ${textAreaLimits.plagiarismSource.min} characters.`);
-                    }
-                    if (!isInValidationBounds(this.plagiarismFlagDetailText.length, textAreaLimits.plagiarismExplanation)) {
-                        throw new Error(`Plagiarism flag explanation text must be between ${textAreaLimits.plagiarismExplanation.min} and ${textAreaLimits.plagiarismExplanation.max} characters.`);
-                    }
-                } else {
-                    throw new Error('Cannot validate bounds for invalid flag type.');
-                }
-                if (this.shouldComment === true) {
-                    if (!isInValidationBounds(this.commentText.length, textAreaLimits.comment)) {
-                        throw new Error(`Comment text must be between ${textAreaLimits.comment.min} and ${textAreaLimits.comment.max} characters. Either update the text or disable the comment option.`);
-                    }
-                }
-            },
-            _handleFlag(flagType: ModFlagRadioType, postId: number): Promise<void> {
-                switch (flagType) {
-                    case 'mod-flag':
-                        return handleNukeAsModFlag(postId, this.modFlagDetailText);
-                    case 'plagiarism':
-                        return handleNukeAsPlagiarism(postId, this.plagiarismFlagOriginalSourceText, this.plagiarismFlagDetailText);
-                    default:
-                        throw new Error('Cannot run flag operation for invalid flag type');
-                }
-            },
-            async HANDLE_NUKE_SUBMIT_ACTIONS(ev: ActionEvent) {
-                ev.preventDefault();
-                const jSubmitButton = $(this[FADHNS.FORM_SUBMIT_BUTTON_TARGET]);
-                jSubmitButton.prop('disabled', true);
-                jSubmitButton.addClass('is-loading');
-                const {postId} = ev.params;
-                const flagType = this.getFlagType(postId);
-                try {
-                    this._validateCharacterLengths(flagType);
-                    await this._handleFlag(flagType, postId);
-                    if (this.shouldComment) {
-                        await addComment(postId, this.commentText);
-                    }
-                    window.location.reload();
-                } catch (e) {
-                    StackExchange.helpers.showToast(e.message, {type: 'danger'});
-                    jSubmitButton.prop('disabled', false);
-                    jSubmitButton.removeClass('is-loading');
-                }
-            },
-            HANDLE_CANCEL_ACTION(ev: ActionEvent) {
-                ev.preventDefault();
-                const {postId} = ev.params;
-                this._removeModal(postId);
-            },
-            _hideTargetDiv(name: string) {
-                $(this[`${name}Target`])
-                    .addClass('d-none');
-            },
-            _showTargetDiv(name: string) {
-                $(this[`${name}Target`])
-                    .removeClass('d-none');
-            },
-            HANDLE_UPDATE_FLAG_TYPE_SELECTION(ev: ActionEvent) {
-                ev.preventDefault();
-                const {shows, hides} = ev.params;
-                this._showTargetDiv(shows);
-                this._hideTargetDiv(hides);
-            },
-            HANDLE_UPDATE_CONTROLLED_FIELD(ev: ActionEvent) {
-                ev.preventDefault();
-                const {controls} = ev.params;
-                if ((<HTMLInputElement>ev.target).checked) {
-                    this._showTargetDiv(controls);
-                } else {
-                    this._hideTargetDiv(controls);
-                }
-            },
-            _getRelevantDetailText(flagType: ModFlagRadioType) {
-                switch (flagType) {
-                    case 'mod-flag':
-                        return this.modFlagDetailText;
-                    case 'plagiarism':
-                        return this.plagiarismFlagDetailText;
-                    default:
-                        throw new Error('Invalid flag type; no corresponding text field found');
-                }
-            },
-            HANDLE_SAVE_CONFIG(ev: ActionEvent) {
-                ev.preventDefault();
-
-                const {postId} = ev.params;
-                const flagType = this.getFlagType(postId);
-                const shouldComment = this.shouldComment;
-
-                const currentConfig: FlagTemplateConfig = {
-                    flagType: flagType,
-                    flagDetailTemplate: this._getRelevantDetailText(flagType),
-                    enableComment: shouldComment,
-                    commentTextTemplate: shouldComment ? this.commentText : ''
-                };
-                GM_setValue(gmConfigKey, JSON.stringify(currentConfig));
-            },
-            HANDLE_CLEAR_CONFIG(ev: ActionEvent) {
-                ev.preventDefault();
-                GM_deleteValue(gmConfigKey);
-                this.connect(); // Rebuild without defaults
+    const controllerConfig: FadhConfig = {
+        targets: FADHNS.DATA_TARGETS,
+        getFlagType(postId: number) {
+            return document.querySelector<HTMLInputElement>(`input[name="${FADHNS.FLAG_RADIO_NAME.formatUnicorn({postId})}"]:checked`).value as ModFlagRadioType;
+        },
+        get plagiarismFlagOriginalSourceText() {
+            return this[FADHNS.PLAGIARISM_FLAG_ORIGINAL_SOURCE_TEXT_TARGET].value ?? '';
+        },
+        get plagiarismFlagDetailText() {
+            return this[FADHNS.PLAGIARISM_FLAG_DETAIL_TEXT_TARGET].value ?? '';
+        },
+        get modFlagDetailText() {
+            return this[FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET].value ?? '';
+        },
+        get shouldComment() {
+            return this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked as boolean;
+        },
+        get commentText() {
+            return this[FADHNS.COMMENT_TEXT_TARGET].value ?? '';
+        },
+        _getRadioTargetFromFlagType(flagType: ModFlagRadioType) {
+            switch (flagType) {
+                case 'mod-flag':
+                    return FADHNS.ENABLE_MOD_FLAG_RADIO;
+                case 'plagiarism':
+                    return FADHNS.ENABLE_PLAGIARISM_FLAG_RADIO;
+                default:
+                    throw new Error('Invalid flag type');
             }
+        },
+        connect() {
+            const loadedConfig: FlagTemplateConfig = JSON.parse(
+                GM_getValue(gmConfigKey, defaultFlagTemplateConfig)
+            );
+
+            const isCommentChecked = this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET].checked;
+            if (
+                loadedConfig.enableComment && !isCommentChecked ||
+                !loadedConfig.enableComment && isCommentChecked
+            ) {
+                $(this[FADHNS.ENABLE_COMMENT_TOGGLE_TARGET]).trigger('click');
+                this[FADHNS.COMMENT_TEXT_TARGET].value = loadedConfig.commentTextTemplate ?? '';
+            }
+
+            // Right now Stack Overflow (id:1) is the only site with the plagiarism flag enabled
+            // Disable this radio option for any other site
+            if (!FADHNS.SUPPORTS_PLAGIARISM_FLAG_TYPE.includes(StackExchange.options.site.id)) {
+                this[FADHNS.ENABLE_PLAGIARISM_FLAG_RADIO].disabled = true;
+            }
+
+            const currentFlagTypeRadio: HTMLInputElement = this[this._getRadioTargetFromFlagType(loadedConfig.flagType)];
+            // Only enable radio if it's not disabled
+            if (!currentFlagTypeRadio.disabled) {
+                $(currentFlagTypeRadio).trigger('click');
+            }
+
+            if (loadedConfig.flagType === 'mod-flag') {
+                this[FADHNS.MOD_FLAG_DETAIL_TEXT_TARGET].value = loadedConfig.flagDetailTemplate ?? '';
+            } else if (loadedConfig.flagType === 'plagiarism') {
+                this[FADHNS.PLAGIARISM_FLAG_DETAIL_TEXT_TARGET].value = loadedConfig.flagDetailTemplate ?? '';
+            }
+        },
+        _validateCharacterLengths(flagType: ModFlagRadioType) {
+            if (flagType === 'mod-flag') {
+                if (!isInValidationBounds(this.modFlagDetailText.length, textAreaLimits.modFlag)) {
+                    throw new Error(`Mod flag text must be between ${textAreaLimits.modFlag.min} and ${textAreaLimits.modFlag.max} characters.`);
+                }
+            } else if (flagType === 'plagiarism') {
+                if (!isInValidationBounds(this.plagiarismFlagOriginalSourceText.length, textAreaLimits.plagiarismSource)) {
+                    throw new Error(`Plagiarism flag source must be more than ${textAreaLimits.plagiarismSource.min} characters.`);
+                }
+                if (!isInValidationBounds(this.plagiarismFlagDetailText.length, textAreaLimits.plagiarismExplanation)) {
+                    throw new Error(`Plagiarism flag explanation text must be between ${textAreaLimits.plagiarismExplanation.min} and ${textAreaLimits.plagiarismExplanation.max} characters.`);
+                }
+            } else {
+                throw new Error('Cannot validate bounds for invalid flag type.');
+            }
+            if (this.shouldComment === true) {
+                if (!isInValidationBounds(this.commentText.length, textAreaLimits.comment)) {
+                    throw new Error(`Comment text must be between ${textAreaLimits.comment.min} and ${textAreaLimits.comment.max} characters. Either update the text or disable the comment option.`);
+                }
+            }
+        },
+        _handleFlag(flagType: ModFlagRadioType, postId: number) {
+            switch (flagType) {
+                case 'mod-flag':
+                    return handleNukeAsModFlag(postId, this.modFlagDetailText);
+                case 'plagiarism':
+                    return handleNukeAsPlagiarism(postId, this.plagiarismFlagOriginalSourceText, this.plagiarismFlagDetailText);
+                default:
+                    throw new Error('Cannot run flag operation for invalid flag type');
+            }
+        },
+        async HANDLE_NUKE_SUBMIT_ACTIONS(ev: ActionEvent) {
+            ev.preventDefault();
+            const jSubmitButton = $(this[FADHNS.FORM_SUBMIT_BUTTON_TARGET]);
+            jSubmitButton.prop('disabled', true);
+            jSubmitButton.addClass('is-loading');
+            const {postId} = ev.params;
+            const flagType = this.getFlagType(postId);
+            try {
+                this._validateCharacterLengths(flagType);
+                await this._handleFlag(flagType, postId);
+                if (this.shouldComment) {
+                    await addComment(postId, this.commentText);
+                }
+                window.location.reload();
+            } catch (e) {
+                StackExchange.helpers.showToast(e.message, {type: 'danger'});
+                jSubmitButton.prop('disabled', false);
+                jSubmitButton.removeClass('is-loading');
+            }
+        },
+        _removeModal(postId: number) {
+            const existingModal = document.getElementById(getModalId(postId));
+            if (existingModal !== null) {
+                Stacks.hideModal(existingModal);
+                setTimeout(() => {
+                    existingModal.remove();
+                }, 125);
+            }
+        },
+        HANDLE_CANCEL_ACTION(ev: ActionEvent) {
+            ev.preventDefault();
+            const {postId} = ev.params;
+            this._removeModal(postId);
+        },
+        _hideTargetDiv(name: string) {
+            $(this[`${name}Target`])
+                .addClass('d-none');
+        },
+        _showTargetDiv(name: string) {
+            $(this[`${name}Target`])
+                .removeClass('d-none');
+        },
+        HANDLE_UPDATE_FLAG_TYPE_SELECTION(ev: ActionEvent) {
+            ev.preventDefault();
+            const {shows, hides} = ev.params;
+            this._showTargetDiv(shows);
+            this._hideTargetDiv(hides);
+        },
+        HANDLE_UPDATE_CONTROLLED_FIELD(ev: ActionEvent) {
+            ev.preventDefault();
+            const {controls} = ev.params;
+            if ((<HTMLInputElement>ev.target).checked) {
+                this._showTargetDiv(controls);
+            } else {
+                this._hideTargetDiv(controls);
+            }
+        },
+        _getRelevantDetailText(flagType: ModFlagRadioType) {
+            switch (flagType) {
+                case 'mod-flag':
+                    return this.modFlagDetailText;
+                case 'plagiarism':
+                    return this.plagiarismFlagDetailText;
+                default:
+                    throw new Error('Invalid flag type; no corresponding text field found');
+            }
+        },
+        HANDLE_SAVE_CONFIG(ev: ActionEvent) {
+            ev.preventDefault();
+
+            const {postId} = ev.params;
+            const flagType = this.getFlagType(postId);
+            const shouldComment = this.shouldComment;
+
+            const currentConfig: FlagTemplateConfig = {
+                flagType: flagType,
+                flagDetailTemplate: this._getRelevantDetailText(flagType),
+                enableComment: shouldComment,
+                commentTextTemplate: shouldComment ? this.commentText : ''
+            };
+            GM_setValue(gmConfigKey, JSON.stringify(currentConfig));
+        },
+        HANDLE_CLEAR_CONFIG(ev: ActionEvent) {
+            ev.preventDefault();
+            GM_deleteValue(gmConfigKey);
+            this.connect(); // Rebuild without defaults
         }
-    );
+    };
+    Stacks.addController(FADHNS.CONTROLLER_NAME, controllerConfig);
 }
 
 async function handleNukeAsModFlag(postId: number, otherText: string) {
@@ -285,7 +307,7 @@ function addButtonToPosts() {
 
 StackExchange.ready(() => {
     if (StackExchange.options.user.isModerator) {
-        registerNukeWithFlagController();
+        registerFlagAndRemoveController();
         addButtonToPosts();
     }
 });
