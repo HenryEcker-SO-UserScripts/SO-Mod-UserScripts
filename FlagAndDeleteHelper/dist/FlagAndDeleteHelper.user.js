@@ -354,7 +354,7 @@
                 </fieldset>
                 <div class="d-flex fd-column g8" data-fadh-nuke-post-form-target="mod-flag-info-area">
                     <div class="d-flex ff-column-nowrap gs4 gsy" data-controller="se-char-counter" data-se-char-counter-min="10" data-se-char-counter-max="500">
-                        <label class="s-label flex--item" for="fadh-mod-flag-area-{postId}">A problem not listed above that requires action by a moderator.</label>
+                        <label class="s-label flex--item" for="fadh-mod-flag-area-{postId}">A problem that requires action by a moderator.</label>
                         <textarea class="flex--item s-textarea" data-se-char-counter-target="field" data-is-valid-length="false" id="fadh-mod-flag-area-{postId}" name="otherText" rows="5" data-fadh-nuke-post-form-target="mod-flag-area"></textarea>
                         <div data-se-char-counter-target="output"></div>
                     </div>
