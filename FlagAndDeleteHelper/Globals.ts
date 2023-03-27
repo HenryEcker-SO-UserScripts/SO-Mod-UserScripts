@@ -1,18 +1,18 @@
 export type ModFlagRadioType = 'mod-flag' | 'plagiarism';
 
 export const textAreaLimits = {
-    plagiarism: {
+    plagiarismExplanation: {
         min: 10,
         max: 500
     },
     plagiarismSource: {
         min: 10
     },
-    mod: {
+    modFlag: {
         min: 10,
         max: 500
     },
-    comments: {
+    comment: {
         min: 15,
         max: 600
     }
