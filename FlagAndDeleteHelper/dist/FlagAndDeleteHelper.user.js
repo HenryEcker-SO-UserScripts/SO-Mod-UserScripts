@@ -3,7 +3,7 @@
 // @description  Adds a "Flag and remove" button to all posts that assists in raising text flags and immediately handling them
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.5
+// @version      0.0.6
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/FlagAndDeleteHelper/dist/FlagAndDeleteHelper.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/FlagAndDeleteHelper/dist/FlagAndDeleteHelper.user.js
 //
@@ -87,13 +87,45 @@
         );
     }
 
-    function getModalId(postId) {
-        return "fadh-nuke-post-form-{postId}".formatUnicorn({
-            postId
-        });
+    function isInValidationBounds(textLength, bounds) {
+        const min = bounds.min ?? 0;
+        if (bounds.max === void 0) {
+            return min <= textLength;
+        }
+        return min <= textLength && textLength <= bounds.max;
+    }
+    const modFlagTextLengthBounds = { min: 10, max: 500 };
+
+    function assertValidModFlagTextLength(flagDetailLength) {
+        if (!isInValidationBounds(flagDetailLength, modFlagTextLengthBounds)) {
+            throw new Error(`Mod flag text must be between ${modFlagTextLengthBounds.min} and ${modFlagTextLengthBounds.max} characters.`);
+        }
+        return true;
+    }
+    const plagiarismFlagLengthBounds = {
+        source: { min: 10 },
+        explanation: { min: 10, max: 500 }
+    };
+
+    function assertValidPlagiarismFlagTextLengths(sourceLength, explanationLength) {
+        if (!isInValidationBounds(sourceLength, plagiarismFlagLengthBounds.source)) {
+            throw new Error(`Plagiarism flag source must be more than ${plagiarismFlagLengthBounds.source.min} characters.`);
+        }
+        if (!isInValidationBounds(explanationLength, plagiarismFlagLengthBounds.explanation)) {
+            throw new Error(`Plagiarism flag explanation text must be between ${plagiarismFlagLengthBounds.explanation.min} and ${plagiarismFlagLengthBounds.explanation.max} characters.`);
+        }
+        return true;
+    }
+    const commentTextLengthBounds = { min: 15, max: 600 };
+
+    function assertValidCommentTextLength(commentLength) {
+        if (!isInValidationBounds(commentLength, commentTextLengthBounds)) {
+            throw new Error(`Comment text must be between ${commentTextLengthBounds.min} and ${commentTextLengthBounds.max} characters.`);
+        }
+        return true;
     }
 
-    function removeModal(modalId) {
+    function removeModalFromDOM(modalId) {
         const existingModal = document.getElementById(modalId);
         if (existingModal !== null) {
             Stacks.hideModal(existingModal);
@@ -102,30 +134,11 @@
             }, 125);
         }
     }
-    const textAreaLimits = {
-        plagiarismExplanation: {
-            min: 10,
-            max: 500
-        },
-        plagiarismSource: {
-            min: 10
-        },
-        modFlag: {
-            min: 10,
-            max: 500
-        },
-        comment: {
-            min: 15,
-            max: 600
-        }
-    };
 
-    function isInValidationBounds(textLength, bounds) {
-        const min = bounds.min ?? 0;
-        if (bounds.max === void 0) {
-            return min <= textLength;
-        }
-        return min <= textLength && textLength <= bounds.max;
+    function getModalId(postId) {
+        return "fadh-nuke-post-form-{postId}".formatUnicorn({
+            postId
+        });
     }
 
     function addComment(postId, commentText) {
@@ -224,6 +237,18 @@
             this._setupFlagUI(loadedConfig.flagType, loadedConfig.flagDetailTemplate);
             this._setupCommentUI(loadedConfig.enableComment, loadedConfig.commentTextTemplate);
         },
+        _assertValidCharacterLengths(flagType) {
+            if (flagType === "mod-flag") {
+                assertValidModFlagTextLength(this.modFlagDetailText.length);
+            } else if (flagType === "plagiarism") {
+                assertValidPlagiarismFlagTextLengths(this.plagiarismFlagOriginalSourceText.length, this.plagiarismFlagDetailText.length);
+            } else {
+                throw new Error("Cannot validate bounds for invalid flag type.");
+            }
+            if (this.shouldComment === true) {
+                assertValidCommentTextLength(this.commentText.length);
+            }
+        },
         _handleFlag(flagType, postId) {
             switch (flagType) {
                 case "mod-flag":
@@ -241,7 +266,7 @@
             const { postId } = ev.params;
             const flagType = this.getFlagType(postId);
             try {
-                validateCharacterLengths(flagType);
+                this._assertValidCharacterLengths(flagType);
                 await this._handleFlag(flagType, postId);
                 if (this.shouldComment) {
                     await addComment(postId, this.commentText);
@@ -255,7 +280,7 @@
         cancelHandleForm(ev) {
             ev.preventDefault();
             const { postId } = ev.params;
-            removeModal(getModalId(postId));
+            removeModalFromDOM(getModalId(postId));
         },
         handleUpdateCommentControlledField(ev) {
             ev.preventDefault();
@@ -286,28 +311,6 @@
             StackExchange.helpers.showToast("The saved configuration has been wiped. The form will now open in the default state until a new configuration is saved.", { type: "info" });
         }
     };
-
-    function validateCharacterLengths(flagType) {
-        if (flagType === "mod-flag") {
-            if (!isInValidationBounds(this.modFlagDetailText.length, textAreaLimits.modFlag)) {
-                throw new Error(`Mod flag text must be between ${textAreaLimits.modFlag.min} and ${textAreaLimits.modFlag.max} characters.`);
-            }
-        } else if (flagType === "plagiarism") {
-            if (!isInValidationBounds(this.plagiarismFlagOriginalSourceText.length, textAreaLimits.plagiarismSource)) {
-                throw new Error(`Plagiarism flag source must be more than ${textAreaLimits.plagiarismSource.min} characters.`);
-            }
-            if (!isInValidationBounds(this.plagiarismFlagDetailText.length, textAreaLimits.plagiarismExplanation)) {
-                throw new Error(`Plagiarism flag explanation text must be between ${textAreaLimits.plagiarismExplanation.min} and ${textAreaLimits.plagiarismExplanation.max} characters.`);
-            }
-        } else {
-            throw new Error("Cannot validate bounds for invalid flag type.");
-        }
-        if (this.shouldComment === true) {
-            if (!isInValidationBounds(this.commentText.length, textAreaLimits.comment)) {
-                throw new Error(`Comment text must be between ${textAreaLimits.comment.min} and ${textAreaLimits.comment.max} characters. Either update the text or disable the comment option.`);
-            }
-        }
-    }
     async function handleNukeAsModFlag(postId, otherText) {
         const flagFetch = await flagInNeedOfModeratorIntervention(postId, otherText);
         if (!flagFetch.Success) {
