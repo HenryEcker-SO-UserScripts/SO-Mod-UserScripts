@@ -24,6 +24,18 @@ export default ({mode}) => {
     const config = buildViteConfig('BanEvasionAccountDeleteHelper', banner);
 
     config.plugins.push(
+        // Strip away namespace name
+        filterReplace(
+            [
+                {
+                    replace: {
+                        from: 'BEADHNS.',
+                        to: ''
+                    }
+                }
+            ],
+            {enforce: 'pre'}
+        ),
         beautifyPlugin({
             brace_style: 'collapse,preserve-inline',
             break_chained_methods: true

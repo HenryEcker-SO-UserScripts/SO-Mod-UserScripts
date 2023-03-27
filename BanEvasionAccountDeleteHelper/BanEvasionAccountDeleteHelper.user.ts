@@ -7,12 +7,12 @@ const onceAddBanEvasionModalController = runVoidOnce(addBanEvasionModalControlle
 function handleBanEvasionButtonClick(ev: JQuery.Event) {
     ev.preventDefault();
     onceAddBanEvasionModalController();
-    const modal = document.getElementById(JS_MODAL_ID);
+    const modal = document.getElementById(BEADHNS.JS_MODAL_ID);
     if (modal !== null) {
         Stacks.showModal(modal);
     } else {
         // Attach modal to DOM
-        $('body').append(INITIAL_MODAL_HTML);
+        $('body').append(BEADHNS.INITIAL_MODAL_HTML);
     }
 }
 
