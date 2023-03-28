@@ -11,7 +11,7 @@
     "eslint": "^8.36.0",
     "jquery": "^3.6.4",
     "js-beautify": "^1.14.7",
-    "se-ts-userscript-utilities": "github:HenryEcker/SE-TS-UserScript-Utilities#semver:1.1.1",
+    "se-ts-userscript-utilities": "github:HenryEcker/SE-TS-UserScript-Utilities#semver:1.1.2",
     "terser": "^5.16.8",
     "typescript": "^5.0.2",
     "vite": "^4.2.1",
