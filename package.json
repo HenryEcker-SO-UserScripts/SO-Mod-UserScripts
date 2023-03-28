@@ -6,7 +6,7 @@
     "@types/js-beautify": "^1.13.3",
     "@types/tampermonkey": "^4.0.10",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
+    "@typescript-eslint/parser": "^5.57.0",
     "@userscripters/stackexchange-global-types": "^2.6.1",
     "eslint": "^8.36.0",
     "jquery": "^3.6.4",
