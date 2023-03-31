@@ -6,11 +6,13 @@ const banner = `// ==UserScript==
 // @description  Adds button to post menu which sends an anonymous edit request to determine if suggested edits are current available or not.
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.1
+// @version      0.0.2
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/SuggestedEditStatusChecker/dist/SuggestedEditQueueStatusChecker.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/SuggestedEditStatusChecker/dist/SuggestedEditQueueStatusChecker.user.js
 //
 ${buildMatchPatterns('// @match        ', '/questions/*')}
+//
+${buildMatchPatterns('// @exclude        ', '/questions/ask*')}
 //
 // ==/UserScript==
 /* globals $, StackExchange */`;

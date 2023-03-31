@@ -3,7 +3,7 @@
 // @description  Adds button to post menu which sends an anonymous edit request to determine if suggested edits are current available or not.
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.1
+// @version      0.0.2
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/SuggestedEditStatusChecker/dist/SuggestedEditQueueStatusChecker.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/SuggestedEditStatusChecker/dist/SuggestedEditQueueStatusChecker.user.js
 //
@@ -14,6 +14,14 @@
 // @match        *://*.stackexchange.com/questions/*
 // @match        *://*.stackoverflow.com/questions/*
 // @match        *://*.superuser.com/questions/*
+//
+// @exclude        *://*.askubuntu.com/questions/ask*
+// @exclude        *://*.mathoverflow.net/questions/ask*
+// @exclude        *://*.serverfault.com/questions/ask*
+// @exclude        *://*.stackapps.com/questions/ask*
+// @exclude        *://*.stackexchange.com/questions/ask*
+// @exclude        *://*.stackoverflow.com/questions/ask*
+// @exclude        *://*.superuser.com/questions/ask*
 //
 // ==/UserScript==
 /* globals $, StackExchange */
