@@ -13,7 +13,7 @@
     "js-beautify": "^1.14.7",
     "se-ts-userscript-utilities": "github:HenryEcker/SE-TS-UserScript-Utilities#semver:1.1.2",
     "terser": "^5.16.8",
-    "typescript": "^5.0.2",
+    "typescript": "^5.0.3",
     "vite": "^4.2.1",
     "vite-plugin-banner": "^0.7.0",
     "vite-plugin-filter-replace": "^0.1.11"
