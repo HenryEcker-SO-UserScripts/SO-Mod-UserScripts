@@ -28,20 +28,26 @@
 /* globals StackExchange, $ */
 (function() {
   "use strict";
-  function getFormDataFromObject(obj) {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
-      acc.set(key, value);
-      return acc;
-    }, new FormData());
-  }
-  function fetchPostFormData(endPoint, data) {
-    return fetch(endPoint, {
-      method: "POST",
-      body: getFormDataFromObject(data)
+  function ajaxPostWithData(endPoint, data, shouldReturnData = true) {
+    return new Promise((resolve, reject) => {
+      void $.ajax({
+        type: "POST",
+        url: endPoint,
+        data
+      }).done((resData, textStatus, xhr) => {
+        resolve(
+          shouldReturnData ? resData : {
+            status: xhr.status,
+            statusText: textStatus
+          }
+        );
+      }).fail((res) => {
+        reject(res.responseText ?? "An unknown error occurred");
+      });
     });
   }
   function castPostsVote(postId, voteType) {
-    return fetchPostFormData(
+    return ajaxPostWithData(
       `/posts/${postId}/vote/${voteType}`,
       {
         fkey: StackExchange.options.user.fkey
