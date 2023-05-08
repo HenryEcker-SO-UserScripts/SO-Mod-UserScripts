@@ -33,7 +33,7 @@ function makeBtnClickHandler(postId: string, voteType: 10 | 11, jSummary: JQuery
         ev.preventDefault();
         void castPostsVote(postId, voteType)
             .then((res) => {
-                    if (res.status === 200) {
+                    if (res.Success) {
                         // Do something to change the style of the divs
                         updatePostStyle();
                         // Replace with a new button of opposite type
