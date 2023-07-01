@@ -12,7 +12,7 @@
     "jquery": "^3.7.0",
     "js-beautify": "^1.14.8",
     "se-ts-userscript-utilities": "github:HenryEcker/SE-TS-UserScript-Utilities#semver:^1.3.4",
-    "terser": "^5.17.7",
+    "terser": "^5.18.2",
     "typescript": "^5.0.4",
     "vite": "^4.3.9",
     "vite-plugin-banner": "^0.7.0",
