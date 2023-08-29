@@ -9,7 +9,7 @@ const config = buildViteConfig(
 // @description  Adds anchor links to specific mod messages and CM escalation messages
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Mod-Message-Anchors/dist/ModMessageAnchors.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Mod-Message-Anchors/dist/ModMessageAnchors.user.js
 //

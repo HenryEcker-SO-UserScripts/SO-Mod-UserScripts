@@ -3,7 +3,7 @@
 // @description  Adds anchor links to specific mod messages and CM escalation messages
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Mod-Message-Anchors/dist/ModMessageAnchors.user.js
 // @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/Mod-Message-Anchors/dist/ModMessageAnchors.user.js
 //
@@ -28,13 +28,23 @@
 /* globals $ */
 (function() {
     "use strict";
-    $(".js-msg-body,.msg-body")
-        .each((i, n) => {
-            const message = $(n);
-            const anchor = message.find("a[name]")
-                .first();
-            const name = anchor.attr("name");
-            message.find("div:eq(0)")
-                .append(`<span class="d-block w100"><a class="my2" href="#${name}">${name}</a></span>`);
-        });
+    if (window.location.search.includes("version=2")) {
+        $(".thread-msg")
+            .each((i, n) => {
+                const header = $(n);
+                const timestamp = $(n)
+                    .find(".relativetime");
+                timestamp.wrap(`<a href="#${header.attr("id")}"></a>`);
+            });
+    } else {
+        $(".js-msg-body,.msg-body")
+            .each((i, n) => {
+                const message = $(n);
+                const anchor = message.find("a[name]")
+                    .first();
+                const name = anchor.attr("name");
+                message.find("div:eq(0)")
+                    .append(`<span class="d-block w100"><a class="my2" href="#${name}">${name}</a></span>`);
+            });
+    }
 })();
