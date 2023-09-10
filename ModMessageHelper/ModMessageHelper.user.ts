@@ -328,44 +328,62 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 const $templateSelector = $('#select-template-menu');
 
 function setupProxyForNonDefaults() {
-    const baseReasons: Set<string> = new Set([...$templateSelector.find('option').map((i, n) => $(n).val() as string)]);
+    const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((i, n) => $(n).val() as string)]);
 
     $.ajaxSetup({
         beforeSend: (jqXHR, settings) => {
-            if (settings?.url?.startsWith('/admin/template/')) {
-                const url = new URL(`${location.origin}${settings.url}`);
-                const usp = new URLSearchParams(url.search);
-                // If the requested reasonId is not one of the base supported reasons then abort the request and do something else
-                const reasonId = usp.get('reasonId');
-                if (usp.has('reasonId') && !baseReasons.has(reasonId)) {
-                    jqXHR.abort();
-                    // Get the selected reason
-                    const templateSearch = customModMessages.filter(x => x.TemplateName.localeCompare(reasonId) === 0);
-                    if (templateSearch.length !== 1) {
-                        StackExchange.helpers.showToast('UserScript Message - Template with that name not found!', {type: 'danger'});
-                        return;
-                    }
-
-                    const selectedTemplate = templateSearch[0];
-                    // Make a different request to an analogous system defined reason
-                    void $.ajax({
-                        type: 'GET',
-                        url: url.pathname,
-                        data: {
-                            reasonId: selectedTemplate.AnalogousSystemReasonId
-                        },
-                        success: function (fieldDefaults: TemplateRequestResponse) {
-                            fieldDefaults.MessageTemplate = {
-                                ...fieldDefaults.MessageTemplate,
-                                ...selectedTemplate
-                            };
-                            // Call Success function
-                            (<(data: TemplateRequestResponse, status: string, req: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
-                        },
-                        error: settings.error
-                    });
-                }
+            // If not a request for an admin template do nothing
+            if (!settings?.url?.startsWith('/admin/template/')) {
+                return;
             }
+
+            const url = new URL(settings.url, location.origin);
+            const usp = new URLSearchParams(url.search);
+
+            // If this isn't a request for a reasonId do nothing
+            if (!usp.has('reasonId')) {
+                return;
+            }
+
+            const reasonId = usp.get('reasonId');
+            // If this is one of the system templates do nothing
+            if (systemTemplateReasonIds.has(reasonId)) {
+                return;
+            }
+
+            // Abort the request preemptively (it will fail since reasonId must be a custom reason)
+            jqXHR.abort();
+
+            // Find the selected reason in the list of templates
+            const templateSearch = customModMessages.filter(x => {
+                return x.TemplateName.localeCompare(reasonId) === 0;
+            });
+
+            if (templateSearch.length !== 1) {
+                StackExchange.helpers.showToast('UserScript Message - Template with that name not found!', {type: 'danger'});
+                return;
+            }
+
+            const selectedTemplate = templateSearch[0];
+            // Make a different request to an analogous system defined reason to populate the majority of the fields
+            void $.ajax({
+                type: 'GET',
+                url: url.pathname,
+                data: {
+                    reasonId: selectedTemplate.AnalogousSystemReasonId
+                },
+                success: function (fieldDefaults: TemplateRequestResponse) {
+                    // Merge returned Values with template specified values
+                    fieldDefaults.MessageTemplate = {
+                        ...fieldDefaults.MessageTemplate,
+                        ...selectedTemplate
+                    };
+                    // Force call the old Success function with updated values
+                    (<(data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
+                },
+                error: settings.error
+            });
+
         }
     });
 }
@@ -385,8 +403,10 @@ function addReasonsToSelect() {
             return acc;
         }, []);
 
+    // Move default templates into an optgroup
     $templateSelector.children().wrapAll('<optgroup label="Stock Templates"></optgroup>');
 
+    // Create new optgroup with custom templates
     $templateSelector.append(
         $('<optgroup label="Custom Templates"></optgroup>')
             .append(...reasonsToAdd.map(reasonId => `<option value="${reasonId}">${reasonId}</option>`))
