@@ -315,38 +315,45 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
   ];
   const $templateSelector = $("#select-template-menu");
   function setupProxyForNonDefaults() {
-    const baseReasons = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((i, n) => $(n).val())]);
+    const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((i, n) => $(n).val())]);
     $.ajaxSetup({
       beforeSend: (jqXHR, settings) => {
-        if (settings?.url?.startsWith("/admin/template/")) {
-          const url = new URL(`${location.origin}${settings.url}`);
-          const usp = new URLSearchParams(url.search);
-          const reasonId = usp.get("reasonId");
-          if (usp.has("reasonId") && !baseReasons.has(reasonId)) {
-            jqXHR.abort();
-            const templateSearch = customModMessages.filter((x) => x.TemplateName.localeCompare(reasonId) === 0);
-            if (templateSearch.length !== 1) {
-              StackExchange.helpers.showToast("UserScript Message - Template with that name not found!", { type: "danger" });
-              return;
-            }
-            const selectedTemplate = templateSearch[0];
-            void $.ajax({
-              type: "GET",
-              url: url.pathname,
-              data: {
-                reasonId: selectedTemplate.AnalogousSystemReasonId
-              },
-              success: function(fieldDefaults) {
-                fieldDefaults.MessageTemplate = {
-                  ...fieldDefaults.MessageTemplate,
-                  ...selectedTemplate
-                };
-                settings.success(fieldDefaults, "success", jqXHR);
-              },
-              error: settings.error
-            });
-          }
+        if (!settings?.url?.startsWith("/admin/template/")) {
+          return;
         }
+        const url = new URL(settings.url, location.origin);
+        const usp = new URLSearchParams(url.search);
+        if (!usp.has("reasonId")) {
+          return;
+        }
+        const reasonId = usp.get("reasonId");
+        if (systemTemplateReasonIds.has(reasonId)) {
+          return;
+        }
+        jqXHR.abort();
+        const templateSearch = customModMessages.filter((x) => {
+          return x.TemplateName.localeCompare(reasonId) === 0;
+        });
+        if (templateSearch.length !== 1) {
+          StackExchange.helpers.showToast("UserScript Message - Template with that name not found!", { type: "danger" });
+          return;
+        }
+        const selectedTemplate = templateSearch[0];
+        void $.ajax({
+          type: "GET",
+          url: url.pathname,
+          data: {
+            reasonId: selectedTemplate.AnalogousSystemReasonId
+          },
+          success: function(fieldDefaults) {
+            fieldDefaults.MessageTemplate = {
+              ...fieldDefaults.MessageTemplate,
+              ...selectedTemplate
+            };
+            settings.success(fieldDefaults, "success", jqXHR);
+          },
+          error: settings.error
+        });
       }
     });
   }
