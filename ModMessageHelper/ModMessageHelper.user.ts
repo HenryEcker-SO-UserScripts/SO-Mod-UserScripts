@@ -404,8 +404,8 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 return acc;
             }, []);
 
-        // Move default templates into an optgroup
-        $templateSelector.children().wrapAll('<optgroup label="Stock Templates"></optgroup>');
+        // Move default templates into an optgroup (excluding value "0" which is "Please select a template..."
+        $templateSelector.find('option[value!="0"]').wrapAll('<optgroup label="Stock Templates"></optgroup>');
 
         // Create new optgroup with custom templates
         $templateSelector.append(
