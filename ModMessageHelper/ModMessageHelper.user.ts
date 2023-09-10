@@ -404,6 +404,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 return acc;
             }, []);
 
+        if (reasonsToAdd.length === 0) {
+            return; // Don't make any changes if there are no custom templates
+        }
+
         // Move default templates into an optgroup (excluding value "0" which is "Please select a template..."
         $templateSelector.find('option[value!="0"]').wrapAll('<optgroup label="Stock Templates"></optgroup>');
 

@@ -367,6 +367,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         acc.push(message.TemplateName);
         return acc;
       }, []);
+      if (reasonsToAdd.length === 0) {
+        return;
+      }
       $templateSelector.find('option[value!="0"]').wrapAll('<optgroup label="Stock Templates"></optgroup>');
       $templateSelector.append(
         $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => {
