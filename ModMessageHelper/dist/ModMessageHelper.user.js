@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -186,7 +186,7 @@ Having more than one account is permitted, if the additional account is not used
         AnalogousSystemReasonId: "OtherViolation",
         StackOverflowOnly: true,
         // because template has SO-only meta links
-        TemplateName: "demands to show effort/not a code-writing service",
+        TemplateName: 'demands to show effort/"not a code-writing service"',
         TemplateBody: `It has come to our attention that you've left one or more comments similar to the following:
 
 > Please show some effort. This is not a code-writing service.
@@ -367,9 +367,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         acc.push(message.TemplateName);
         return acc;
       }, []);
-      $templateSelector.children().wrapAll('<optgroup label="Stock Templates"></optgroup>');
+      $templateSelector.find('option[value!="0"]').wrapAll('<optgroup label="Stock Templates"></optgroup>');
       $templateSelector.append(
-        $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => `<option value="${reasonId}">${reasonId}</option>`))
+        $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => {
+          return $("<option></option>").val(reasonId).text(reasonId);
+        }))
       );
     }
     setupProxyForNonDefaults();
