@@ -206,7 +206,7 @@ Having more than one account is permitted, if the additional account is not used
         {
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
-            TemplateName: 'demands to show effort/not a code-writing service',
+            TemplateName: 'demands to show effort/"not a code-writing service"',
             TemplateBody: `It has come to our attention that you've left one or more comments similar to the following:
 
 > Please show some effort. This is not a code-writing service.
@@ -410,7 +410,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         // Create new optgroup with custom templates
         $templateSelector.append(
             $('<optgroup label="Custom Templates"></optgroup>')
-                .append(...reasonsToAdd.map(reasonId => `<option value="${reasonId}">${reasonId}</option>`))
+                .append(...reasonsToAdd.map(reasonId => {
+                    return $('<option></option>').val(reasonId).text(reasonId);
+                }))
         );
     }
 
