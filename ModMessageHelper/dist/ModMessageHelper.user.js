@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -352,6 +352,19 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 ...selectedTemplate
               };
               settings.success(fieldDefaults, "success", jqXHR);
+              const form = $("#js-msg-form");
+              const suspendReason = $("#js-suspend-reason");
+              if (suspendReason.length === 0) {
+                form.append(
+                  $('<input id="js-suspend-reason" name="suspendReason" type="hidden"/>').val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
+                );
+              } else {
+                suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
+              }
+              const sendEmail = $("#js-send-email");
+              if (sendEmail.length === 0) {
+                form.append('<input id="js-send-email" name="email" value="true" type="hidden" checked="checked">');
+              }
             },
             error: settings.error
           });
