@@ -379,8 +379,28 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                             ...fieldDefaults.MessageTemplate,
                             ...selectedTemplate
                         };
+
                         // Force call the old Success function with updated values
                         (<(data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
+
+                        // Grab Form Element
+                        const form = $('#js-msg-form');
+                        //Add Missing fields
+                        // Provide support for a suspend reason
+                        const suspendReason = $('#js-suspend-reason');
+                        if (suspendReason.length === 0) {
+                            form.append(
+                                $('<input id="js-suspend-reason" name="suspendReason" type="hidden"/>')
+                                    .val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
+                            );
+                        } else {
+                            suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
+                        }
+                        // Restore emails
+                        const sendEmail = $('#js-send-email');
+                        if (sendEmail.length === 0) {
+                            form.append('<input id="js-send-email" name="email" value="true" type="hidden" checked="checked">');
+                        }
                     },
                     error: settings.error
                 });
