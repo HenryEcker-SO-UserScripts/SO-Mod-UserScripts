@@ -15,7 +15,7 @@
 /* globals StackExchange, $ */
 (function () {
     'use strict';
-    const config = {
+    var config = {
         'selfActionClass': 'bg-black-075',
         'bodyId': 'auru-main-content',
         'route': '/admin/users',
@@ -67,98 +67,99 @@
         }
     };
     function buildURL(relativePath, baseURLSearchParamString, searchParams) {
-        const url = new URL(relativePath, window.location.origin);
+        var url = new URL(relativePath, window.location.origin);
         if (baseURLSearchParamString !== undefined || searchParams !== undefined) {
-            const usp = new URLSearchParams(baseURLSearchParamString);
-            Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+            url.search = baseURLSearchParamString;
+            Object.entries(searchParams !== null && searchParams !== void 0 ? searchParams : {}).forEach(function (_a) {
+                var key = _a[0], value = _a[1];
                 if (value === undefined) {
-                    usp.delete(key);
+                    url.searchParams.delete(key);
                 }
                 else {
-                    usp.set(key, value);
+                    url.searchParams.set(key, value);
                 }
             });
-            url.search = usp.toString();
         }
         return url;
     }
-    class AdminUsersPage {
-        mountPoint;
-        currentTab;
-        currentPage;
-        displayName;
-        constructor(mountPoint) {
+    var AdminUsersPage = /** @class */ (function () {
+        function AdminUsersPage(mountPoint) {
             this.mountPoint = mountPoint;
             this.updatePageInformation();
             this.displayName = $('.s-topbar--item.s-user-card .s-avatar').first().attr('title');
             this.attachOnPopStateTasks();
         }
-        updatePageInformation() {
-            const usp = new URLSearchParams(window.location.search);
-            this.currentTab = usp.get('tab') ?? config.defaultTab[StackExchange.options.site.isChildMeta ? 'meta' : 'main'];
-            this.currentPage = usp.get('page') ?? '1';
-        }
-        updateURLSearchParamPage() {
-            const newLocation = buildURL(config.route, window.location.search, {
+        AdminUsersPage.prototype.updatePageInformation = function () {
+            var _a, _b;
+            var usp = new URLSearchParams(window.location.search);
+            this.currentTab = (_a = usp.get('tab')) !== null && _a !== void 0 ? _a : config.defaultTab[StackExchange.options.site.isChildMeta ? 'meta' : 'main'];
+            this.currentPage = (_b = usp.get('page')) !== null && _b !== void 0 ? _b : '1';
+        };
+        AdminUsersPage.prototype.updateURLSearchParamPage = function () {
+            var newLocation = buildURL(config.route, window.location.search, {
                 tab: this.currentTab,
                 page: this.currentPage === '1' ? undefined : this.currentPage
             }).toString();
             history.pushState(null, '', newLocation);
-        }
+        };
         // Allow back and forward navigation to update page values
-        attachOnPopStateTasks() {
-            window.addEventListener('popstate', (ev) => {
+        AdminUsersPage.prototype.attachOnPopStateTasks = function () {
+            var _this = this;
+            window.addEventListener('popstate', function (ev) {
                 ev.preventDefault();
-                this.mountPoint.html(config.loadingComponent); // Replace with loading component because it's more confusing to not show any indication something's happening
-                this.updatePageInformation();
-                this.render(true);
+                _this.mountPoint.html(config.loadingComponent); // Replace with loading component because it's more confusing to not show any indication something's happening
+                _this.updatePageInformation();
+                _this.render(true);
             });
-        }
-        render(manualLoad = false) {
+        };
+        AdminUsersPage.prototype.render = function (manualLoad) {
+            if (manualLoad === void 0) { manualLoad = false; }
             this.mountPoint
                 .empty()
                 .append(this.rebuildPage(manualLoad));
-        }
-        rebuildPage(manualLoad) {
+        };
+        AdminUsersPage.prototype.rebuildPage = function (manualLoad) {
             return $('<div class="d-flex mb48"></div>')
                 .append(this.buildNav())
                 .append(this.buildMainBody(manualLoad));
-        }
+        };
         // Build Nav (Sidebar)
-        buildNav() {
+        AdminUsersPage.prototype.buildNav = function () {
             return $('<nav class="flex--item fl-shrink0 mr32 wmn1 md:d-none" role="navigation"></nav>')
                 .append(this.buildNavUl());
-        }
-        buildNavUl() {
-            const ul = $('<ul class="ps-sticky t64 s-navigation s-navigation__muted s-navigation__vertical"></ul>');
-            for (const [queryLocation, { tabNavName, tabTitle, mainOnly }] of Object.entries(config.tabInfo)) {
+        };
+        AdminUsersPage.prototype.buildNavUl = function () {
+            var ul = $('<ul class="ps-sticky t64 s-navigation s-navigation__muted s-navigation__vertical"></ul>');
+            for (var _i = 0, _a = Object.entries(config.tabInfo); _i < _a.length; _i++) {
+                var _b = _a[_i], queryLocation = _b[0], _c = _b[1], tabNavName = _c.tabNavName, tabTitle = _c.tabTitle, mainOnly = _c.mainOnly;
                 ul.append(this.buildNavLi(tabNavName, tabTitle, queryLocation, mainOnly));
             }
             return ul;
-        }
-        buildNavLi(tabText, tabTitle, queryLocation, mainOnly) {
+        };
+        AdminUsersPage.prototype.buildNavLi = function (tabText, tabTitle, queryLocation, mainOnly) {
             if (mainOnly === true && StackExchange.options.site.isChildMeta) {
                 return null;
             }
             return $('<li></li>').append(this.buildNavAnchor(tabText, tabTitle, queryLocation));
-        }
-        buildNavAnchor(tabText, tabTitle, queryLocation) {
-            const href = buildURL(config.route, '', { tab: queryLocation }).toString();
-            const a = $(`<a class="s-navigation--item pr48 ps-relative${this.currentTab === queryLocation ? ' is-selected' : ''}" href="${href}" title="${tabTitle}">${tabText}</a>`);
-            a.on('click', (ev) => {
+        };
+        AdminUsersPage.prototype.buildNavAnchor = function (tabText, tabTitle, queryLocation) {
+            var _this = this;
+            var href = buildURL(config.route, '', { tab: queryLocation }).toString();
+            var a = $("<a class=\"s-navigation--item pr48 ps-relative".concat(this.currentTab === queryLocation ? ' is-selected' : '', "\" href=\"").concat(href, "\" title=\"").concat(tabTitle, "\">").concat(tabText, "</a>"));
+            a.on('click', function (ev) {
                 ev.preventDefault();
-                this.currentPage = '1';
-                this.currentTab = queryLocation;
-                this.updateURLSearchParamPage();
-                this.render(true);
+                _this.currentPage = '1';
+                _this.currentTab = queryLocation;
+                _this.updateURLSearchParamPage();
+                _this.render(true);
             });
             return a;
-        }
+        };
         // Build main container for data
-        buildMainBody(manualLoad) {
-            const { tabTitle, dataLoadFromUrl, urlSearchParams } = config.tabInfo[this.currentTab];
-            const loadFrom = buildURL(dataLoadFromUrl, urlSearchParams, { page: this.currentPage }).toString();
-            const dataBody = $(`<div class="js-auto-load" data-load-from="${loadFrom}" aria-live="polite">${config.loadingComponent}</div>`);
+        AdminUsersPage.prototype.buildMainBody = function (manualLoad) {
+            var _a = config.tabInfo[this.currentTab], tabTitle = _a.tabTitle, dataLoadFromUrl = _a.dataLoadFromUrl, urlSearchParams = _a.urlSearchParams;
+            var loadFrom = buildURL(dataLoadFromUrl, urlSearchParams, { page: this.currentPage }).toString();
+            var dataBody = $("<div class=\"js-auto-load\" data-load-from=\"".concat(loadFrom, "\" aria-live=\"polite\">").concat(config.loadingComponent, "</div>"));
             this.attachLoadListenerToDiv(dataBody[0]);
             if (manualLoad) {
                 dataBody
@@ -167,53 +168,58 @@
                     // Important! attachLoadListenerToDiv (and stock SE code) relies on the 'js-auto-load-target' class to attach listeners and perform pagination
                     .addClass('js-auto-load-target');
             }
-            return $(`<div id="${config.bodyId}"></div>`)
-                .append(`<h2>${tabTitle}</h2>`)
+            return $("<div id=\"".concat(config.bodyId, "\"></div>"))
+                .append("<h2>".concat(tabTitle, "</h2>"))
                 .append(dataBody);
-        }
+        };
         // Attach mutation observer to monitor for when the DOM elements have been added
-        attachLoadListenerToDiv(node) {
-            const dataObserver = new MutationObserver((mutationList, observer) => {
-                for (const mutation of mutationList) {
+        AdminUsersPage.prototype.attachLoadListenerToDiv = function (node) {
+            var _this = this;
+            var dataObserver = new MutationObserver(function (mutationList, observer) {
+                for (var _i = 0, mutationList_1 = mutationList; _i < mutationList_1.length; _i++) {
+                    var mutation = mutationList_1[_i];
                     if (mutation.type === 'childList' &&
                         mutation.addedNodes.length === 5 && // This is a set number of elements
                         mutation.target.classList.contains('js-auto-load-target')) {
-                        this.addListenerToPaginationItems();
-                        if (config.tabInfo[this.currentTab].highlightSelf) {
-                            this.highlightOwnItems();
+                        _this.addListenerToPaginationItems();
+                        if (config.tabInfo[_this.currentTab].highlightSelf) {
+                            _this.highlightOwnItems();
                         }
                         break; // We've found what we need don't look through any more mutations
                     }
                 }
                 observer.disconnect(); // Don't care about any future DOM updates
             });
-            const observerConfig = { childList: true };
+            var observerConfig = { childList: true };
             dataObserver.observe(node, observerConfig);
             // Re-attach observer on next ajax call
-            $(document).on('ajaxSend', (_0, _1, { url }) => {
+            $(document).on('ajaxSend', function (_0, _1, _a) {
+                var url = _a.url;
                 if (url.startsWith(config.route)) {
                     dataObserver.observe(node, observerConfig);
                 }
             });
-        }
-        addListenerToPaginationItems() {
-            $('.js-ajax .s-pagination--item').on('click', (ev) => {
-                this.currentPage = new URLSearchParams(buildURL(ev.target.href).search).get('page');
-                this.updateURLSearchParamPage();
+        };
+        AdminUsersPage.prototype.addListenerToPaginationItems = function () {
+            var _this = this;
+            $('.js-ajax .s-pagination--item').on('click', function (ev) {
+                _this.currentPage = new URLSearchParams(buildURL(ev.target.href).search).get('page');
+                _this.updateURLSearchParamPage();
             });
-        }
+        };
         // Highlight items that contain your display name as the author
-        highlightOwnItems() {
-            $(`.annotime:contains("${this.displayName}")`)
+        AdminUsersPage.prototype.highlightOwnItems = function () {
+            $(".annotime:contains(\"".concat(this.displayName, "\")"))
                 .closest('tr')
                 .addClass(config.selfActionClass);
-        }
-    }
+        };
+        return AdminUsersPage;
+    }());
     function main() {
-        const mountPoint = $('.content-page');
+        var mountPoint = $('.content-page');
         mountPoint.empty();
-        const newPage = new AdminUsersPage(mountPoint);
-        StackExchange.ready(() => {
+        var newPage = new AdminUsersPage(mountPoint);
+        StackExchange.ready(function () {
             newPage.render();
         });
     }
