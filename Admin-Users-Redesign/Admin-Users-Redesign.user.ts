@@ -90,18 +90,17 @@
         }
     };
 
-    function buildURL(relativePath: string, baseURLSearchParamString?: string, searchParams?: { [key: string]: unknown; }): URL {
+    function buildURL(relativePath: string, baseURLSearchParamString?: string, searchParams?: Record<string, unknown>): URL {
         const url = new URL(relativePath, window.location.origin);
         if (baseURLSearchParamString !== undefined || searchParams !== undefined) {
-            const usp = new URLSearchParams(baseURLSearchParamString);
+            url.search = baseURLSearchParamString;
             Object.entries(searchParams ?? {}).forEach(([key, value]) => {
                 if (value === undefined) {
-                    usp.delete(key);
+                    url.searchParams.delete(key);
                 } else {
-                    usp.set(key, value as string);
+                    url.searchParams.set(key, value as string);
                 }
             });
-            url.search = usp.toString();
         }
         return url;
     }
