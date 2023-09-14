@@ -352,18 +352,18 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 ...selectedTemplate
               };
               settings.success(fieldDefaults, "success", jqXHR);
-              const form = $("#js-msg-form");
-              const suspendReason = $("#js-suspend-reason");
-              if (suspendReason.length === 0) {
-                form.append(
+              const $form = $("#js-msg-form");
+              const $suspendReason = $("#js-suspend-reason");
+              if ($suspendReason.length === 0) {
+                $form.append(
                   $('<input id="js-suspend-reason" name="suspendReason" type="hidden"/>').val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
                 );
               } else {
-                suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
+                $suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
               }
-              const sendEmail = $("#js-send-email");
-              if (sendEmail.length === 0) {
-                form.append('<input id="js-send-email" name="email" value="true" type="hidden" checked="checked">');
+              const $sendEmail = $("#js-send-email");
+              if ($sendEmail.length === 0) {
+                $form.append('<input id="js-send-email" name="email" value="true" type="hidden" checked="checked">');
               }
             },
             error: settings.error
