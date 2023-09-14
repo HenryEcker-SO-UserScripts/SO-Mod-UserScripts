@@ -339,14 +339,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 }
 
                 const url = new URL(settings.url, location.origin);
-                const usp = new URLSearchParams(url.search);
 
                 // If this isn't a request for a reasonId do nothing
-                if (!usp.has('reasonId')) {
+                if (!url.searchParams.has('reasonId')) {
                     return;
                 }
 
-                const reasonId = usp.get('reasonId');
+                const reasonId = url.searchParams.get('reasonId');
                 // If this is one of the system templates do nothing
                 if (systemTemplateReasonIds.has(reasonId)) {
                     return;
