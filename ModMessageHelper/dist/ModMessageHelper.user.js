@@ -323,11 +323,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             return;
           }
           const url = new URL(settings.url, location.origin);
-          const usp = new URLSearchParams(url.search);
-          if (!usp.has("reasonId")) {
+          if (!url.searchParams.has("reasonId")) {
             return;
           }
-          const reasonId = usp.get("reasonId");
+          const reasonId = url.searchParams.get("reasonId");
           if (systemTemplateReasonIds.has(reasonId)) {
             return;
           }
