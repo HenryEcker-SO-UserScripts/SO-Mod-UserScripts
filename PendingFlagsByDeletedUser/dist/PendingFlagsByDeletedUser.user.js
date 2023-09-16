@@ -3,7 +3,7 @@
 // @description  Searches timelines for any pending flags on posts by deleted users
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.4
+// @version      0.0.5
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
 //
 // @match        *://*.askubuntu.com/admin/posts-by-deleted-user/*
@@ -65,7 +65,7 @@
         postData.$link.addClass("bg-green-500");
         atLeastOneOutstandingFlag = true;
       }
-      await sleep(300);
+      await sleep(500);
     }
     if (!atLeastOneOutstandingFlag) {
       StackExchange.helpers.showToast("No pending flags found!", {
@@ -76,7 +76,7 @@
     }
   }
   StackExchange.ready(() => {
-    const $buttonContainer = $('<div class="clear-both" style="max-width: 25vw;"></div>');
+    const $buttonContainer = $('<div class="clear-both" style="max-width: max-content"></div>');
     const $button = $('<button type="button" class="s-btn s-btn__outlined my8">Search post timelines for pending flags</button>');
     $button.on("click", () => {
       void main($buttonContainer);
