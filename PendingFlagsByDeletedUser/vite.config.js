@@ -9,7 +9,7 @@ export default buildViteConfig(
 // @description  Searches timelines for any pending flags on posts by deleted users
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
 //
 ${buildMatchPatterns('// @match        ', '/admin/posts-by-deleted-user/*')}

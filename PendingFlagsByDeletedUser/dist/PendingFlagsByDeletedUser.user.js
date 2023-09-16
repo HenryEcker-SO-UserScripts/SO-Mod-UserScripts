@@ -3,7 +3,7 @@
 // @description  Searches timelines for any pending flags on posts by deleted users
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
 //
 // @match        *://*.askubuntu.com/admin/posts-by-deleted-user/*
@@ -21,18 +21,14 @@
 (function() {
   "use strict";
   function getPostIds() {
-    return [
-      ...$(".answer-hyperlink").map((i, n) => {
-        const $link = $(n);
-        const url = new URL($link.attr("href"), window.location.origin);
-        return { $link, postId: url.hash.slice(1) };
-      }).toArray(),
-      ...$(".question-hyperlink").map((i, n) => {
-        const $link = $(n);
-        const match = $link.attr("href").match(/questions\/(\d+)\/.*/);
-        return { $link, postId: match[1] };
-      }).toArray()
-    ];
+    return $(".question-hyperlink,.answer-hyperlink").map((i, n) => {
+      const $link = $(n);
+      const match = $link.attr("href").match(/.*?#(?<answerid>\d+)$|^\/questions\/(?<questionid>\d+)\/.*/);
+      return {
+        $link,
+        postId: match.groups.answerid ?? match.groups.questionid
+      };
+    }).toArray();
   }
   function fetchTimelinePage(postId) {
     return $.get(`/posts/${postId}/timeline`).then((resText) => {
