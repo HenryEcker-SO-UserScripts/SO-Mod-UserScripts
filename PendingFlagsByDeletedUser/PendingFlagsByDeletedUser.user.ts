@@ -54,7 +54,7 @@ async function main($buttonContainer: JQuery) {
             postData.$link.addClass('bg-green-500'); // This could probably be better but whatever...
             atLeastOneOutstandingFlag = true;
         }
-        await sleep(300);
+        await sleep(500);
     }
 
     if (!atLeastOneOutstandingFlag) {
@@ -67,7 +67,7 @@ async function main($buttonContainer: JQuery) {
 }
 
 StackExchange.ready(() => {
-    const $buttonContainer = $('<div class="clear-both" style="max-width: 25vw;"></div>');
+    const $buttonContainer = $('<div class="clear-both" style="max-width: max-content"></div>');
     const $button = $('<button type="button" class="s-btn s-btn__outlined my8">Search post timelines for pending flags</button>');
     $button.on('click', () => {
         void main($buttonContainer);
