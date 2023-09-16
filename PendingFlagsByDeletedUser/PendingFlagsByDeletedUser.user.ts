@@ -36,6 +36,9 @@ function sleep(ms: number): Promise<void> {
 }
 
 function* loopWithProgressBar<T>(arr: T[], $progressBarMountPoint: JQuery): Generator<T> {
+    if (arr.length === 0) {
+        return; // We don't need to do anything if the array is empty
+    }
     const $wrapper = $('<div class="s-progress"></div>');
     const $progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${0}" aria-valuemax="${arr.length}" aria-label="current progress"></div>`);
     $progressBarMountPoint.append($wrapper.append($progressBar));
