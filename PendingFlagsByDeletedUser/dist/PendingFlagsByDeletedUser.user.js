@@ -48,6 +48,9 @@
     });
   }
   function* loopWithProgressBar(arr, $progressBarMountPoint) {
+    if (arr.length === 0) {
+      return;
+    }
     const $wrapper = $('<div class="s-progress"></div>');
     const $progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${0}" aria-valuemax="${arr.length}" aria-label="current progress"></div>`);
     $progressBarMountPoint.append($wrapper.append($progressBar));
