@@ -35,45 +35,20 @@ function sleep(ms: number): Promise<void> {
     });
 }
 
-class ProgressBar {
-    private readonly $progressBar: JQuery;
-    private readonly $wrapper: JQuery;
-    private readonly min: number;
-    private readonly max: number;
-
-    constructor($mountPoint: JQuery, min: number, max: number) {
-        this.min = min;
-        this.max = max;
-        this.$progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${this.min}" aria-valuemax="${this.max}" aria-label="current progress"></div>`);
-        this.$wrapper = $('<div class="s-progress"></div>');
-
-        $mountPoint.append(
-            this.$wrapper
-                .append(this.$progressBar)
-        );
-    }
-
-    update(currentValue: number) {
-        this.$progressBar.attr('aria-valuenow', currentValue);
-        this.$progressBar.css('width', `${(currentValue - this.min) / this.max * 100}%`);
-    }
-
-    destroy() {
-        this.$wrapper.remove();
-    }
-}
-
 function* loopWithProgressBar<T>(arr: T[], $progressBarMountPoint: JQuery): Generator<T> {
-    const bar = new ProgressBar($progressBarMountPoint, 0, arr.length);
+    const $wrapper = $('<div class="s-progress"></div>');
+    const $progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${0}" aria-valuemax="${arr.length}" aria-label="current progress"></div>`);
+    $progressBarMountPoint.append($wrapper.append($progressBar));
     for (let i = 0; i < arr.length; i++) {
-        bar.update(i);
+        $progressBar.attr('aria-valuenow', i);
+        $progressBar.css('width', `${i / arr.length * 100}%`);
         yield arr[i];
     }
-    bar.destroy();
+    $wrapper.remove();
 }
 
 
-async function main($buttonContainer:JQuery) {
+async function main($buttonContainer: JQuery) {
     let atLeastOneOutstandingFlag = false;
     for (const postData of loopWithProgressBar(getPostIds(), $buttonContainer)) {
         const timelineText = await fetchTimelinePage(postData.postId);
