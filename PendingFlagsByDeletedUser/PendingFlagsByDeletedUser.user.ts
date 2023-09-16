@@ -4,19 +4,14 @@ interface PostData {
 }
 
 function getPostIds(): PostData[] {
-    return [
-        ...$('.answer-hyperlink').map((i, n) => {
-            const $link = $(n);
-            const url = new URL($link.attr('href'), window.location.origin);
-            return {$link: $link, postId: url.hash.slice(1)};
-        }).toArray(),
-
-        ...$('.question-hyperlink').map((i, n) => {
-            const $link = $(n);
-            const match = $link.attr('href').match(/questions\/(\d+)\/.*/);
-            return {$link: $link, postId: match[1]};
-        }).toArray()
-    ];
+    return $('.question-hyperlink,.answer-hyperlink').map((i, n) => {
+        const $link = $(n);
+        const match = $link.attr('href').match(/.*?#(?<answerid>\d+)$|^\/questions\/(?<questionid>\d+)\/.*/);
+        return {
+            $link: $link,
+            postId: match.groups.answerid ?? match.groups.questionid
+        } satisfies PostData;
+    }).toArray();
 }
 
 function fetchTimelinePage(postId: string | number) {
