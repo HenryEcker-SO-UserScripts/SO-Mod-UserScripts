@@ -3,7 +3,7 @@
 // @description  Searches timelines for any pending flags on posts by deleted users
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.1
+// @version      0.0.2
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
 //
 // @match        *://*.askubuntu.com/admin/posts-by-deleted-user/*
@@ -56,7 +56,7 @@
       this.min = min;
       this.max = max;
       this.$progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${this.min}" aria-valuemax="${this.max}" aria-label="current progress"></div>`);
-      this.$wrapper = $('<div class="s-progress" style="max-width: 25vw"></div>');
+      this.$wrapper = $('<div class="s-progress"></div>');
       $mountPoint.append(
         this.$wrapper.append(this.$progressBar)
       );
@@ -77,9 +77,9 @@
     }
     bar.destroy();
   }
-  async function main() {
+  async function main($buttonContainer) {
     let atLeastOneOutstandingFlag = false;
-    for (const postData of loopWithProgressBar(getPostIds(), $("#mainbar"))) {
+    for (const postData of loopWithProgressBar(getPostIds(), $buttonContainer)) {
       const timelineText = await fetchTimelinePage(postData.postId);
       if (hasOutstandingFlags(timelineText)) {
         postData.$link.addClass("bg-green-500");
@@ -96,8 +96,11 @@
     }
   }
   StackExchange.ready(() => {
+    const $buttonContainer = $('<div class="clear-both" style="max-width: 25vw;"></div>');
     const $button = $('<button type="button" class="s-btn s-btn__outlined my8">Search post timelines for pending flags</button>');
-    $button.on("click", main);
-    $("#mainbar").append($button);
+    $button.on("click", () => {
+      void main($buttonContainer);
+    });
+    $("#mainbar").append($buttonContainer.append($button));
   });
 })();
