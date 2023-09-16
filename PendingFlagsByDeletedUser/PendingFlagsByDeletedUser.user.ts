@@ -45,7 +45,7 @@ class ProgressBar {
         this.min = min;
         this.max = max;
         this.$progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${this.min}" aria-valuemax="${this.max}" aria-label="current progress"></div>`);
-        this.$wrapper = $('<div class="s-progress" style="max-width: 25vw"></div>');
+        this.$wrapper = $('<div class="s-progress"></div>');
 
         $mountPoint.append(
             this.$wrapper
@@ -73,9 +73,9 @@ function* loopWithProgressBar<T>(arr: T[], $progressBarMountPoint: JQuery): Gene
 }
 
 
-async function main() {
+async function main($buttonContainer:JQuery) {
     let atLeastOneOutstandingFlag = false;
-    for (const postData of loopWithProgressBar(getPostIds(), $('#mainbar'))) {
+    for (const postData of loopWithProgressBar(getPostIds(), $buttonContainer)) {
         const timelineText = await fetchTimelinePage(postData.postId);
         if (hasOutstandingFlags(timelineText)) {
             postData.$link.addClass('bg-green-500'); // This could probably be better but whatever...
@@ -94,7 +94,10 @@ async function main() {
 }
 
 StackExchange.ready(() => {
+    const $buttonContainer = $('<div class="clear-both" style="max-width: 25vw;"></div>');
     const $button = $('<button type="button" class="s-btn s-btn__outlined my8">Search post timelines for pending flags</button>');
-    $button.on('click', main);
-    $('#mainbar').append($button);
+    $button.on('click', () => {
+        void main($buttonContainer);
+    });
+    $('#mainbar').append($buttonContainer.append($button));
 });
