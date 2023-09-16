@@ -3,7 +3,7 @@
 // @description  Searches timelines for any pending flags on posts by deleted users
 // @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
 //
 // @match        *://*.askubuntu.com/admin/posts-by-deleted-user/*
@@ -47,35 +47,16 @@
       setTimeout(resolve, ms);
     });
   }
-  class ProgressBar {
-    $progressBar;
-    $wrapper;
-    min;
-    max;
-    constructor($mountPoint, min, max) {
-      this.min = min;
-      this.max = max;
-      this.$progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${this.min}" aria-valuemax="${this.max}" aria-label="current progress"></div>`);
-      this.$wrapper = $('<div class="s-progress"></div>');
-      $mountPoint.append(
-        this.$wrapper.append(this.$progressBar)
-      );
-    }
-    update(currentValue) {
-      this.$progressBar.attr("aria-valuenow", currentValue);
-      this.$progressBar.css("width", `${(currentValue - this.min) / this.max * 100}%`);
-    }
-    destroy() {
-      this.$wrapper.remove();
-    }
-  }
   function* loopWithProgressBar(arr, $progressBarMountPoint) {
-    const bar = new ProgressBar($progressBarMountPoint, 0, arr.length);
+    const $wrapper = $('<div class="s-progress"></div>');
+    const $progressBar = $(`<div class="s-progress--bar" role="progressbar" aria-valuemin="${0}" aria-valuemax="${arr.length}" aria-label="current progress"></div>`);
+    $progressBarMountPoint.append($wrapper.append($progressBar));
     for (let i = 0; i < arr.length; i++) {
-      bar.update(i);
+      $progressBar.attr("aria-valuenow", i);
+      $progressBar.css("width", `${i / arr.length * 100}%`);
       yield arr[i];
     }
-    bar.destroy();
+    $wrapper.remove();
   }
   async function main($buttonContainer) {
     let atLeastOneOutstandingFlag = false;
