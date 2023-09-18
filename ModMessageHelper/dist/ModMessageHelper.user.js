@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Custom Mod Message Templates V2
 // @description  Adds mod message templates with default configurations to the mod message drop-down
-// @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
+// @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
 // @version      0.0.4
-// @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
+// @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
 // @match        *://*.mathoverflow.net/users/message/create/*
