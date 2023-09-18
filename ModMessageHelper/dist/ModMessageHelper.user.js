@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.5
+// @version      0.0.6
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -20,7 +20,10 @@
 /* globals StackExchange, $ */
 (function() {
   "use strict";
-  function main() {
+  StackExchange.ready(function() {
+    if (!StackExchange?.options?.user?.isModerator) {
+      return;
+    }
     const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
     const parentName = StackExchange.options?.site?.name;
     const customModMessages = [
@@ -314,7 +317,15 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         TemplateBody: "Account removed for spamming and/or abusive behavior. You're no longer welcome to participate here."
       }
     ];
-    const $templateSelector = $("#select-template-menu");
+    const formElementIds = {
+      templateSelector: "select-template-menu",
+      form: "js-msg-form",
+      suspendReason: "js-suspend-reason",
+      sendEmail: "js-send-email"
+    };
+    const $templateSelector = $(`#${formElementIds.templateSelector}`);
+    const $form = $(`#${formElementIds.form}`);
+    $form.prepend(`<input id="${formElementIds.sendEmail}" name="email" value="true" type="hidden" checked="checked">`);
     function setupProxyForNonDefaults() {
       const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
       $.ajaxSetup({
@@ -328,6 +339,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           }
           const reasonId = url.searchParams.get("reasonId");
           if (systemTemplateReasonIds.has(reasonId)) {
+            $(`#${formElementIds.suspendReason}`).remove();
             return;
           }
           jqXHR.abort();
@@ -351,18 +363,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 ...selectedTemplate
               };
               settings.success(fieldDefaults, "success", jqXHR);
-              const $form = $("#js-msg-form");
-              const $suspendReason = $("#js-suspend-reason");
+              const $suspendReason = $(`#${formElementIds.suspendReason}`);
               if ($suspendReason.length === 0) {
-                $form.append(
-                  $('<input id="js-suspend-reason" name="suspendReason" type="hidden"/>').val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
+                $form.prepend(
+                  $(`<input id="${formElementIds.suspendReason}" name="suspendReason" type="hidden"/>`).val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
                 );
               } else {
                 $suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
-              }
-              const $sendEmail = $("#js-send-email");
-              if ($sendEmail.length === 0) {
-                $form.append('<input id="js-send-email" name="email" value="true" type="hidden" checked="checked">');
               }
             },
             error: settings.error
@@ -391,11 +398,5 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     }
     setupProxyForNonDefaults();
     addReasonsToSelect();
-  }
-  StackExchange.ready(function() {
-    if (!StackExchange?.options?.user?.isModerator) {
-      return;
-    }
-    main();
   });
 })();

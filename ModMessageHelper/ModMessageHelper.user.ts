@@ -40,7 +40,12 @@ type UserDefinedMessageTemplate =
     AnalogousSystemReasonId: SystemReasonId;
 };
 
-function main() {
+
+StackExchange.ready(function () {
+    if (!StackExchange?.options?.user?.isModerator) {
+        return;
+    }
+
     const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
     const parentName = StackExchange.options?.site?.name;
 
@@ -326,7 +331,18 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
     ];
 
-    const $templateSelector = $('#select-template-menu');
+    const formElementIds = {
+        templateSelector: 'select-template-menu',
+        form: 'js-msg-form',
+        suspendReason: 'js-suspend-reason',
+        sendEmail: 'js-send-email'
+    };
+
+    const $templateSelector = $(`#${formElementIds.templateSelector}`);
+    const $form = $(`#${formElementIds.form}`);
+
+    // Restore emails for all reason types
+    $form.prepend(`<input id="${formElementIds.sendEmail}" name="email" value="true" type="hidden" checked="checked">`);
 
     function setupProxyForNonDefaults() {
         const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
@@ -346,8 +362,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 }
 
                 const reasonId = url.searchParams.get('reasonId');
-                // If this is one of the system templates do nothing
+                // If this is one of the system templates
                 if (systemTemplateReasonIds.has(reasonId)) {
+                    // Remove suspendReason field for stock templates
+                    $(`#${formElementIds.suspendReason}`).remove();
                     return;
                 }
 
@@ -382,23 +400,15 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                         // Force call the old Success function with updated values
                         (<(data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
 
-                        // Grab Form Element
-                        const $form = $('#js-msg-form');
-                        //Add Missing fields
-                        // Provide support for a suspend reason
-                        const $suspendReason = $('#js-suspend-reason');
+                        // Add suspend reason if missing for custom reasons
+                        const $suspendReason = $(`#${formElementIds.suspendReason}`);
                         if ($suspendReason.length === 0) {
-                            $form.append(
-                                $('<input id="js-suspend-reason" name="suspendReason" type="hidden"/>')
+                            $form.prepend(
+                                $(`<input id="${formElementIds.suspendReason}" name="suspendReason" type="hidden"/>`)
                                     .val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
                             );
                         } else {
                             $suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
-                        }
-                        // Restore emails
-                        const $sendEmail = $('#js-send-email');
-                        if ($sendEmail.length === 0) {
-                            $form.append('<input id="js-send-email" name="email" value="true" type="hidden" checked="checked">');
                         }
                     },
                     error: settings.error
@@ -441,11 +451,4 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     setupProxyForNonDefaults();
     addReasonsToSelect();
-}
-
-StackExchange.ready(function () {
-    if (!StackExchange?.options?.user?.isModerator) {
-        return;
-    }
-    main();
 });
