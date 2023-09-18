@@ -3,7 +3,7 @@
 // @description  Adds direct links to individual user review history from the review result notice
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ReviewHistoryLinks/dist/ReviewHistoryLinks.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ReviewHistoryLinks/dist/ReviewHistoryLinks.user.js
 //
