@@ -3,7 +3,7 @@
     "@hotwired/stimulus": "^3.2.2",
     "@types/format-unicorn": "^1.1.2",
     "@types/jquery": "^3.5.19",
-    "@types/js-beautify": "^1.14.0",
+    "@types/js-beautify": "^1.14.1",
     "@types/tampermonkey": "^4.20.1",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.7.0",
