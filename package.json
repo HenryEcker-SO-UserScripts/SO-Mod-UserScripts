@@ -15,7 +15,7 @@
     "terser": "^5.19.3",
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
-    "vite-plugin-banner": "^0.7.0",
+    "vite-plugin-banner": "^0.7.1",
     "vite-plugin-filter-replace": "^0.1.12"
   }
 }
