@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Update Post Votes From User Page
 // @description  Adds button to fetch vote count for all posts to update counts (e.g. after invalidation)
-// @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
+// @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
 // @version      0.0.1
-// @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/ForceUpdatePostVoteCounts/dist/ForceUpdatePostVoteCounts.user.js
-// @updateURL    https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/ForceUpdatePostVoteCounts/dist/ForceUpdatePostVoteCounts.user.js
+// @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ForceUpdatePostVoteCounts/dist/ForceUpdatePostVoteCounts.user.js
+// @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ForceUpdatePostVoteCounts/dist/ForceUpdatePostVoteCounts.user.js
 //
 // @match        *://*.askubuntu.com/users/*/*?tab=answers*
 // @match        *://*.askubuntu.com/users/*/*?tab=questions*
