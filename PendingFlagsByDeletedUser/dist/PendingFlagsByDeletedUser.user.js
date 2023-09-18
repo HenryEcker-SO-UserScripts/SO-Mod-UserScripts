@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Pending Flags By Deleted User
 // @description  Searches timelines for any pending flags on posts by deleted users
-// @homepage     https://github.com/HenryEcker/SO-Mod-UserScripts
+// @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
 // @version      0.0.5
-// @downloadURL  https://github.com/HenryEcker/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
+// @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
 //
 // @match        *://*.askubuntu.com/admin/posts-by-deleted-user/*
 // @match        *://*.mathoverflow.net/admin/posts-by-deleted-user/*
