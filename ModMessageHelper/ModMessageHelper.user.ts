@@ -341,9 +341,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
     const $form = $(`#${formElementIds.form}`);
 
-    // Restore emails for all reason types
-    $form.prepend(`<input id="${formElementIds.sendEmail}" name="email" value="true" type="hidden" checked="checked">`);
-
     function setupProxyForNonDefaults() {
         const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
 

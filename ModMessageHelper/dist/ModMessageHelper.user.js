@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.6
+// @version      0.0.7
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -325,7 +325,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     };
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
     const $form = $(`#${formElementIds.form}`);
-    $form.prepend(`<input id="${formElementIds.sendEmail}" name="email" value="true" type="hidden" checked="checked">`);
     function setupProxyForNonDefaults() {
       const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
       $.ajaxSetup({
