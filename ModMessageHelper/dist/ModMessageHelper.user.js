@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.7
+// @version      0.0.8
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -318,13 +318,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       }
     ];
     const formElementIds = {
-      templateSelector: "select-template-menu",
-      form: "js-msg-form",
-      suspendReason: "js-suspend-reason",
-      sendEmail: "js-send-email"
+      templateSelector: "select-template-menu"
     };
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
-    const $form = $(`#${formElementIds.form}`);
     function setupProxyForNonDefaults() {
       const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
       $.ajaxSetup({
@@ -338,7 +334,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           }
           const reasonId = url.searchParams.get("reasonId");
           if (systemTemplateReasonIds.has(reasonId)) {
-            $(`#${formElementIds.suspendReason}`).remove();
             return;
           }
           jqXHR.abort();
@@ -362,14 +357,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 ...selectedTemplate
               };
               settings.success(fieldDefaults, "success", jqXHR);
-              const $suspendReason = $(`#${formElementIds.suspendReason}`);
-              if ($suspendReason.length === 0) {
-                $form.prepend(
-                  $(`<input id="${formElementIds.suspendReason}" name="suspendReason" type="hidden"/>`).val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
-                );
-              } else {
-                $suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
-              }
             },
             error: settings.error
           });

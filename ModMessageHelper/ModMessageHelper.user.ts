@@ -332,14 +332,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     ];
 
     const formElementIds = {
-        templateSelector: 'select-template-menu',
-        form: 'js-msg-form',
-        suspendReason: 'js-suspend-reason',
-        sendEmail: 'js-send-email'
+        templateSelector: 'select-template-menu'
     };
 
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
-    const $form = $(`#${formElementIds.form}`);
 
     function setupProxyForNonDefaults() {
         const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
@@ -361,8 +357,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 const reasonId = url.searchParams.get('reasonId');
                 // If this is one of the system templates
                 if (systemTemplateReasonIds.has(reasonId)) {
-                    // Remove suspendReason field for stock templates
-                    $(`#${formElementIds.suspendReason}`).remove();
                     return;
                 }
 
@@ -396,17 +390,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
                         // Force call the old Success function with updated values
                         (<(data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
-
-                        // Add suspend reason if missing for custom reasons
-                        const $suspendReason = $(`#${formElementIds.suspendReason}`);
-                        if ($suspendReason.length === 0) {
-                            $form.prepend(
-                                $(`<input id="${formElementIds.suspendReason}" name="suspendReason" type="hidden"/>`)
-                                    .val(fieldDefaults.MessageTemplate.DefaultSuspensionReason)
-                            );
-                        } else {
-                            $suspendReason.val(fieldDefaults.MessageTemplate.DefaultSuspensionReason);
-                        }
                     },
                     error: settings.error
                 });
