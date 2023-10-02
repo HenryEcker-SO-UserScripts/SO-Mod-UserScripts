@@ -3,7 +3,7 @@
 // @description  Makes /admin/users a bit less busy
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.8
+// @version      0.0.9
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign/Admin-Users-Redesign.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/Admin-Users-Redesign/Admin-Users-Redesign.user.js
 //
@@ -31,6 +31,10 @@
                 tabNavName: string;
                 tabTitle: string;
                 dataLoadFromUrl: string;
+                ownOnly?: {
+                    labelText: string;
+                    inputId: string;
+                };
                 urlSearchParams?: string;
                 highlightSelf: boolean;
                 mainOnly?: boolean;
@@ -52,6 +56,10 @@
                 tabNavName: 'Messages',
                 tabTitle: 'Latest User Messages',
                 dataLoadFromUrl: '/admin/users/messages',
+                ownOnly: {
+                    inputId: 'own-messages',
+                    labelText: 'Show my messages only'
+                },
                 highlightSelf: true,
                 mainOnly: true
             },
@@ -59,12 +67,20 @@
                 tabNavName: 'Annotations',
                 tabTitle: 'Latest User Annotations',
                 dataLoadFromUrl: '/admin/users/annotated',
+                ownOnly: {
+                    inputId: 'own-annotations',
+                    labelText: 'Show my annotations only'
+                },
                 highlightSelf: true
             },
             'escalations': {
                 tabNavName: 'Escalations',
                 tabTitle: 'Latest CM-Team Escalations',
                 dataLoadFromUrl: '/admin/users/cm-contacted',
+                ownOnly: {
+                    inputId: 'own-escalations',
+                    labelText: 'Show my escalations only'
+                },
                 highlightSelf: true
             },
             'suspended': {
@@ -92,8 +108,10 @@
 
     function buildURL(relativePath: string, baseURLSearchParamString?: string, searchParams?: Record<string, unknown>): URL {
         const url = new URL(relativePath, window.location.origin);
-        if (baseURLSearchParamString !== undefined || searchParams !== undefined) {
+        if (baseURLSearchParamString !== undefined) {
             url.search = baseURLSearchParamString;
+        }
+        if (searchParams !== undefined) {
             Object.entries(searchParams ?? {}).forEach(([key, value]) => {
                 if (value === undefined) {
                     url.searchParams.delete(key);
@@ -106,13 +124,14 @@
     }
 
     class AdminUsersPage {
-        private readonly mountPoint: JQuery;
+        private readonly $mountPoint: JQuery;
         private currentTab: string;
         private currentPage: string;
+        private currentOwnOnly: boolean;
         private readonly displayName: string;
 
-        constructor(mountPoint: JQuery) {
-            this.mountPoint = mountPoint;
+        constructor($mountPoint: JQuery) {
+            this.$mountPoint = $mountPoint;
             this.updatePageInformation();
             this.displayName = $('.s-topbar--item.s-user-card .s-avatar').first().attr('title') as string;
             this.attachOnPopStateTasks();
@@ -122,12 +141,14 @@
             const usp = new URLSearchParams(window.location.search);
             this.currentTab = usp.get('tab') ?? config.defaultTab[StackExchange.options.site.isChildMeta ? 'meta' : 'main'];
             this.currentPage = usp.get('page') ?? '1';
+            this.currentOwnOnly = usp.get('ownOnly') === 'true' || false;
         }
 
         private updateURLSearchParamPage() {
             const newLocation = buildURL(config.route, window.location.search, {
                 tab: this.currentTab,
-                page: this.currentPage === '1' ? undefined : this.currentPage
+                page: this.currentPage === '1' ? undefined : this.currentPage,
+                ownOnly: this.currentOwnOnly || undefined
             }).toString();
             history.pushState(null, '', newLocation);
         }
@@ -136,14 +157,14 @@
         private attachOnPopStateTasks() {
             window.addEventListener('popstate', (ev) => {
                 ev.preventDefault();
-                this.mountPoint.html(config.loadingComponent); // Replace with loading component because it's more confusing to not show any indication something's happening
+                this.$mountPoint.html(config.loadingComponent); // Replace with loading component because it's more confusing to not show any indication something's happening
                 this.updatePageInformation();
                 this.render(true);
             });
         }
 
         render(manualLoad = false) {
-            this.mountPoint
+            this.$mountPoint
                 .empty()
                 .append(this.rebuildPage(manualLoad));
         }
@@ -156,16 +177,16 @@
 
         // Build Nav (Sidebar)
         buildNav(): JQuery {
-            return $('<nav class="flex--item fl-shrink0 mr32 wmn1 md:d-none" role="navigation"></nav>')
+            return $('<nav class="flex--item fl-shrink0 mr32 wmn1" role="navigation"></nav>')
                 .append(this.buildNavUl());
         }
 
         buildNavUl(): JQuery {
-            const ul = $('<ul class="ps-sticky t64 s-navigation s-navigation__muted s-navigation__vertical"></ul>');
+            const $ul = $('<ul class="ps-sticky t64 s-navigation s-navigation__muted s-navigation__vertical"></ul>');
             for (const [queryLocation, {tabNavName, tabTitle, mainOnly}] of Object.entries(config.tabInfo)) {
-                ul.append(this.buildNavLi(tabNavName, tabTitle, queryLocation, mainOnly));
+                $ul.append(this.buildNavLi(tabNavName, tabTitle, queryLocation, mainOnly));
             }
-            return ul;
+            return $ul;
         }
 
         buildNavLi(tabText: string, tabTitle: string, queryLocation: string, mainOnly: boolean | undefined): JQuery | null {
@@ -177,37 +198,68 @@
 
         buildNavAnchor(tabText: string, tabTitle: string, queryLocation: string) {
             const href = buildURL(config.route, '', {tab: queryLocation}).toString();
-            const a = $(`<a class="s-navigation--item pr48 ps-relative${this.currentTab === queryLocation ? ' is-selected' : ''}" href="${href}" title="${tabTitle}">${tabText}</a>`);
-            a.on('click', (ev) => {
+            const $a = $(`<a class="s-navigation--item pr48 ps-relative${this.currentTab === queryLocation ? ' is-selected' : ''}" href="${href}" title="${tabTitle}">${tabText}</a>`);
+            $a.on('click', (ev) => {
                 ev.preventDefault();
                 this.currentPage = '1';
+                this.currentOwnOnly = false;
                 this.currentTab = queryLocation;
                 this.updateURLSearchParamPage();
                 this.render(true);
             });
-            return a;
+            return $a;
         }
-
 
         // Build main container for data
         private buildMainBody(manualLoad: boolean): JQuery {
-            const {tabTitle, dataLoadFromUrl, urlSearchParams} = config.tabInfo[this.currentTab];
+            const {tabTitle, dataLoadFromUrl, urlSearchParams, ownOnly} = config.tabInfo[this.currentTab];
 
-            const loadFrom = buildURL(dataLoadFromUrl, urlSearchParams, {page: this.currentPage}).toString();
-            const dataBody = $(`<div class="js-auto-load" data-load-from="${loadFrom}" aria-live="polite">${config.loadingComponent}</div>`);
-            this.attachLoadListenerToDiv(dataBody[0]);
+            const loadFrom = buildURL(dataLoadFromUrl, urlSearchParams, {
+                page: this.currentPage,
+                ownOnly: this.currentOwnOnly
+            }).toString();
 
-            if (manualLoad) {
-                dataBody
-                    .load(loadFrom)
+            const $dataBody = $(`<div class="d-flex fd-column js-auto-load" data-load-from="${loadFrom}" aria-live="polite">${config.loadingComponent}</div>`);
+            this.attachLoadListenerToDiv($dataBody[0]);
+
+            function doManualLoad() {
+                $dataBody
+                    .load($dataBody.data('load-from'))
                     .removeClass('js-auto-load')
                     // Important! attachLoadListenerToDiv (and stock SE code) relies on the 'js-auto-load-target' class to attach listeners and perform pagination
                     .addClass('js-auto-load-target');
             }
 
-            return $(`<div id="${config.bodyId}"></div>`)
-                .append(`<h2>${tabTitle}</h2>`)
-                .append(dataBody);
+            if (manualLoad) {
+                doManualLoad();
+            }
+
+            if (ownOnly !== undefined) {
+                const $ownOnlyCheckbox = $(`<input class="s-checkbox" type="checkbox" id="${ownOnly.inputId}">`);
+                $ownOnlyCheckbox.prop('checked', this.currentOwnOnly);
+                $ownOnlyCheckbox.on('change', (ev) => {
+                    this.currentOwnOnly = $(<HTMLInputElement>ev.target).is(':checked');
+                    this.currentPage = '1'; // Always revert to page 1 on change mode
+                    this.updateURLSearchParamPage();
+                    this.render(true);
+                });
+
+                const $ownOnlyCheckboxAndContainer = $('<div class="s-check-control d-inline pl16"></div>')
+                    .append($ownOnlyCheckbox)
+                    .append(`<label class="s-label" for="${ownOnly.inputId}">${ownOnly.labelText}</label>`);
+
+                return $(`<div class="w100" id="${config.bodyId}"></div>`)
+                    .append(
+                        $('<div class="mb12"></div>')
+                            .append(`<h2 class="d-inline">${tabTitle}</h2>`)
+                            .append($ownOnlyCheckboxAndContainer)
+                    )
+                    .append($dataBody);
+            } else {
+                return $(`<div id="${config.bodyId}"></div>`)
+                    .append(`<h2>${tabTitle}</h2>`)
+                    .append($dataBody);
+            }
         }
 
         // Attach mutation observer to monitor for when the DOM elements have been added
@@ -256,10 +308,10 @@
 
 
     function main() {
-        const mountPoint = $('.content-page');
-        mountPoint.empty();
+        const $mountPoint = $('.content-page');
+        $mountPoint.empty();
 
-        const newPage = new AdminUsersPage(mountPoint);
+        const newPage = new AdminUsersPage($mountPoint);
 
         StackExchange.ready(() => {
             newPage.render();
