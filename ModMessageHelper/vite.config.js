@@ -9,7 +9,7 @@ export default buildViteConfig(
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.8
+// @version      0.0.9
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 ${buildMatchPatterns('// @match        ', '/users/message/create/*')}
