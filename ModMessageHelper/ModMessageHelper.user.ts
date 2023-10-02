@@ -199,7 +199,6 @@ Should you wish to appeal this decision, you can use the [Contact Us](${parentUr
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'ban evasion, multiple accounts',
-            DefaultSuspendDays: 30,
             TemplateBody: `It has come to our attention that you have been using multiple accounts to work around system limitations. The extra accounts will be removed together with any unanswered questions. Please refrain from using secondary accounts to circumvent our systems in the future.
 
 All system and moderator-imposed limits/blocks/bans/suspensions/etc. apply to the user, not just a single account. You are not permitted to create one or more new accounts in order to get around such limitations. If you are hitting a limit on one account, then you should act as if you were hitting that limit on each of your accounts.
@@ -226,7 +225,6 @@ Please do not post any more of these comments. They add noise for moderators to 
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'self tag burnination',
-            DefaultSuspendDays: 7,
             TemplateBody: `As you should be aware, there is [a process for mass tag removal](https://meta.stackoverflow.com/q/324070), also known as burnination. The [policy from Stack Exchange](https://meta.stackoverflow.com/q/356963) is that the process **must** be followed and that burninations of tags which are used on more than 50 questions **must** be discussed on Meta Stack Overflow *prior* to beginning to edit to remove the tag.
 
 You have recently removed many tags from questions without following the burnination process. Do not do that. This message is a warning. If you do this again, with this or any other tag, then there will be further consequences.
@@ -237,7 +235,6 @@ The edits you made will be reverted. Some of the edits have other beneficial cha
             AnalogousSystemReasonId: 'Plagiarism',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'mass plagiarism',
-            DefaultSuspendDays: 30,
             TemplateBody: `It has come to our attention that some of your answers contain text copied from other answers or websites without giving credit to the source of the text.  This is considered plagiarism, and it is a violation of our Terms of Service and the license agreement.
 
 You are not allowed to copy content already available elsewhere and claim it as your own.  That is, you must _at least_ provide [clear attribution](/help/referencing).
@@ -314,7 +311,6 @@ It's expected that whatever is decided upon as the new policy for using such too
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'voluntary suspension',
             DefaultSuspensionReason: 'upon request',
-            DefaultSuspendDays: 30,
             TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
 
 Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
@@ -326,7 +322,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         {
             AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
             TemplateName: 'spam/abuse year-long ban',
-            DefaultSuspendDays: 365,
             TemplateBody: 'Account removed for spamming and/or abusive behavior. You\'re no longer welcome to participate here.'
         }
     ];
