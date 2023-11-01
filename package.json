@@ -2,7 +2,7 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@types/format-unicorn": "^1.1.4",
-    "@types/jquery": "^3.5.20",
+    "@types/jquery": "^3.5.25",
     "@types/js-beautify": "^1.14.2",
     "@types/tampermonkey": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
