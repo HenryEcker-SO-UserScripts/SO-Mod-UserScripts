@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.9
+// @version      0.0.10
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -320,6 +320,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
       $.ajaxSetup({
         beforeSend: (jqXHR, settings) => {
+          $('button[aria-controls="suspension-popover"]').prop("disabled", false);
           if (!settings?.url?.startsWith("/admin/template/")) {
             return;
           }
@@ -352,6 +353,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 ...selectedTemplate
               };
               settings.success(fieldDefaults, "success", jqXHR);
+              $('button[aria-controls="suspension-popover"]').prop("disabled", true);
             },
             error: settings.error
           });

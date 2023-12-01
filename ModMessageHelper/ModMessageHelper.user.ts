@@ -337,6 +337,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
         $.ajaxSetup({
             beforeSend: (jqXHR, settings) => {
+                $('button[aria-controls="suspension-popover"]').prop('disabled', false);
                 // If not a request for an admin template do nothing
                 if (!settings?.url?.startsWith('/admin/template/')) {
                     return;
@@ -385,6 +386,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
                         // Force call the old Success function with updated values
                         (<(data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
+                        $('button[aria-controls="suspension-popover"]').prop('disabled', true);
                     },
                     error: settings.error
                 });
