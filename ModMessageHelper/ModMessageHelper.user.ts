@@ -210,6 +210,16 @@ Having more than one account is permitted, if the additional account is not used
         {
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
+            TemplateName: 'question repetition, multiple accounts',
+            TemplateBody: `It has been called to our attention that you have asked the same question from multiple accounts. The extra accounts will be removed together with any unanswered questions. Please refrain from using secondary accounts to circumvent our systems in the future.
+
+If your question was closed or did not attract responses, then the first thing to do is to *improve the question*; some guidance for this is [given here](https://stackoverflow.com/help/how-to-ask). Questions that aren’t up to standards are voted on and may be closed: this doesn’t mean they’re gone forever, as they can be reopened if improved or clarified (as appropriate). Please see our [editing](https://stackoverflow.com/editing-help) guidelines for how to improve your question.
+
+However, please do not keep re-asking the same question. If your ability to ask questions has been suspended, do not create new accounts to circumvent our systems; this will result in increasingly longer suspensions being applied. Having more than one account is permitted, if the additional account is not used to circumvent such limitations and the accounts do not interact with each other, or otherwise allow you to do things which you would not be permitted to do with a single account. If you are interested in more information about having more than one account, please see [What are the rules governing multiple accounts (i.e. sockpuppets)?](https://meta.stackoverflow.com/q/388984)`,
+        },
+        {
+            AnalogousSystemReasonId: 'OtherViolation',
+            StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'demands to show effort/"not a code-writing service"',
             TemplateBody: `It has come to our attention that you've left one or more comments similar to the following:
 
