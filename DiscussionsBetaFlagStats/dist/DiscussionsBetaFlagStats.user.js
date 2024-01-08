@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Discussion Beta Flag Stats
+// @name         Discussions Beta Flag Stats
 // @description  Adds statistics about flag counts and users in discussions
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.1
+// @version      0.0.2
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/DiscussionsBetaFlagStats/dist/DiscussionsBetaFlagStats.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/DiscussionsBetaFlagStats/dist/DiscussionsBetaFlagStats.user.js
 //
@@ -132,7 +132,7 @@
         $table.append($tbody);
       }
       $summaryContainer.append($table);
-      return $(`<div class="my8"><h2>${tableTitle}</h2></div>`).append($summaryContainer);
+      return $(`<div class="my12"><h2>${tableTitle}</h2></div>`).append($summaryContainer);
     }
     function buildSummaryTable(ss) {
       return buildTable(
@@ -143,9 +143,7 @@
         })
       );
     }
-    $userScriptMasterContainer.append(
-      $("<div></div>").append(buildSummaryTable(summaryStats))
-    );
+    $userScriptMasterContainer.append(buildSummaryTable(summaryStats));
     function buildUserTable(title, uss, linkSuffix = "", useDetailCount = true) {
       const flagTypes = /* @__PURE__ */ new Set(["Spam", "Should be a question", "Something else"]);
       const tbodyData = Object.entries(uss).map((e) => {
@@ -170,13 +168,13 @@
         ];
       });
       return buildTable(
-        title,
+        `${tbodyData.length} ${plurarlise(tbodyData.length, title)}`,
         [["User", ...flagTypes, "Total"]],
         tbodyData,
         ["hs4"]
       );
     }
-    $userScriptMasterContainer.append(buildUserTable("Flagged Users", flaggedUserSummaryStats, "?tab=activity&sort=discussions")).append(buildUserTable("Flaggers", flaggerSummaryStats, void 0, false));
+    $userScriptMasterContainer.append(buildUserTable("Flagged User", flaggedUserSummaryStats, "?tab=activity&sort=discussions")).append(buildUserTable("Flagger", flaggerSummaryStats, void 0, false));
   }
   StackExchange.ready(main);
 })();

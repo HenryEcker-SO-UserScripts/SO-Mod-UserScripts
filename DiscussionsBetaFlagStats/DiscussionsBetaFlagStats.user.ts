@@ -171,7 +171,7 @@ function main() {
 
         $summaryContainer.append($table);
 
-        return $(`<div class="my8"><h2>${tableTitle}</h2></div>`).append($summaryContainer);
+        return $(`<div class="my12"><h2>${tableTitle}</h2></div>`).append($summaryContainer);
     }
 
     function buildSummaryTable(ss: SummaryFlagCount): JQuery<HTMLElement> {
@@ -186,10 +186,8 @@ function main() {
         );
     }
 
-    $userScriptMasterContainer.append(
-        $('<div></div>')
-            .append(buildSummaryTable(summaryStats))
-    );
+    $userScriptMasterContainer
+        .append(buildSummaryTable(summaryStats));
 
     function buildUserTable(title: string, uss: UserSummaryStats, linkSuffix = '', useDetailCount = true): JQuery<HTMLElement> {
         const flagTypes = new Set<DiscussionFlagType>(['Spam', 'Should be a question', 'Something else']);
@@ -215,7 +213,7 @@ function main() {
             ];
         });
         return buildTable(
-            title,
+            `${tbodyData.length} ${plurarlise(tbodyData.length, title)}`,
             [['User', ...flagTypes, 'Total']],
             tbodyData,
             ['hs4']
@@ -223,8 +221,8 @@ function main() {
     }
 
     $userScriptMasterContainer
-        .append(buildUserTable('Flagged Users', flaggedUserSummaryStats, '?tab=activity&sort=discussions'))
-        .append(buildUserTable('Flaggers', flaggerSummaryStats, undefined, false));
+        .append(buildUserTable('Flagged User', flaggedUserSummaryStats, '?tab=activity&sort=discussions'))
+        .append(buildUserTable('Flagger', flaggerSummaryStats, undefined, false));
 }
 
 StackExchange.ready(main);
