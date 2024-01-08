@@ -46,7 +46,7 @@
     function getUserInfo($userAnchor) {
       return {
         displayName: $userAnchor.text().trim(),
-        userId: Number($userAnchor.attr("href").match(/(\d+)/)[0])
+        userId: Number($userAnchor.attr("href").match(/^\/users\/(\d+)\//i)[1])
       };
     }
     function accumulateUserSummaryStats(uss, userInfo, flagType, flagCount) {

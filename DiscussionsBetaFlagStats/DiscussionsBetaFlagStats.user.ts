@@ -68,7 +68,7 @@ function computeStats($postContainers: JQuery<HTMLElement>) {
     function getUserInfo($userAnchor: JQuery<HTMLElement>): UserInfo {
         return {
             displayName: $userAnchor.text().trim(),
-            userId: Number($userAnchor.attr('href').match(/(\d+)/)[0])
+            userId: Number($userAnchor.attr('href').match(/^\/users\/(\d+)\//i)[1])
         };
     }
 
