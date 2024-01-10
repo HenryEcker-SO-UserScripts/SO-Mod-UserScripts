@@ -3,7 +3,7 @@
 // @description  Adds statistics about flag counts and users in discussions
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/DiscussionsBetaFlagStats/dist/DiscussionsBetaFlagStats.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/DiscussionsBetaFlagStats/dist/DiscussionsBetaFlagStats.user.js
 //
@@ -15,7 +15,7 @@
 /* globals StackExchange, $ */
 (function() {
   "use strict";
-  function plurarlise(count, base) {
+  function pluralise(count, base) {
     return count === 1 ? base : `${base}s`;
   }
   function* jQueryGen($jqueryElem) {
@@ -90,6 +90,9 @@
   function main() {
     const $postContainers = $(".js-post-container");
     const uniquePostCount = $postContainers.length;
+    if (uniquePostCount === 0) {
+      return;
+    }
     $("#mainbar header .s-page-title--header").append(` (on ${uniquePostCount} Posts)`);
     const { summaryStats, flaggedUserSummaryStats, flaggerSummaryStats } = computeStats($postContainers);
     const $userScriptMasterContainer = $('<div id="dbfs-summary" class="mb24"></div>');
@@ -98,7 +101,7 @@
       if (cr === void 0) {
         return "0";
       } else {
-        return `${cr.count} ${plurarlise(cr.count, "flag")} (on ${cr.unduplicatedCount} ${plurarlise(cr.unduplicatedCount, "post")})`;
+        return `${cr.count} ${pluralise(cr.count, "flag")} (on ${cr.unduplicatedCount} ${pluralise(cr.unduplicatedCount, "post")})`;
       }
     }
     function buildTable(tableTitle, theadData, tbodyData, tableContainerStyles) {
@@ -168,10 +171,10 @@
         ];
       });
       return buildTable(
-        `${tbodyData.length} ${plurarlise(tbodyData.length, title)}`,
+        `${tbodyData.length} ${pluralise(tbodyData.length, title)}`,
         [["User", ...flagTypes, "Total"]],
         tbodyData,
-        ["hs4"]
+        ["hmx4"]
       );
     }
     $userScriptMasterContainer.append(buildUserTable("Flagged User", flaggedUserSummaryStats, "?tab=activity&sort=discussions")).append(buildUserTable("Flagger", flaggerSummaryStats, void 0, false));
