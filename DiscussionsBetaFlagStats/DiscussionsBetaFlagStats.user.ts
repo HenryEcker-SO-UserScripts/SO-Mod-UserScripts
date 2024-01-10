@@ -17,7 +17,7 @@ interface UserInfo {
 }
 
 
-function plurarlise(count: number, base: string) {
+function pluralise(count: number, base: string) {
     return count === 1 ? base : `${base}s`;
 }
 
@@ -132,7 +132,7 @@ function main() {
         if (cr === undefined) {
             return '0';
         } else {
-            return `${cr.count} ${plurarlise(cr.count, 'flag')} (on ${cr.unduplicatedCount} ${plurarlise(cr.unduplicatedCount, 'post')})`;
+            return `${cr.count} ${pluralise(cr.count, 'flag')} (on ${cr.unduplicatedCount} ${pluralise(cr.unduplicatedCount, 'post')})`;
         }
     }
 
@@ -213,7 +213,7 @@ function main() {
             ];
         });
         return buildTable(
-            `${tbodyData.length} ${plurarlise(tbodyData.length, title)}`,
+            `${tbodyData.length} ${pluralise(tbodyData.length, title)}`,
             [['User', ...flagTypes, 'Total']],
             tbodyData,
             ['hmx4']
