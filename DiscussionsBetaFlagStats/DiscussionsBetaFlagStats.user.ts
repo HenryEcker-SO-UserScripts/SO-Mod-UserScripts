@@ -122,6 +122,11 @@ function main() {
     const $postContainers = $('.js-post-container');
     const uniquePostCount = $postContainers.length;
 
+    if(uniquePostCount === 0){
+        // Do nothing if no flags
+        return;
+    }
+
     $('#mainbar header .s-page-title--header').append(` (on ${uniquePostCount} Posts)`);
 
     const {summaryStats, flaggedUserSummaryStats, flaggerSummaryStats} = computeStats($postContainers);
