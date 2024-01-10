@@ -216,7 +216,7 @@ function main() {
             `${tbodyData.length} ${plurarlise(tbodyData.length, title)}`,
             [['User', ...flagTypes, 'Total']],
             tbodyData,
-            ['hs4']
+            ['hmx4']
         );
     }
 
