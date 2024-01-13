@@ -194,7 +194,7 @@ function main() {
     $userScriptMasterContainer
         .append(buildSummaryTable(summaryStats));
 
-    function buildUserTable(title: string, flagTypes: Set<DiscussionFlagType>, uss: UserSummaryStats, linkSuffix = '', useDetailCount = true): JQuery<HTMLElement> {
+    function buildUserTable(title: string, flagTypes: DiscussionFlagType[], uss: UserSummaryStats, linkSuffix = '', useDetailCount = true): JQuery<HTMLElement> {
         const tbodyData = (<[string, { total: number; } & UserStats][]>Object.entries(uss)).map((e) => {
             e[1].total = 0;
             for (const ft of flagTypes) {
@@ -224,11 +224,9 @@ function main() {
         );
     }
 
-    const filteredFlagTypes = new Set<DiscussionFlagType>(
-        <DiscussionFlagType[]>['Spam', 'Rude or abusive', 'Should be a question', 'Something else'].filter((v) => {
-            return Object.hasOwn(summaryStats, v);
-        })
-    );
+    const filteredFlagTypes = (<[DiscussionFlagType, CountRecord][]>Object.entries(summaryStats))
+            .sort(([_0, a], [_1, b]) => b.count - a.count)
+            .map(([e, _0]) => e);
 
     $userScriptMasterContainer
         .append(buildUserTable('Flagged User', filteredFlagTypes, flaggedUserSummaryStats, '?tab=activity&sort=discussions'))
