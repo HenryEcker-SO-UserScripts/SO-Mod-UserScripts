@@ -159,7 +159,7 @@
       ).map(([userId, userStats]) => {
         return [
           `<a href="/users/${userId}/${linkSuffix}" target="_blank">${userStats.displayName}</a>`,
-          ...[...flagTypes].map((ft) => {
+          ...flagTypes.map((ft) => {
             if (useDetailCount) {
               return formatCountRecord(userStats?.[ft]);
             } else {
