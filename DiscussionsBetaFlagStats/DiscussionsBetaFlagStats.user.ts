@@ -1,4 +1,4 @@
-type DiscussionFlagType = 'Spam' | 'Should be a question' | 'Something else';
+type DiscussionFlagType = 'Spam' | 'Should be a question' | 'Something else' | 'Rude or abusive';
 
 interface CountRecord {
     unduplicatedCount: number;
@@ -122,7 +122,7 @@ function main() {
     const $postContainers = $('.js-post-container');
     const uniquePostCount = $postContainers.length;
 
-    if(uniquePostCount === 0){
+    if (uniquePostCount === 0) {
         // Do nothing if no flags
         return;
     }
@@ -194,8 +194,7 @@ function main() {
     $userScriptMasterContainer
         .append(buildSummaryTable(summaryStats));
 
-    function buildUserTable(title: string, uss: UserSummaryStats, linkSuffix = '', useDetailCount = true): JQuery<HTMLElement> {
-        const flagTypes = new Set<DiscussionFlagType>(['Spam', 'Should be a question', 'Something else']);
+    function buildUserTable(title: string, flagTypes: Set<DiscussionFlagType>, uss: UserSummaryStats, linkSuffix = '', useDetailCount = true): JQuery<HTMLElement> {
         const tbodyData = (<[string, { total: number; } & UserStats][]>Object.entries(uss)).map((e) => {
             e[1].total = 0;
             for (const ft of flagTypes) {
@@ -225,9 +224,15 @@ function main() {
         );
     }
 
+    const filteredFlagTypes = new Set<DiscussionFlagType>(
+        <DiscussionFlagType[]>['Spam', 'Rude or abusive', 'Should be a question', 'Something else'].filter((v) => {
+            return Object.hasOwn(summaryStats, v);
+        })
+    );
+
     $userScriptMasterContainer
-        .append(buildUserTable('Flagged User', flaggedUserSummaryStats, '?tab=activity&sort=discussions'))
-        .append(buildUserTable('Flagger', flaggerSummaryStats, undefined, false));
+        .append(buildUserTable('Flagged User', filteredFlagTypes, flaggedUserSummaryStats, '?tab=activity&sort=discussions'))
+        .append(buildUserTable('Flagger', filteredFlagTypes, flaggerSummaryStats, undefined, false));
 }
 
 StackExchange.ready(main);
