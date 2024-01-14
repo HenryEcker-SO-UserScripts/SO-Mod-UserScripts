@@ -1,3 +1,5 @@
+type ColumnHeader = 'Voter' | 'Target User' | 'Votes Given' | 'Fraud Signal';
+
 function processUserCardTd($td: JQuery<HTMLElement>) {
     const userDisplayName = getTextFromJQueryElem($td.find('.user-details .s-btn'));
     const userLink = $td.find('a.s-block-link[href^="/users"]').attr('href');
@@ -8,28 +10,35 @@ function getTextFromJQueryElem($e: JQuery<HTMLElement>) {
     return $e.text().trim();
 }
 
-function* getTableRowElements($table: JQuery<HTMLElement>) {
-    for (const n of $table.find('tbody tr')) {
+function getTableRowElements($table: JQuery<HTMLElement>): Record<ColumnHeader, string>[] {
+    return $table.find('tbody tr').map((_0, n) => {
         const $e = $(n);
-        yield {
-            voter: processUserCardTd($e.find('td:eq(0)')),
-            targetUser: processUserCardTd($e.find('td:eq(1)')),
-            votesGiven: getTextFromJQueryElem($e.find('td:eq(2)')),
-            fraudSignal: getTextFromJQueryElem($e.find('td:eq(5)'))
+        return {
+            'Voter': processUserCardTd($e.find('td:eq(0)')),
+            'Target User': processUserCardTd($e.find('td:eq(1)')),
+            'Votes Given': getTextFromJQueryElem($e.find('td:eq(2)')),
+            'Fraud Signal': getTextFromJQueryElem($e.find('td:eq(5)'))
         };
-    }
+    }).toArray();
 }
 
 function buildTableMarkdown() {
-
     const $votesTable = $('table');
 
-    const markdown = ['| Voter | Target User | Votes Given | Fraud Signal |'];
-    markdown.push('|:---|:---|:---|:---|');
-
-    for (const {voter, targetUser, votesGiven, fraudSignal} of getTableRowElements($votesTable)) {
-        markdown.push(`| ${voter} | ${targetUser} | ${votesGiven} | ${fraudSignal} |`);
+    function makeMdRow(trData: string[], withWhitespace = true) {
+        if (withWhitespace) {
+            return `| ${trData.join(' | ')} |`;
+        } else {
+            return `|${trData.join('|')}|`;
+        }
     }
+
+    const headers: ColumnHeader[] = ['Voter', 'Target User', 'Votes Given', 'Fraud Signal'];
+    const markdown = [
+        makeMdRow(headers),
+        makeMdRow(headers.map(_ => ':---'), false),
+        ...getTableRowElements($votesTable).map(tbodyRow => makeMdRow(headers.map(v => tbodyRow[v])))
+    ];
 
     return {
         rows: markdown.length + 4,
