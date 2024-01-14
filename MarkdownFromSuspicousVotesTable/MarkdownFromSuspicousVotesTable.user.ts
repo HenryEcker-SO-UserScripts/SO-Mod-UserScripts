@@ -46,8 +46,6 @@ function main() {
     $btn.on('click', () => {
         const {rows, markdown} = buildTableMarkdown();
         const $textarea = $(`#${modalId}-textarea`);
-        $textarea.addClass('w100');
-        $textarea.css('max-height', '65vh');
         $textarea.attr('rows', rows);
         $textarea.val(markdown);
     });
@@ -55,7 +53,9 @@ function main() {
     const $modal = $(`<aside class="s-modal" data-s-modal-target="modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}-title" aria-describedby="${modalId}-description" aria-hidden="true">
         <div class="s-modal--dialog w70" role="document">
             <h1 class="s-modal--header" id="${modalId}-title">Table Markdown</h1>
-            <p class="s-modal--body" id="${modalId}-description"><textarea id="${modalId}-textarea"></textarea></p>
+            <p class="s-modal--body" id="${modalId}-description">
+                <textarea id="${modalId}-textarea" class="w100" style="max-height: 65vh;"></textarea>
+            </p>
             <div class="d-flex gx8 s-modal--footer">
                 <button class="flex--item s-btn" type="button" data-action="s-modal#hide">Close</button>
             </div>
