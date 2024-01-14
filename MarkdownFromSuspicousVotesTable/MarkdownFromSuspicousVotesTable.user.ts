@@ -1,9 +1,14 @@
 type ColumnHeader = 'Voter' | 'Target User' | 'Votes Given' | 'Fraud Signal';
 
+function createLinkMd(text: string, href: string) {
+    return `[${text.replace('[', '\\[').replace(']', '\\]')}](${href})`;
+}
+
+
 function processUserCardTd($td: JQuery<HTMLElement>) {
     const userDisplayName = getTextFromJQueryElem($td.find('.user-details .s-btn'));
     const userLink = $td.find('a.s-block-link[href^="/users"]').attr('href');
-    return `[${userDisplayName}](${userLink})`;
+    return createLinkMd(userDisplayName, userLink);
 }
 
 function getTextFromJQueryElem($e: JQuery<HTMLElement>) {
