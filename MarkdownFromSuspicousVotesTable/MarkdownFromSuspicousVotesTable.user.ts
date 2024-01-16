@@ -41,7 +41,7 @@ function buildTableMarkdown() {
     const headers: ColumnHeader[] = ['Voter', 'Target User', 'Votes Given', 'Fraud Signal'];
     const markdown = [
         makeMdRow(headers),
-        makeMdRow(headers.map(_ => ':---'), false),
+        makeMdRow(headers.map(({length}) => Array.from({length}).map((_, i) => i === 0 ? ':' : '-').join(''))),
         ...getTableRowElements($votesTable).map(tbodyRow => makeMdRow(headers.map(v => tbodyRow[v])))
     ];
 
