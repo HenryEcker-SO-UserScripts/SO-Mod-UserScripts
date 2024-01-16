@@ -3,7 +3,7 @@
 // @description  Creates an easy way to build a markdown table from a suspicious votes query
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/MarkdownFromSuspicousVotesTable/dist/MarkdownFromSuspicousVotesTable.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/MarkdownFromSuspicousVotesTable/dist/MarkdownFromSuspicousVotesTable.user.js
 //
@@ -55,7 +55,7 @@
     const headers = ["Voter", "Target User", "Votes Given", "Fraud Signal"];
     const markdown = [
       makeMdRow(headers),
-      makeMdRow(headers.map((_) => ":---"), false),
+      makeMdRow(headers.map(({ length }) => Array.from({ length }).map((_, i) => i === 0 ? ":" : "-").join(""))),
       ...getTableRowElements($votesTable).map((tbodyRow) => makeMdRow(headers.map((v) => tbodyRow[v])))
     ];
     return {
@@ -78,10 +78,10 @@ ${markdown.join("\n")}
       $textarea.val(markdown);
     });
     const $modal = $(`<aside class="s-modal" data-s-modal-target="modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}-title" aria-describedby="${modalId}-description" aria-hidden="true">
-        <div class="s-modal--dialog w70" role="document">
+        <div class="s-modal--dialog w60" style="max-width: unset;" role="document">
             <h1 class="s-modal--header" id="${modalId}-title">Table Markdown</h1>
             <p class="s-modal--body" id="${modalId}-description">
-                <textarea id="${modalId}-textarea" class="w100" style="max-height: 65vh;"></textarea>
+                <textarea id="${modalId}-textarea" class="w100" style="max-height: 65vh;font-family: monospace;white-space: pre;"></textarea>
             </p>
             <div class="d-flex gx8 s-modal--footer">
                 <button class="flex--item s-btn" type="button" data-action="s-modal#hide">Close</button>
