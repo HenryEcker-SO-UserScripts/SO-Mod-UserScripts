@@ -1,4 +1,5 @@
 type ColumnHeader = 'Voter' | 'Target User' | 'Votes Given' | 'Fraud Signal';
+type TableConfiguration = { idx: number; fn: ($j: JQuery<HTMLElement>) => string; }[];
 
 function createLinkMd(text: string, href: string) {
     return `[${text.replace('[', '\\[').replace(']', '\\]')}](${href})`;
@@ -15,34 +16,45 @@ function getTextFromJQueryElem($e: JQuery<HTMLElement>) {
     return $e.text().trim();
 }
 
-function getTableRowElements($table: JQuery<HTMLElement>): Record<ColumnHeader, string>[] {
-    return $table.find('tbody tr').map((_0, n) => {
+function getTableHeaderRowElements($table: JQuery<HTMLElement>, config: TableConfiguration) {
+    const $thead = $table.find('thead tr');
+    return config.map(({idx}) => getTextFromJQueryElem($thead.find(`th:eq(${idx})`)) as ColumnHeader);
+}
+
+
+function getTableRowElements($table: JQuery<HTMLElement>, config: TableConfiguration): string[][] {
+    return $table.find('tbody tr').toArray().map((n) => {
         const $e = $(n);
-        return {
-            'Voter': processUserCardTd($e.find('td:eq(0)')),
-            'Target User': processUserCardTd($e.find('td:eq(1)')),
-            'Votes Given': getTextFromJQueryElem($e.find('td:eq(2)')),
-            'Fraud Signal': getTextFromJQueryElem($e.find('td:eq(5)'))
-        };
-    }).toArray();
+        return config.map(({idx, fn}) => {
+            return fn($e.find(`td:eq(${idx})`));
+        });
+    });
+}
+
+
+function makeMdRow(trData: string[], withWhitespace = true) {
+    if (withWhitespace) {
+        return `| ${trData.join(' | ')} |`;
+    } else {
+        return `|${trData.join('|')}|`;
+    }
 }
 
 function buildTableMarkdown() {
+    const tableConfiguration: TableConfiguration = [
+        {idx: 0, fn: processUserCardTd},
+        {idx: 1, fn: processUserCardTd},
+        {idx: 2, fn: getTextFromJQueryElem},
+        {idx: 5, fn: getTextFromJQueryElem}
+    ];
     const $votesTable = $('table');
 
-    function makeMdRow(trData: string[], withWhitespace = true) {
-        if (withWhitespace) {
-            return `| ${trData.join(' | ')} |`;
-        } else {
-            return `|${trData.join('|')}|`;
-        }
-    }
+    const headers: ColumnHeader[] = getTableHeaderRowElements($votesTable, tableConfiguration);
 
-    const headers: ColumnHeader[] = ['Voter', 'Target User', 'Votes Given', 'Fraud Signal'];
     const markdown = [
         makeMdRow(headers),
         makeMdRow(headers.map(({length}) => Array.from({length}).map((_, i) => i === 0 ? ':' : '-').join(''))),
-        ...getTableRowElements($votesTable).map(tbodyRow => makeMdRow(headers.map(v => tbodyRow[v])))
+        ...getTableRowElements($votesTable, tableConfiguration).map(tbodyRow => makeMdRow(tbodyRow))
     ];
 
     return {

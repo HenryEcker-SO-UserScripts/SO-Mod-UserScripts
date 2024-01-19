@@ -3,7 +3,7 @@
 // @description  Creates an easy way to build a markdown table from a suspicious votes query
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/MarkdownFromSuspicousVotesTable/dist/MarkdownFromSuspicousVotesTable.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/MarkdownFromSuspicousVotesTable/dist/MarkdownFromSuspicousVotesTable.user.js
 //
@@ -32,31 +32,38 @@
   function getTextFromJQueryElem($e) {
     return $e.text().trim();
   }
-  function getTableRowElements($table) {
-    return $table.find("tbody tr").map((_0, n) => {
+  function getTableHeaderRowElements($table, config) {
+    const $thead = $table.find("thead tr");
+    return config.map(({ idx }) => getTextFromJQueryElem($thead.find(`th:eq(${idx})`)));
+  }
+  function getTableRowElements($table, config) {
+    return $table.find("tbody tr").toArray().map((n) => {
       const $e = $(n);
-      return {
-        "Voter": processUserCardTd($e.find("td:eq(0)")),
-        "Target User": processUserCardTd($e.find("td:eq(1)")),
-        "Votes Given": getTextFromJQueryElem($e.find("td:eq(2)")),
-        "Fraud Signal": getTextFromJQueryElem($e.find("td:eq(5)"))
-      };
-    }).toArray();
+      return config.map(({ idx, fn }) => {
+        return fn($e.find(`td:eq(${idx})`));
+      });
+    });
+  }
+  function makeMdRow(trData, withWhitespace = true) {
+    if (withWhitespace) {
+      return `| ${trData.join(" | ")} |`;
+    } else {
+      return `|${trData.join("|")}|`;
+    }
   }
   function buildTableMarkdown() {
+    const tableConfiguration = [
+      { idx: 0, fn: processUserCardTd },
+      { idx: 1, fn: processUserCardTd },
+      { idx: 2, fn: getTextFromJQueryElem },
+      { idx: 5, fn: getTextFromJQueryElem }
+    ];
     const $votesTable = $("table");
-    function makeMdRow(trData, withWhitespace = true) {
-      if (withWhitespace) {
-        return `| ${trData.join(" | ")} |`;
-      } else {
-        return `|${trData.join("|")}|`;
-      }
-    }
-    const headers = ["Voter", "Target User", "Votes Given", "Fraud Signal"];
+    const headers = getTableHeaderRowElements($votesTable, tableConfiguration);
     const markdown = [
       makeMdRow(headers),
       makeMdRow(headers.map(({ length }) => Array.from({ length }).map((_, i) => i === 0 ? ":" : "-").join(""))),
-      ...getTableRowElements($votesTable).map((tbodyRow) => makeMdRow(headers.map((v) => tbodyRow[v])))
+      ...getTableRowElements($votesTable, tableConfiguration).map((tbodyRow) => makeMdRow(tbodyRow))
     ];
     return {
       rows: markdown.length + 4,
