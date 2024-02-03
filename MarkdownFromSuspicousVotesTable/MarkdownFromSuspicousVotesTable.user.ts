@@ -1,5 +1,16 @@
 type ColumnHeader = 'Voter' | 'Target User' | 'Votes Given' | 'Fraud Signal';
-type TableConfiguration = { idx: number; fn: ($j: JQuery<HTMLElement>) => string; }[];
+
+
+interface CellParser {
+    headFn: ($j: JQuery<HTMLElement>) => ColumnHeader;
+    bodyFn: ($j: JQuery<HTMLElement>) => string;
+}
+
+interface CellConfiguration extends CellParser {
+    idx: number;
+}
+
+type TableConfiguration = CellConfiguration[];
 
 function createLinkMd(text: string, href: string) {
     return `[${text.replace('[', '\\[').replace(']', '\\]')}](${href})`;
@@ -7,28 +18,35 @@ function createLinkMd(text: string, href: string) {
 
 
 function processUserCardTd($td: JQuery<HTMLElement>) {
-    const userDisplayName = getTextFromJQueryElem($td.find('.user-details .s-btn'));
+    const userDisplayName = getTextFromJQueryElem<string>($td.find('.user-details .s-btn'));
     const userLink = $td.find('a.s-block-link[href^="/users"]').attr('href');
     return createLinkMd(userDisplayName, userLink);
 }
 
-function getTextFromJQueryElem($e: JQuery<HTMLElement>) {
-    return $e.text().trim();
+function getTextFromJQueryElem<T>($e: JQuery<HTMLElement>): T {
+    return $e.text().trim() as T;
+}
+
+
+function getTableCellFromSection<T>(
+    $table: JQuery<HTMLElement>, tableSectionHtmlTag: string, cellHtmlTag: string,
+    config: TableConfiguration, fnAttr: keyof CellParser
+): T[][] {
+    return $table.find(`${tableSectionHtmlTag} tr`).toArray().map((n) => {
+        const $e = $(n);
+        return config.map(({idx, [fnAttr]: fn}) => {
+            return fn($e.find(`${cellHtmlTag}:eq(${idx})`)) as T;
+        });
+    });
 }
 
 function getTableHeaderRowElements($table: JQuery<HTMLElement>, config: TableConfiguration) {
-    const $thead = $table.find('thead tr');
-    return config.map(({idx}) => getTextFromJQueryElem($thead.find(`th:eq(${idx})`)) as ColumnHeader);
+    return getTableCellFromSection<ColumnHeader>($table, 'thead', 'th', config, 'headFn')[0];
 }
 
 
-function getTableRowElements($table: JQuery<HTMLElement>, config: TableConfiguration): string[][] {
-    return $table.find('tbody tr').toArray().map((n) => {
-        const $e = $(n);
-        return config.map(({idx, fn}) => {
-            return fn($e.find(`td:eq(${idx})`));
-        });
-    });
+function getTableBodyRowElements($table: JQuery<HTMLElement>, config: TableConfiguration): string[][] {
+    return getTableCellFromSection<ColumnHeader>($table, 'tbody', 'td', config, 'bodyFn');
 }
 
 
@@ -42,19 +60,19 @@ function makeMdRow(trData: string[], withWhitespace = true) {
 
 function buildTableMarkdown() {
     const tableConfiguration: TableConfiguration = [
-        {idx: 0, fn: processUserCardTd},
-        {idx: 1, fn: processUserCardTd},
-        {idx: 2, fn: getTextFromJQueryElem},
-        {idx: 5, fn: getTextFromJQueryElem}
+        {idx: 0, headFn: getTextFromJQueryElem<ColumnHeader>, bodyFn: processUserCardTd},
+        {idx: 1, headFn: getTextFromJQueryElem<ColumnHeader>, bodyFn: processUserCardTd},
+        {idx: 2, headFn: getTextFromJQueryElem<ColumnHeader>, bodyFn: getTextFromJQueryElem<string>},
+        {idx: 5, headFn: getTextFromJQueryElem<ColumnHeader>, bodyFn: getTextFromJQueryElem<string>}
     ];
     const $votesTable = $('table');
 
-    const headers: ColumnHeader[] = getTableHeaderRowElements($votesTable, tableConfiguration);
+    const headers = getTableHeaderRowElements($votesTable, tableConfiguration);
 
     const markdown = [
         makeMdRow(headers),
         makeMdRow(headers.map(({length}) => Array.from({length}).map((_, i) => i === 0 ? ':' : '-').join(''))),
-        ...getTableRowElements($votesTable, tableConfiguration).map(tbodyRow => makeMdRow(tbodyRow))
+        ...getTableBodyRowElements($votesTable, tableConfiguration).map(tbodyRow => makeMdRow(tbodyRow))
     ];
 
     return {
