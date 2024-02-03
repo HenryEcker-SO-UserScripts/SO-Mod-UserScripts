@@ -3,7 +3,7 @@
 // @description  Creates an easy way to build a markdown table from a suspicious votes query
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.4
+// @version      0.0.5
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/MarkdownFromSuspicousVotesTable/dist/MarkdownFromSuspicousVotesTable.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/MarkdownFromSuspicousVotesTable/dist/MarkdownFromSuspicousVotesTable.user.js
 //
@@ -32,17 +32,19 @@
   function getTextFromJQueryElem($e) {
     return $e.text().trim();
   }
-  function getTableHeaderRowElements($table, config) {
-    const $thead = $table.find("thead tr");
-    return config.map(({ idx }) => getTextFromJQueryElem($thead.find(`th:eq(${idx})`)));
-  }
-  function getTableRowElements($table, config) {
-    return $table.find("tbody tr").toArray().map((n) => {
+  function getTableCellFromSection($table, tableSectionHtmlTag, cellHtmlTag, config, fnAttr) {
+    return $table.find(`${tableSectionHtmlTag} tr`).toArray().map((n) => {
       const $e = $(n);
-      return config.map(({ idx, fn }) => {
-        return fn($e.find(`td:eq(${idx})`));
+      return config.map(({ idx, [fnAttr]: fn }) => {
+        return fn($e.find(`${cellHtmlTag}:eq(${idx})`));
       });
     });
+  }
+  function getTableHeaderRowElements($table, config) {
+    return getTableCellFromSection($table, "thead", "th", config, "headFn")[0];
+  }
+  function getTableBodyRowElements($table, config) {
+    return getTableCellFromSection($table, "tbody", "td", config, "bodyFn");
   }
   function makeMdRow(trData, withWhitespace = true) {
     if (withWhitespace) {
@@ -53,17 +55,17 @@
   }
   function buildTableMarkdown() {
     const tableConfiguration = [
-      { idx: 0, fn: processUserCardTd },
-      { idx: 1, fn: processUserCardTd },
-      { idx: 2, fn: getTextFromJQueryElem },
-      { idx: 5, fn: getTextFromJQueryElem }
+      { idx: 0, headFn: getTextFromJQueryElem, bodyFn: processUserCardTd },
+      { idx: 1, headFn: getTextFromJQueryElem, bodyFn: processUserCardTd },
+      { idx: 2, headFn: getTextFromJQueryElem, bodyFn: getTextFromJQueryElem },
+      { idx: 5, headFn: getTextFromJQueryElem, bodyFn: getTextFromJQueryElem }
     ];
     const $votesTable = $("table");
     const headers = getTableHeaderRowElements($votesTable, tableConfiguration);
     const markdown = [
       makeMdRow(headers),
       makeMdRow(headers.map(({ length }) => Array.from({ length }).map((_, i) => i === 0 ? ":" : "-").join(""))),
-      ...getTableRowElements($votesTable, tableConfiguration).map((tbodyRow) => makeMdRow(tbodyRow))
+      ...getTableBodyRowElements($votesTable, tableConfiguration).map((tbodyRow) => makeMdRow(tbodyRow))
     ];
     return {
       rows: markdown.length + 4,
