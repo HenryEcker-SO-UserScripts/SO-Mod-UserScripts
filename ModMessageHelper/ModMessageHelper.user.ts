@@ -54,6 +54,7 @@ StackExchange.ready(function () {
         {
             AnalogousSystemReasonId: 'LowQualityQuestions',
             TemplateName: 'low quality answers',
+            DefaultSuspendDays: 0,
             DefaultSuspensionReason: 'because of low-quality contributions',
             TemplateBody: `One or more of your answers do not meet the quality standards of the site and have been deleted.
 
@@ -72,6 +73,7 @@ If you believe a specific answer should not have been deleted, you can flag the 
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'closing spam',
+            DefaultSuspendDays: 0,
             TemplateBody: `As you may have noticed, ${parentName} is currently under a spam wave, receiving a lot of "support number" spam posts.
 
 While we appreciate your willingness to help us out with these as you see them, we noticed that you recently voted to close one or more of these questions. That is not very useful. **Instead of voting to close spam, you should flag it as spam.** You'll find that option at the very top of the "flag" dialog.
@@ -83,6 +85,7 @@ Thank you for your attention to this matter in the future. If you have any quest
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'soliciting votes',
+            DefaultSuspendDays: 0,
             TemplateBody: `We noticed that you've been posting numerous comments asking other users for upvotes and/or accepts. This is not an appropriate use of comments.
 
 Quoting from the [comment privilege page](${parentUrl}/help/privileges/comment):
@@ -101,7 +104,7 @@ In the best case, comments like these are merely noise, redundant with system-le
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'author minor edits bumping post',
-            DefaultSuspendDays: 3,
+            DefaultSuspendDays: 0,
             TemplateBody: `You appear to be editing your post to attract attention, rather than to improve it. Periodic cosmetic edits are not constructive and needlessly bump your post, displacing actually active posts that require more community attention. To quote the Help Center [How does editing work?](${parentUrl}/help/editing):
 
 > **Tiny, trivial edits are discouraged**; try to make the post significantly better when you edit, correcting all problems that you observe.
@@ -111,7 +114,7 @@ Please only edit your post to correct errors, to include additional insights, or
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'minor/trivial suggested edits',
-            DefaultSuspendDays: 3,
+            DefaultSuspendDays: 0,
             TemplateBody: `We have noticed that your recent suggested edits are just correcting a typo in the title and haven't handled any of the other problems with a question. Please note that we expect suggested edits to fix all issues with a post, rather than correcting only a single thing. To quote the Help Center [How does editing work?](${parentUrl}/help/editing):
 
 > **Tiny, trivial edits are discouraged**; try to make the post significantly better when you edit, correcting all problems that you observe.
@@ -123,6 +126,7 @@ Your ability to suggest edits has been revoked for {suspensionDurationDays} days
         {
             AnalogousSystemReasonId: 'Plagiarism',
             TemplateName: 'tag-wiki plagiarism',
+            DefaultSuspendDays: 0,
             TemplateBody: `It has come to our attention that your recent suggested tag wiki edits consisted primarily or entirely of text copied from other websites. We prefer not to simply copy content already available elsewhere in lieu of creating something that adds value to this site, and where possible we prefer that content be your own original work.
 
 Please note that we still require full attribution with a link to the external source, and citing the name of the original author if you are quoting an excerpt. You should also make an effort to seek permission before copying content.
@@ -132,6 +136,7 @@ Thank you, and we look forward to your contributions in the future.`,
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'gold badge abuse (redupe to add answer)',
+            DefaultSuspendDays: 0,
             TemplateBody: `We have noticed you have used your gold badge privilege to reopen a question closed as duplicate, answer it, and immediately close it again.
 
 - <!-- Add examples of question(s) that user have reopened -->
@@ -156,6 +161,7 @@ There are a few other appropriate actions that we ask you to consider:
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'gold badge abuse (reopen when answered)',
+            DefaultSuspendDays: 0,
             TemplateBody: `We have noticed you have used your gold badge privilege to reopen a question others have closed as duplicate, when you have a stake in the question.
 
 - <!-- Add examples of question(s) that user have reopened -->
@@ -176,6 +182,7 @@ There are a few other appropriate actions that we ask you to consider:
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'reset inappropriate username',
+            DefaultSuspendDays: 0,
             TemplateBody: `We have received reports that your username may be considered offensive to some members of our community. Our [Code of Conduct](${parentUrl}/conduct) requires that all usernames be appropriate for professional discourse and in keeping with our community standards.
 
 As a result we have reset your username to the default setting. We kindly request that you do not change your username back to the previous one without first consulting with us.
@@ -187,6 +194,7 @@ Thank you for your understanding and cooperation.`,
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'account sharing',
+            DefaultSuspendDays: 0,
             TemplateBody: `Company-owned or accounts shared by multiple users are not permitted as stated in the [Terms of Service](${parentUrl}/legal/terms-of-service/public):
 
 > To access some of the public Network features you will need to **register for an account as an individual** and consent to these Public Network Terms. If you do not consent to these Public Network Terms, ${parentName} reserves the right to refuse, suspend or terminate your access to the public Network.
@@ -199,6 +207,7 @@ Should you wish to appeal this decision, you can use the [Contact Us](${parentUr
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'ban evasion, multiple accounts',
+            DefaultSuspendDays: 0,
             TemplateBody: `It has come to our attention that you have been using multiple accounts to work around system limitations. The extra accounts will be removed together with any unanswered questions. Please refrain from using secondary accounts to circumvent our systems in the future.
 
 All system and moderator-imposed limits/blocks/bans/suspensions/etc. apply to the user, not just a single account. You are not permitted to create one or more new accounts in order to get around such limitations. If you are hitting a limit on one account, then you should act as if you were hitting that limit on each of your accounts.
@@ -211,6 +220,7 @@ Having more than one account is permitted, if the additional account is not used
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'question repetition, multiple accounts',
+            DefaultSuspendDays: 0,
             TemplateBody: `It has been called to our attention that you have asked the same question from multiple accounts. The extra accounts will be removed together with any unanswered questions. Please refrain from using secondary accounts to circumvent our systems in the future.
 
 If your question was closed or did not attract responses, then the first thing to do is to *improve the question*; some guidance for this is [given here](https://stackoverflow.com/help/how-to-ask). Questions that aren’t up to standards are voted on and may be closed: this doesn’t mean they’re gone forever, as they can be reopened if improved or clarified (as appropriate). Please see our [editing](https://stackoverflow.com/editing-help) guidelines for how to improve your question.
@@ -221,6 +231,7 @@ However, please do not keep re-asking the same question. If your ability to ask 
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'demands to show effort/"not a code-writing service"',
+            DefaultSuspendDays: 0,
             TemplateBody: `It has come to our attention that you've left one or more comments similar to the following:
 
 > Please show some effort. This is not a code-writing service.
@@ -235,6 +246,7 @@ Please do not post any more of these comments. They add noise for moderators to 
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'self tag burnination',
+            DefaultSuspendDays: 0,
             TemplateBody: `As you should be aware, there is [a process for mass tag removal](https://meta.stackoverflow.com/q/324070), also known as burnination. The [policy from Stack Exchange](https://meta.stackoverflow.com/q/356963) is that the process **must** be followed and that burninations of tags which are used on more than 50 questions **must** be discussed on Meta Stack Overflow *prior* to beginning to edit to remove the tag.
 
 You have recently removed many tags from questions without following the burnination process. Do not do that. This message is a warning. If you do this again, with this or any other tag, then there will be further consequences.
@@ -245,6 +257,7 @@ The edits you made will be reverted. Some of the edits have other beneficial cha
             AnalogousSystemReasonId: 'Plagiarism',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'mass plagiarism',
+            DefaultSuspendDays: 0,
             TemplateBody: `It has come to our attention that some of your answers contain text copied from other answers or websites without giving credit to the source of the text.  This is considered plagiarism, and it is a violation of our Terms of Service and the license agreement.
 
 You are not allowed to copy content already available elsewhere and claim it as your own.  That is, you must _at least_ provide [clear attribution](/help/referencing).
@@ -275,6 +288,7 @@ If there are specific answers of yours that you believe were not plagiarized (th
             AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'promotional content; answers not self-contained',
+            DefaultSuspendDays: 0,
             // The \n characters used below are to get around a Tampermonkey default setting which automatically removes trailing whitespace from changed lines.
             TemplateBody: `**Promotional content:**  \nWe noticed that at least some of your posts seem to promote and/or link to a product, website, blog, library, YouTube channel/videos, project, source code repository, etc. Per the [help center](${parentUrl}/help/behavior):
 
@@ -297,6 +311,7 @@ If you do include a link to something, then the link needs to be directly releva
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'ChatGPT banned; plagiarism (AI); inaccurate AI content',
+            DefaultSuspendDays: 0,
             TemplateBody: `**Use of ChatGPT for content while its use is banned:**  \nThe use of ChatGPT as a source for content on ${parentName} is currently banned. Please see the Meta Stack Overflow question "[Temporary policy: ChatGPT is banned](https://meta.stackoverflow.com/q/421831)". It is not permitted for you to use ChatGPT to create content on ${parentName} during this ban.
 
 **Plagiarism / failure to indicate or attribute work that's not your own (AI generated text):**  \nWe’ve noticed that at least one of your posts contains text for which you are not the author, which includes AI generated text. Current consensus is that AI generated text requires attribution. See "[Is it acceptable to post answers generated by an AI, such as GitHub Copilot?](https://meta.stackoverflow.com/q/412696)" for more information.
@@ -317,23 +332,23 @@ It's expected that whatever is decided upon as the new policy for using such too
 
 **Some, many, or all of your posts have been deleted:**  \nSome, many, or all of your posts may have been or will be deleted, because we believe they violate the rules and guidelines mentioned above. If you believe we are in error regarding a specific post, then feel free to raise an "in need of moderator intervention" flag on that post explaining the issue and request the post be reevaluated. You can find links to your deleted posts from your "[deleted questions](${parentUrl}/users/deleted-questions/current)" and your "[deleted answers](${parentUrl}/users/deleted-answers/current)" pages. Links to the above mentioned deleted post pages can be found at the bottom of the respective [questions](${parentUrl}/users/current?tab=questions) and [answers](${parentUrl}/users/current?tab=answers) tabs in your profile.`,
         },
-        {
-            AnalogousSystemReasonId: 'OtherViolation',
-            TemplateName: 'voluntary suspension',
-            DefaultSuspensionReason: 'upon request',
-            TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
-
-Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
-
-We wish you a pleasant vacation from the site, and we look forward to your return!`,
-            IncludeSuspensionFooter: false,
-            Footer: '',
-        },
-        {
-            AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
-            TemplateName: 'spam/abuse year-long ban',
-            TemplateBody: 'Account removed for spamming and/or abusive behavior. You\'re no longer welcome to participate here.'
-        }
+//         {
+//             AnalogousSystemReasonId: 'OtherViolation',
+//             TemplateName: 'voluntary suspension',
+//             DefaultSuspensionReason: 'upon request',
+//             TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
+//
+// Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
+//
+// We wish you a pleasant vacation from the site, and we look forward to your return!`,
+//             IncludeSuspensionFooter: false,
+//             Footer: '',
+//         },
+//         {
+//             AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
+//             TemplateName: 'spam/abuse year-long ban',
+//             TemplateBody: 'Account removed for spamming and/or abusive behavior. You\'re no longer welcome to participate here.'
+//         }
     ];
 
     const formElementIds = {
