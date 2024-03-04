@@ -20,6 +20,34 @@
 /* globals StackExchange, $ */
 (function() {
   "use strict";
+  function ajaxPostWithData(endPoint, data, shouldReturnData = true) {
+    return new Promise((resolve, reject) => {
+      void $.ajax({
+        type: "POST",
+        url: endPoint,
+        data
+      }).done((resData, textStatus, xhr) => {
+        resolve(
+          shouldReturnData ? resData : {
+            status: xhr.status,
+            statusText: textStatus
+          }
+        );
+      }).fail((res) => {
+        reject(res.responseText ?? "An unknown error occurred");
+      });
+    });
+  }
+  function annotateUser(userId, annotationDetails) {
+    return ajaxPostWithData(
+      `/admin/users/${userId}/annotate`,
+      {
+        fkey: StackExchange.options.user.fkey,
+        annotation: annotationDetails
+      },
+      false
+    );
+  }
   StackExchange.ready(function() {
     if (!StackExchange?.options?.user?.isModerator) {
       return;
@@ -324,14 +352,14 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       }
     ];
     const formElementIds = {
+      formSelector: "js-msg-form",
       templateSelector: "select-template-menu"
     };
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
+    const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
     function setupProxyForNonDefaults() {
-      const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
       $.ajaxSetup({
         beforeSend: (jqXHR, settings) => {
-          $('button[aria-controls="suspension-popover"]').prop("disabled", false);
           if (!settings?.url?.startsWith("/admin/template/")) {
             return;
           }
@@ -364,7 +392,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 ...selectedTemplate
               };
               settings.success(fieldDefaults, "success", jqXHR);
-              $('button[aria-controls="suspension-popover"]').prop("disabled", true);
             },
             error: settings.error
           });
@@ -390,7 +417,50 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }))
       );
     }
+    function interceptSubmit() {
+      $(`#${formElementIds.formSelector}`).submit(function(e) {
+        const templateNameEl = $(`#${formElementIds.templateSelector}`);
+        const suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
+        const userIdEl = $('.js-about-user-id[name="userId"]');
+        const reasonId = templateNameEl.val();
+        const suspensionDays = suspensionDaysEl.val();
+        const userId = userIdEl.val();
+        if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
+          return true;
+        }
+        e.preventDefault();
+        templateNameEl.val("OtherViolation");
+        const url = new URL("/users/message/save", parentUrl);
+        fetch(url.pathname, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: $(this).serialize()
+        }).then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to send message");
+          }
+          annotateUser(
+            userId,
+            `${reasonId} (content of previous entry)`
+          ).then(() => {
+            window.location.href = response.url;
+          }).catch((error) => {
+            console.log(error);
+            if (confirm("The message was sent but the profile was not annotated. Refresh anyway?")) {
+              window.location.href = response.url;
+            }
+          });
+        }).catch((error) => {
+          alert("Something went wrong, inspect the console for details");
+          console.error(error);
+        });
+        return false;
+      });
+    }
     setupProxyForNonDefaults();
     addReasonsToSelect();
+    interceptSubmit();
   });
 })();
