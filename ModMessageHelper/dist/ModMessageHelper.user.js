@@ -425,7 +425,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         const reasonId = templateNameEl.val();
         const suspensionDays = suspensionDaysEl.val();
         const userId = userIdEl.val();
-        if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
+        if (systemTemplateReasonIds.has(reasonId) || suspensionDays == 0) {
           return true;
         }
         e.preventDefault();
