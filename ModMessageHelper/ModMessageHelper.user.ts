@@ -448,7 +448,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
             // submitting the form as-is works as intended
-            if(systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
+            if(systemTemplateReasonIds.has(reasonId) || suspensionDays == 0) {
                 return true;
             }
             // otherwise do things manually
