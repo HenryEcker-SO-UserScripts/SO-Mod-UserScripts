@@ -447,13 +447,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     function interceptSubmit() {
         $(`#${formElementIds.formSelector}`).on('submit', function (e) {
-            const templateNameEl = $(`#${formElementIds.templateSelector}`);
-            const suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
-            const userIdEl = $('.js-about-user-id[name="userId"]');
+            const $templateNameEl = $(`#${formElementIds.templateSelector}`);
+            const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
+            const $userIdEl = $('.js-about-user-id[name="userId"]');
 
-            const reasonId = templateNameEl.val() as string;
-            const suspensionDays = suspensionDaysEl.val() as number;
-            const userId = userIdEl.val() as string;
+            const reasonId = $templateNameEl.val() as string;
+            const suspensionDays = $suspensionDaysEl.val() as number;
+            const userId = $userIdEl.val() as string;
 
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
@@ -466,7 +466,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
             // fall back to the identifier for generic violations
             // the message will be sent as "Something else..." but the suspension gets applied
-            templateNameEl.val('OtherViolation');
+            $templateNameEl.val('OtherViolation');
 
             // now we send the message
             const url = new URL('/users/message/save', parentUrl);
