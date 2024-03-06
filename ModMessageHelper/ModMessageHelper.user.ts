@@ -1,4 +1,13 @@
 import {annotateUser} from 'se-ts-userscript-utilities/Moderators/UserModActions';
+import {type IdType} from 'se-ts-userscript-utilities/Utilities/Types';
+import {assertValidAnnotationTextLength} from 'se-ts-userscript-utilities/Validators/TextLengthValidators';
+
+declare global {
+    interface Window {
+        modSuspendTokens: (text: string) => string;
+    }
+}
+
 
 interface ModMessageTemplate {
     ModMessageReason: number;
@@ -350,6 +359,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     const formElementIds = {
         formSelector: 'js-msg-form',
         templateSelector: 'select-template-menu',
+        editor: 'wmd-input'
     };
 
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
@@ -445,6 +455,47 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         );
     }
 
+    async function submitFormAndAnnotate(fetchPath: string, serialisedFormData: string, userId: IdType, annotationText: string) {
+        try {
+            // Ensure that the annotation won't fail due to its length
+            assertValidAnnotationTextLength(annotationText.length);
+
+            // use fetch instead of ajax to handle the redirect manually
+            const response = await fetch(fetchPath, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: serialisedFormData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send message');
+            }
+
+            try {
+                // annotate the profile with the name of the custom template
+                await annotateUser(userId, annotationText);
+                window.location.href = response.url;
+            } catch (error) {
+                console.error(error);
+                if (confirm('The message was sent but the profile was not annotated. Refresh anyway?')) {
+                    window.location.href = response.url;
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            StackExchange.helpers.showToast(
+                'Something went wrong, inspect the console for details',
+                {
+                    type: 'danger',
+                    transient: true,
+                    transientTimeout: 3000
+                }
+            );
+        }
+    }
+
     function setupSubmitIntercept() {
         $(`#${formElementIds.formSelector}`).on('submit', function (e) {
             const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
@@ -467,48 +518,37 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // the message will be sent as "Something else..." but the suspension gets applied
             $templateSelector.val('OtherViolation');
 
-            // now we send the message
+            // Replace Placeholders with real values
+            const $editor = $(`#${formElementIds.editor}`);
+            const text = window.modSuspendTokens($editor.val() as string);
+            if (!text) {
+                StackExchange.helpers.showToast('Please fill out the mod message form', {
+                    type: 'danger'
+                });
+                return false;
+            }
+            // Validate placeholders
+            if (text.match(/\{todo/i) || text.match(/\{suspensionDurationDays/i)) {
+                StackExchange.helpers.showToast(
+                    'It looks like there are incomplete placeholders; please ensure all necessary detail is complete',
+                    {type: 'danger'}
+                );
+                return false;
+            }
+
+            // Finally update editor text with the replaced values
+            $editor.val(text);
+
+            // now we can send the message
             const url = new URL('/users/message/save', parentUrl);
 
-            // use fetch instead of ajax to handle the redirect manually
-            fetch(url.pathname, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: $(this).serialize(),
-            })
-                .then((response: Response) => {
-                    if (!response.ok) {
-                        throw new Error('Failed to send message');
-                    }
-                    // annotate the profile with the name of the custom template
-                    annotateUser(
-                        userId,
-                        `${reasonId} (content of previous entry)`,
-                    )
-                        .then(() => {
-                            window.location.href = response.url;
-                        })
-                        .catch((error) => {
-                            console.error(error);
-                            if (confirm('The message was sent but the profile was not annotated. Refresh anyway?')) {
-                                window.location.href = response.url;
-                            }
-                        });
-                })
-                .catch((error) => {
-                    StackExchange.helpers.showToast(
-                        'Something went wrong, inspect the console for details',
-                        {
-                            type: 'danger',
-                            transient: true,
-                            transientTimeout: 3000
-                        }
-                    );
-                    console.error(error);
-                });
-
+            // Preform Form Submission and Annotation
+            void submitFormAndAnnotate(
+                url.pathname,
+                $(this).serialize(),
+                userId,
+                `${reasonId} (content of previous entry)`
+            );
             return false;
         });
     }
