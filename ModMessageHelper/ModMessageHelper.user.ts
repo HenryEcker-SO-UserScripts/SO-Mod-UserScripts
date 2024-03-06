@@ -333,23 +333,23 @@ It's expected that whatever is decided upon as the new policy for using such too
 
 **Some, many, or all of your posts have been deleted:**  \nSome, many, or all of your posts may have been or will be deleted, because we believe they violate the rules and guidelines mentioned above. If you believe we are in error regarding a specific post, then feel free to raise an "in need of moderator intervention" flag on that post explaining the issue and request the post be reevaluated. You can find links to your deleted posts from your "[deleted questions](${parentUrl}/users/deleted-questions/current)" and your "[deleted answers](${parentUrl}/users/deleted-answers/current)" pages. Links to the above mentioned deleted post pages can be found at the bottom of the respective [questions](${parentUrl}/users/current?tab=questions) and [answers](${parentUrl}/users/current?tab=answers) tabs in your profile.`,
         },
-//         {
-//             AnalogousSystemReasonId: 'OtherViolation',
-//             TemplateName: 'voluntary suspension',
-//             DefaultSuspensionReason: 'upon request',
-//             TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
-//
-// Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
-//
-// We wish you a pleasant vacation from the site, and we look forward to your return!`,
-//             IncludeSuspensionFooter: false,
-//             Footer: '',
-//         },
-//         {
-//             AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
-//             TemplateName: 'spam/abuse year-long ban',
-//             TemplateBody: 'Account removed for spamming and/or abusive behavior. You\'re no longer welcome to participate here.'
-//         }
+        {
+            AnalogousSystemReasonId: 'OtherViolation',
+            TemplateName: 'voluntary suspension',
+            DefaultSuspensionReason: 'upon request',
+            TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
+
+Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
+
+We wish you a pleasant vacation from the site, and we look forward to your return!`,
+            IncludeSuspensionFooter: false,
+            Footer: '',
+        },
+        {
+            AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
+            TemplateName: 'spam/abuse year-long ban',
+            TemplateBody: 'Account removed for spamming and/or abusive behavior. You\'re no longer welcome to participate here.'
+        }
     ];
 
     const formElementIds = {
