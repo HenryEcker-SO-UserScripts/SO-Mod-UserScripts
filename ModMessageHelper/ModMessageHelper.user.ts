@@ -492,7 +492,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                             window.location.href = response.url;
                         })
                         .catch((error) => {
-                            console.log(error);
+                            console.error(error);
                             if (confirm('The message was sent but the profile was not annotated. Refresh anyway?')) {
                                 window.location.href = response.url;
                             }
