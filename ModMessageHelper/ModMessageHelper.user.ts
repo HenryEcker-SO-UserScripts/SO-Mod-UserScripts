@@ -43,7 +43,6 @@ type UserDefinedMessageTemplate =
 };
 
 
-
 StackExchange.ready(function () {
     if (!StackExchange?.options?.user?.isModerator) {
         return;
@@ -448,11 +447,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     function setupSubmitIntercept() {
         $(`#${formElementIds.formSelector}`).on('submit', function (e) {
-            const $templateNameEl = $(`#${formElementIds.templateSelector}`);
             const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
             const $userIdEl = $('.js-about-user-id[name="userId"]');
 
-            const reasonId = $templateNameEl.val() as string;
+            const reasonId = $templateSelector.val() as string;
             const suspensionDays = Number($suspensionDaysEl.val());
             const userId = $userIdEl.val() as string;
 
@@ -467,7 +465,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
             // fall back to the identifier for generic violations
             // the message will be sent as "Something else..." but the suspension gets applied
-            $templateNameEl.val('OtherViolation');
+            $templateSelector.val('OtherViolation');
 
             // now we send the message
             const url = new URL('/users/message/save', parentUrl);
