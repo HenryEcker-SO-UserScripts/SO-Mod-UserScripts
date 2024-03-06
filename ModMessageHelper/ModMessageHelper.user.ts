@@ -344,11 +344,6 @@ Since this suspension is fully voluntary, you are welcome to reply to this messa
 We wish you a pleasant vacation from the site, and we look forward to your return!`,
             IncludeSuspensionFooter: false,
             Footer: '',
-        },
-        {
-            AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
-            TemplateName: 'spam/abuse year-long ban',
-            TemplateBody: 'Account removed for spamming and/or abusive behavior. You\'re no longer welcome to participate here.'
         }
     ];
 
