@@ -1,3 +1,5 @@
+import {annotateUser} from 'se-ts-userscript-utilities/Moderators/UserModActions';
+
 interface ModMessageTemplate {
     ModMessageReason: number;
     IsCommunityTeamMessage: boolean;
@@ -40,7 +42,6 @@ type UserDefinedMessageTemplate =
     AnalogousSystemReasonId: SystemReasonId;
 };
 
-import {annotateUser} from 'se-ts-userscript-utilities/Moderators/UserModActions';
 
 
 StackExchange.ready(function () {
