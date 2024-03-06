@@ -499,7 +499,14 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                         });
                 })
                 .catch((error) => {
-                    alert('Something went wrong, inspect the console for details');
+                    StackExchange.helpers.showToast(
+                        'Something went wrong, inspect the console for details',
+                        {
+                            type: 'danger',
+                            transient: true,
+                            transientTimeout: 3000
+                        }
+                    );
                     console.error(error);
                 });
 
