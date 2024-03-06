@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.12
+// @version      0.0.13
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -347,24 +347,19 @@ It's expected that whatever is decided upon as the new policy for using such too
 
 **Some, many, or all of your posts have been deleted:**  
 Some, many, or all of your posts may have been or will be deleted, because we believe they violate the rules and guidelines mentioned above. If you believe we are in error regarding a specific post, then feel free to raise an "in need of moderator intervention" flag on that post explaining the issue and request the post be reevaluated. You can find links to your deleted posts from your "[deleted questions](${parentUrl}/users/deleted-questions/current)" and your "[deleted answers](${parentUrl}/users/deleted-answers/current)" pages. Links to the above mentioned deleted post pages can be found at the bottom of the respective [questions](${parentUrl}/users/current?tab=questions) and [answers](${parentUrl}/users/current?tab=answers) tabs in your profile.`
+      },
+      {
+        AnalogousSystemReasonId: "OtherViolation",
+        TemplateName: "voluntary suspension",
+        DefaultSuspensionReason: "upon request",
+        TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
+
+Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
+
+We wish you a pleasant vacation from the site, and we look forward to your return!`,
+        IncludeSuspensionFooter: false,
+        Footer: ""
       }
-      //         {
-      //             AnalogousSystemReasonId: 'OtherViolation',
-      //             TemplateName: 'voluntary suspension',
-      //             DefaultSuspensionReason: 'upon request',
-      //             TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
-      //
-      // Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
-      //
-      // We wish you a pleasant vacation from the site, and we look forward to your return!`,
-      //             IncludeSuspensionFooter: false,
-      //             Footer: '',
-      //         },
-      //         {
-      //             AnalogousSystemReasonId: 'ExcessiveSelfPromotion',
-      //             TemplateName: 'spam/abuse year-long ban',
-      //             TemplateBody: 'Account removed for spamming and/or abusive behavior. You\'re no longer welcome to participate here.'
-      //         }
     ];
     const formElementIds = {
       formSelector: "js-msg-form",
@@ -432,19 +427,18 @@ Some, many, or all of your posts may have been or will be deleted, because we be
         }))
       );
     }
-    function interceptSubmit() {
-      $(`#${formElementIds.formSelector}`).submit(function(e) {
-        const templateNameEl = $(`#${formElementIds.templateSelector}`);
-        const suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
-        const userIdEl = $('.js-about-user-id[name="userId"]');
-        const reasonId = templateNameEl.val();
-        const suspensionDays = suspensionDaysEl.val();
-        const userId = userIdEl.val();
-        if (systemTemplateReasonIds.has(reasonId) || suspensionDays == 0) {
+    function setupSubmitIntercept() {
+      $(`#${formElementIds.formSelector}`).on("submit", function(e) {
+        const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
+        const $userIdEl = $('.js-about-user-id[name="userId"]');
+        const reasonId = $templateSelector.val();
+        const suspensionDays = Number($suspensionDaysEl.val());
+        const userId = $userIdEl.val();
+        if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
           return true;
         }
         e.preventDefault();
-        templateNameEl.val("OtherViolation");
+        $templateSelector.val("OtherViolation");
         const url = new URL("/users/message/save", parentUrl);
         fetch(url.pathname, {
           method: "POST",
@@ -462,13 +456,20 @@ Some, many, or all of your posts may have been or will be deleted, because we be
           ).then(() => {
             window.location.href = response.url;
           }).catch((error) => {
-            console.log(error);
+            console.error(error);
             if (confirm("The message was sent but the profile was not annotated. Refresh anyway?")) {
               window.location.href = response.url;
             }
           });
         }).catch((error) => {
-          alert("Something went wrong, inspect the console for details");
+          StackExchange.helpers.showToast(
+            "Something went wrong, inspect the console for details",
+            {
+              type: "danger",
+              transient: true,
+              transientTimeout: 3e3
+            }
+          );
           console.error(error);
         });
         return false;
@@ -476,6 +477,6 @@ Some, many, or all of your posts may have been or will be deleted, because we be
     }
     setupProxyForNonDefaults();
     addReasonsToSelect();
-    interceptSubmit();
+    setupSubmitIntercept();
   });
 })();
