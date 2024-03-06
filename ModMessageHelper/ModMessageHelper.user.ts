@@ -445,7 +445,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         );
     }
 
-    function interceptSubmit() {
+    function setupSubmitIntercept() {
         $(`#${formElementIds.formSelector}`).on('submit', function (e) {
             const $templateNameEl = $(`#${formElementIds.templateSelector}`);
             const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
@@ -516,5 +516,5 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     setupProxyForNonDefaults();
     addReasonsToSelect();
-    interceptSubmit();
+    setupSubmitIntercept();
 });
