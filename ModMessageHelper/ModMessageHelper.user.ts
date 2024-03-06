@@ -446,7 +446,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     }
 
     function interceptSubmit() {
-        $(`#${formElementIds.formSelector}`).submit(function(e) {
+        $(`#${formElementIds.formSelector}`).on('submit', function (e) {
             const templateNameEl = $(`#${formElementIds.templateSelector}`);
             const suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
             const userIdEl = $('.js-about-user-id[name="userId"]');
@@ -458,7 +458,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
             // submitting the form as-is works as intended
-            if(systemTemplateReasonIds.has(reasonId) || suspensionDays == 0) {
+            if (systemTemplateReasonIds.has(reasonId) || suspensionDays == 0) {
                 return true;
             }
             // otherwise do things manually
@@ -475,33 +475,33 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             fetch(url.pathname, {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: $(this).serialize(),
             })
-              .then((response: Response) => {
-                  if(!response.ok) {
-                      throw new Error('Failed to send message');
-                  }
-                  // annotate the profile with the name of the custom template
-                  annotateUser(
-                    userId,
-                    `${reasonId} (content of previous entry)`,
-                  )
-                    .then(() => {
-                      window.location.href = response.url;
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                        if (confirm('The message was sent but the profile was not annotated. Refresh anyway?')) {
+                .then((response: Response) => {
+                    if (!response.ok) {
+                        throw new Error('Failed to send message');
+                    }
+                    // annotate the profile with the name of the custom template
+                    annotateUser(
+                        userId,
+                        `${reasonId} (content of previous entry)`,
+                    )
+                        .then(() => {
                             window.location.href = response.url;
-                        }
-                    });
-              })
-              .catch((error) => {
-                  alert('Something went wrong, inspect the console for details');
-                  console.error(error);
-              });
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                            if (confirm('The message was sent but the profile was not annotated. Refresh anyway?')) {
+                                window.location.href = response.url;
+                            }
+                        });
+                })
+                .catch((error) => {
+                    alert('Something went wrong, inspect the console for details');
+                    console.error(error);
+                });
 
             return false;
         });
