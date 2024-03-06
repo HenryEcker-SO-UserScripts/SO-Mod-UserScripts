@@ -514,10 +514,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // otherwise do things manually
             e.preventDefault();
 
-            // fall back to the identifier for generic violations
-            // the message will be sent as "Something else..." but the suspension gets applied
-            $templateSelector.val('OtherViolation');
-
             // Replace Placeholders with real values
             const $editor = $(`#${formElementIds.editor}`);
             const text = window.modSuspendTokens($editor.val() as string);
@@ -538,6 +534,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
             // Finally update editor text with the replaced values
             $editor.val(text);
+
+            // fall back to the identifier for generic violations
+            // the message will be sent as "Something else..." but the suspension gets applied
+            $templateSelector.val('OtherViolation');
 
             // now we can send the message
             const url = new URL('/users/message/save', parentUrl);

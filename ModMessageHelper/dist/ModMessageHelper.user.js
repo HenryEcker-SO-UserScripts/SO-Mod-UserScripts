@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.14
+// @version      0.0.15
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -487,7 +487,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           return true;
         }
         e.preventDefault();
-        $templateSelector.val("OtherViolation");
         const $editor = $(`#${formElementIds.editor}`);
         const text = window.modSuspendTokens($editor.val());
         if (!text) {
@@ -504,6 +503,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           return false;
         }
         $editor.val(text);
+        $templateSelector.val("OtherViolation");
         const url = new URL("/users/message/save", parentUrl);
         void submitFormAndAnnotate(
           url.pathname,
