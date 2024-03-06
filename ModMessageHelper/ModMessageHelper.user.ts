@@ -452,13 +452,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             const $userIdEl = $('.js-about-user-id[name="userId"]');
 
             const reasonId = $templateNameEl.val() as string;
-            const suspensionDays = $suspensionDaysEl.val() as number;
+            const suspensionDays = Number($suspensionDaysEl.val());
             const userId = $userIdEl.val() as string;
 
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
             // submitting the form as-is works as intended
-            if (systemTemplateReasonIds.has(reasonId) || suspensionDays == 0) {
+            if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
                 return true;
             }
             // otherwise do things manually
