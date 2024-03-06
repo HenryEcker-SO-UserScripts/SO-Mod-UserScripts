@@ -40,6 +40,8 @@ type UserDefinedMessageTemplate =
     AnalogousSystemReasonId: SystemReasonId;
 };
 
+import {annotateUser} from 'se-ts-userscript-utilities/Moderators/UserModActions';
+
 
 StackExchange.ready(function () {
     if (!StackExchange?.options?.user?.isModerator) {
@@ -48,7 +50,6 @@ StackExchange.ready(function () {
 
     const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
     const parentName = StackExchange.options?.site?.name;
-
 
     const customModMessages: UserDefinedMessageTemplate[] = [
         {
@@ -352,17 +353,17 @@ It's expected that whatever is decided upon as the new policy for using such too
     ];
 
     const formElementIds = {
-        templateSelector: 'select-template-menu'
+        formSelector: 'js-msg-form',
+        templateSelector: 'select-template-menu',
     };
 
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
 
-    function setupProxyForNonDefaults() {
-        const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
+    const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
 
+    function setupProxyForNonDefaults() {
         $.ajaxSetup({
             beforeSend: (jqXHR, settings) => {
-                $('button[aria-controls="suspension-popover"]').prop('disabled', false);
                 // If not a request for an admin template do nothing
                 if (!settings?.url?.startsWith('/admin/template/')) {
                     return;
@@ -411,11 +412,9 @@ It's expected that whatever is decided upon as the new policy for using such too
 
                         // Force call the old Success function with updated values
                         (<(data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
-                        $('button[aria-controls="suspension-popover"]').prop('disabled', true);
                     },
                     error: settings.error
                 });
-
             }
         });
     }
@@ -451,6 +450,69 @@ It's expected that whatever is decided upon as the new policy for using such too
         );
     }
 
+    function interceptSubmit() {
+        $(`#${formElementIds.formSelector}`).submit(function(e) {
+            const templateNameEl = $(`#${formElementIds.templateSelector}`);
+            const suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
+            const userIdEl = $('.js-about-user-id[name="userId"]');
+
+            const reasonId = templateNameEl.val() as string;
+            const suspensionDays = suspensionDaysEl.val() as number;
+            const userId = userIdEl.val() as string;
+
+            // the backend will fail to apply the suspension when using custom template names
+            // though in case of official templates or custom ones without a suspension,
+            // submitting the form as-is works as intended
+            if(systemTemplateReasonIds.has(reasonId) || suspensionDays == 0) {
+                return true;
+            }
+            // otherwise do things manually
+            e.preventDefault();
+
+            // fall back to the identifier for generic violations
+            // the message will be sent as "Something else..." but the suspension gets applied
+            templateNameEl.val('OtherViolation');
+
+            // now we send the message
+            const url = new URL('/users/message/save', parentUrl);
+
+            // use fetch instead of ajax to handle the redirect manually
+            fetch(url.pathname, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: $(this).serialize(),
+            })
+              .then((response: Response) => {
+                  if(!response.ok) {
+                      throw new Error('Failed to send message');
+                  }
+                  // annotate the profile with the name of the custom template
+                  annotateUser(
+                    userId,
+                    `${reasonId} (content of previous entry)`,
+                  )
+                    .then(() => {
+                      window.location.href = response.url;
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        if (confirm('The message was sent but the profile was not annotated. Refresh anyway?')) {
+                            window.location.href = response.url;
+                        }
+                    });
+              })
+              .catch((error) => {
+                  alert('Something went wrong, inspect the console for details');
+                  console.error(error);
+              });
+
+            return false;
+        });
+    }
+
     setupProxyForNonDefaults();
     addReasonsToSelect();
+    interceptSubmit();
 });
