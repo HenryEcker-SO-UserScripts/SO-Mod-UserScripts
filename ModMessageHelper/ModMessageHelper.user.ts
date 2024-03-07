@@ -519,28 +519,24 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             const $userIdEl = $('.js-about-user-id[name="userId"]');
             const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
 
-            let reasonId = $templateSelector.val() as string;
-            const currentDisplay = $(`#${formElementIds.templateSelector} option:selected`).text();
-
             const suspensionDays = Number($suspensionDaysEl.val());
             const userId = $userIdEl.val() as string;
             const customTemplateName = $customTemplateNameInput.val() as string;
+            const currentDisplay = $templateSelector.find('option:selected').text();
 
-            let hasCustomInput = false;
+            // If the selected template dropdown doesn't match the custom template text field add a new option
             if (currentDisplay !== customTemplateName) {
-                hasCustomInput = true;
-                reasonId = customTemplateName;
+                // Create a new option and select it
+                $templateSelector.append(`<option value="${customTemplateName}">${customTemplateName}</option>`);
+                $templateSelector.val(customTemplateName);
             }
+
+            const reasonId = $templateSelector.val() as string;
 
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
             // submitting the form as-is works as intended
             if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
-                // if there is custom input, we want to use that as template name in the user history
-                if (hasCustomInput) {
-                    $templateSelector.append(`<option value="${reasonId}">${reasonId}</option>`);
-                    $templateSelector.val(reasonId);
-                }
                 return true;
             }
 
