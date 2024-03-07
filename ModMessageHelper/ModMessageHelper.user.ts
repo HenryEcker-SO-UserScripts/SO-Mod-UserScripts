@@ -373,7 +373,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         $messageContentDiv.before(`
           <div id="${formElementIds.customTemplateNameSelector}" class="d-flex gy4 fd-column mb12">
               <label class="flex--item s-label">Template Name</label>
-              <input class="flex--item s-input wmx4">
+              <input class="flex--item s-input wmx4" maxlength="272">
           </div>`);
 
         // populate this field with the display text
