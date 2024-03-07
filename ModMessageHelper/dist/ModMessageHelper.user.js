@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.13
+// @version      0.0.15
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -47,6 +47,20 @@
       },
       false
     );
+  }
+  function isInValidationBounds(textLength, bounds) {
+    const min = bounds.min ?? 0;
+    if (bounds.max === void 0) {
+      return min <= textLength;
+    }
+    return min <= textLength && textLength <= bounds.max;
+  }
+  const annotationTextLengthBounds = { min: 10, max: 300 };
+  function assertValidAnnotationTextLength(annotationLength) {
+    if (!isInValidationBounds(annotationLength, annotationTextLengthBounds)) {
+      throw new Error(`Annotation text must be between ${annotationTextLengthBounds.min} and ${annotationTextLengthBounds.max} characters.`);
+    }
+    return true;
   }
   StackExchange.ready(function() {
     if (!StackExchange?.options?.user?.isModerator) {
@@ -362,10 +376,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       }
     ];
     const formElementIds = {
-      formSelector: "js-msg-form",
-      templateSelector: "select-template-menu",
-      messageContentSelector: "js-message-contents",
-      customTemplateNameSelector: "usr-template-name-label"
+        formSelector: 'js-msg-form',
+        templateSelector: 'select-template-menu',
+        editor: 'wmd-input',
+        messageContentSelector: 'js-message-contents',
+        customTemplateNameSelector: 'usr-template-name-label'
     };
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
     const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
@@ -437,6 +452,40 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }))
       );
     }
+    async function submitFormAndAnnotate(fetchPath, serialisedFormData, userId, annotationText) {
+      try {
+        assertValidAnnotationTextLength(annotationText.length);
+        const response = await fetch(fetchPath, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: serialisedFormData
+        });
+        if (!response.ok) {
+          throw new Error("Failed to send message");
+        }
+        try {
+          await annotateUser(userId, annotationText);
+          window.location.href = response.url;
+        } catch (error) {
+          console.error(error);
+          if (confirm("The message was sent but the profile was not annotated. Refresh anyway?")) {
+            window.location.href = response.url;
+          }
+        }
+      } catch (error) {
+        console.error(error);
+        StackExchange.helpers.showToast(
+          "Something went wrong, inspect the console for details",
+          {
+            type: "danger",
+            transient: true,
+            transientTimeout: 3e3
+          }
+        );
+      }
+    }
     function setupSubmitIntercept() {
       $(`#${formElementIds.formSelector}`).on("submit", function(e) {
         const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
@@ -460,40 +509,30 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           return true;
         }
         e.preventDefault();
+        const $editor = $(`#${formElementIds.editor}`);
+        const text = window.modSuspendTokens($editor.val());
+        if (!text) {
+          StackExchange.helpers.showToast("Please fill out the mod message form", {
+            type: "danger"
+          });
+          return false;
+        }
+        if (text.match(/\{todo/i) || text.match(/\{suspensionDurationDays/i)) {
+          StackExchange.helpers.showToast(
+            "It looks like there are incomplete placeholders; please ensure all necessary detail is complete",
+            { type: "danger" }
+          );
+          return false;
+        }
+        $editor.val(text);
         $templateSelector.val("OtherViolation");
         const url = new URL("/users/message/save", parentUrl);
-        fetch(url.pathname, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: $(this).serialize()
-        }).then((response) => {
-          if (!response.ok) {
-            throw new Error("Failed to send message");
-          }
-          annotateUser(
-            userId,
-            `${reasonId} (content of previous entry)`
-          ).then(() => {
-            window.location.href = response.url;
-          }).catch((error) => {
-            console.error(error);
-            if (confirm("The message was sent but the profile was not annotated. Refresh anyway?")) {
-              window.location.href = response.url;
-            }
-          });
-        }).catch((error) => {
-          StackExchange.helpers.showToast(
-            "Something went wrong, inspect the console for details",
-            {
-              type: "danger",
-              transient: true,
-              transientTimeout: 3e3
-            }
-          );
-          console.error(error);
-        });
+        void submitFormAndAnnotate(
+          url.pathname,
+          $(this).serialize(),
+          userId,
+          `${reasonId} (content of previous entry)`
+        );
         return false;
       });
     }
