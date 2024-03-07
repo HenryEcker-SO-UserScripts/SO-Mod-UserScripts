@@ -361,7 +361,8 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         templateSelector: 'select-template-menu',
         editor: 'wmd-input',
         messageContentSelector: 'js-message-contents',
-        customTemplateNameSelector: 'usr-template-name-label'
+        customTemplateNameSelector: 'usr-template-name-label',
+        jsAutoSuspendMessageTemplateText: 'js-auto-suspend-message'
     };
 
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
@@ -542,6 +543,15 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
             // otherwise do things manually
             e.preventDefault();
+
+            // Update Auto Suspend Template value to correctly pluralise suspend days
+            const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
+            $autoSuspendTemplate.val(
+                $autoSuspendTemplate.val().toString().replace(
+                    /\$days\$ days?/,
+                    suspensionDays === 1 ? '$days$ day' : '$days$ days'
+                )
+            );
 
             // Replace Placeholders with real values
             const $editor = $(`#${formElementIds.editor}`);
