@@ -376,12 +376,22 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       }
     ];
     const formElementIds = {
-      formSelector: "js-msg-form",
-      templateSelector: "select-template-menu",
-      editor: "wmd-input"
+        formSelector: 'js-msg-form',
+        templateSelector: 'select-template-menu',
+        editor: 'wmd-input',
+        messageContentSelector: 'js-message-contents',
+        customTemplateNameSelector: 'usr-template-name-label'
     };
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
     const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
+    function appendTemplateNameInput() {
+      const messageContentDiv = $(`#${formElementIds.messageContentSelector}`);
+      messageContentDiv.before('<div id="' + formElementIds.customTemplateNameSelector + '" class="d-flex gy4 fd-column mb12">    <label class="flex--item s-label">Template Name</label>    <input class="flex--item s-input wmx4"></div>');
+      $templateSelector.on("change", function(e) {
+        const customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
+        customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
+      });
+    }
     function setupProxyForNonDefaults() {
       $.ajaxSetup({
         beforeSend: (jqXHR, settings) => {
@@ -480,10 +490,22 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       $(`#${formElementIds.formSelector}`).on("submit", function(e) {
         const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
         const $userIdEl = $('.js-about-user-id[name="userId"]');
-        const reasonId = $templateSelector.val();
+        const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
+        let reasonId = $templateSelector.val();
+        const currentDisplay = $(`#${formElementIds.templateSelector} option:selected`).text();
         const suspensionDays = Number($suspensionDaysEl.val());
         const userId = $userIdEl.val();
+        const customTemplateName = $customTemplateNameInput.val();
+        let hasCustomInput = false;
+        if (currentDisplay !== customTemplateName) {
+          hasCustomInput = true;
+          reasonId = customTemplateName;
+        }
         if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
+          if (hasCustomInput) {
+            $templateSelector.append(`<option value="${reasonId}">${reasonId}</option>`);
+            $templateSelector.val(reasonId);
+          }
           return true;
         }
         e.preventDefault();
@@ -514,6 +536,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         return false;
       });
     }
+    appendTemplateNameInput();
     setupProxyForNonDefaults();
     addReasonsToSelect();
     setupSubmitIntercept();

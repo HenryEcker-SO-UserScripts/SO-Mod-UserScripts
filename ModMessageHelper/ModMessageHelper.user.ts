@@ -359,12 +359,29 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     const formElementIds = {
         formSelector: 'js-msg-form',
         templateSelector: 'select-template-menu',
-        editor: 'wmd-input'
+        editor: 'wmd-input',
+        messageContentSelector: 'js-message-contents',
+        customTemplateNameSelector: 'usr-template-name-label'
     };
 
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
 
     const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
+
+    function appendTemplateNameInput() {
+        const messageContentDiv = $(`#${formElementIds.messageContentSelector}`);
+        messageContentDiv.before('' +
+          '<div id="' + formElementIds.customTemplateNameSelector + '" class="d-flex gy4 fd-column mb12">' +
+          '    <label class="flex--item s-label">Template Name</label>' +
+          '    <input class="flex--item s-input wmx4">' +
+          '</div>');
+
+        // populate this field with the display text
+        $templateSelector.on('change', function(e: JQuery.ChangeEvent<HTMLSelectElement>) {
+            const customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
+            customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
+        });
+    }
 
     function setupProxyForNonDefaults() {
         $.ajaxSetup({
@@ -500,17 +517,33 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         $(`#${formElementIds.formSelector}`).on('submit', function (e) {
             const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
             const $userIdEl = $('.js-about-user-id[name="userId"]');
+            const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
 
-            const reasonId = $templateSelector.val() as string;
+            let reasonId = $templateSelector.val() as string;
+            const currentDisplay = $(`#${formElementIds.templateSelector} option:selected`).text();
+
             const suspensionDays = Number($suspensionDaysEl.val());
             const userId = $userIdEl.val() as string;
+            const customTemplateName = $customTemplateNameInput.val() as string;
+
+            let hasCustomInput = false;
+            if (currentDisplay !== customTemplateName) {
+                hasCustomInput = true;
+                reasonId = customTemplateName;
+            }
 
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
             // submitting the form as-is works as intended
             if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
+                // if there is custom input, we want to use that as template name in the user history
+                if (hasCustomInput) {
+                    $templateSelector.append(`<option value="${reasonId}">${reasonId}</option>`);
+                    $templateSelector.val(reasonId);
+                }
                 return true;
             }
+
             // otherwise do things manually
             e.preventDefault();
 
@@ -553,6 +586,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         });
     }
 
+    appendTemplateNameInput();
     setupProxyForNonDefaults();
     addReasonsToSelect();
     setupSubmitIntercept();
