@@ -398,7 +398,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
 
         get $customTemplateNameInput(): JQuery<HTMLInputElement> {
-            // This user id is defined in attachTemplateNameInputField
+            // This html id is defined in attachTemplateNameInputField
             return $('#usr-template-name-input');
         }
 
