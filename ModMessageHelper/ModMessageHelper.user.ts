@@ -430,21 +430,19 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                     return;
                 }
 
-                // Create a proxy to fix the paragraph break in the footer (applies to both stock and custom reasons)
-                settings.success = new Proxy(settings.success, {
-                    apply: (target: AjaxSuccess, thisArg, args: Parameters<AjaxSuccess>) => {
-                        const [fieldDefaults] = args;
-                        fieldDefaults.MessageTemplate.Footer = fieldDefaults.MessageTemplate.Footer.replace('Regards,\n\n', 'Regards,  \n');
-                        Reflect.apply(target, thisArg, args);
-                    }
-                });
-
-
                 const reasonId = url.searchParams.get('reasonId');
-
 
                 // If this is one of the system templates
                 if (systemTemplateReasonIds.has(reasonId)) {
+                    // Create a proxy to fix the paragraph break in the footer
+                    // also fixes custom reasons due to the call to an AnalogousSystemReasonId to populate the majority of fields
+                    settings.success = new Proxy(settings.success, {
+                        apply: (target: AjaxSuccess, thisArg, args: Parameters<AjaxSuccess>) => {
+                            const [fieldDefaults] = args;
+                            fieldDefaults.MessageTemplate.Footer = fieldDefaults.MessageTemplate.Footer.replace('Regards,\n\n', 'Regards,  \n');
+                            Reflect.apply(target, thisArg, args);
+                        }
+                    });
                     return;
                 }
                 // Abort the request preemptively (it will fail since reasonId must be a custom reason)
