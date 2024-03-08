@@ -28,18 +28,24 @@ interface TemplateRequestResponse {
     MessageTemplate: ModMessageTemplate;
 }
 
-type SystemReasonId = 'LowQualityQuestions' |
-    'QuestionRepetition' |
-    'SockPuppetVoting' |
-    'TargetedVotes' |
-    'AbusiveToOthers' |
-    'RevengeDownvoting' |
-    'SelfDestructionOfUsefulContent' |
-    'SignaturesOrTaglines' |
-    'ExcessiveSelfPromotion' |
-    'ExcessiveDiscussionInComments' |
-    'Plagiarism' |
-    'ProgrammingQuestionsOnMeta' |
+// To create run the following code with no UserScripts running
+// console.log($('#select-template-menu option').map((_, n) => `'${$(n).val()}'`).toArray().slice(1).join('|\n'))
+type SystemReasonId = 'LowQualityQuestions'|
+    'QuestionRepetition'|
+    'SockPuppetVoting'|
+    'TargetedVotes'|
+    'AbusiveToOthers'|
+    'RevengeDownvoting'|
+    'SelfDestructionOfUsefulContent'|
+    'SignaturesOrTaglines'|
+    'ExcessiveSelfPromotion'|
+    'ExcessiveDiscussionInComments'|
+    'Plagiarism'|
+    'RollbackWar'|
+    'InappropriateUsername'|
+    'BanEvasionMultipleAccounts'|
+    'InaccurateAIContent'|
+    'SpamRecidivism'|
     'OtherViolation';
 
 type UserDefinedMessageTemplate =
