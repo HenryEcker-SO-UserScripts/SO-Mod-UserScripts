@@ -616,7 +616,12 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 window.location.href = response.url;
             } catch (error) {
                 console.error(error);
-                if (confirm('The message was sent but the profile was not annotated. Refresh anyway?')) {
+                const confirmRefresh = await StackExchange.helpers.showConfirmModal({
+                    title: 'Annotation Failed',
+                    body: 'The message was sent but the profile was not annotated. Refresh anyway?',
+                    buttonLabel: 'Refresh'
+                });
+                if (confirmRefresh) {
                     window.location.href = response.url;
                 }
             }
