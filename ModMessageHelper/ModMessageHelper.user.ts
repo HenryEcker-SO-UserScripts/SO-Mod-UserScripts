@@ -8,8 +8,6 @@ declare global {
     }
 }
 
-type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
-
 interface ModMessageTemplate {
     ModMessageReason: number;
     IsCommunityTeamMessage: boolean;
@@ -51,6 +49,8 @@ type UserDefinedMessageTemplate =
     StackOverflowOnly?: boolean;
     AnalogousSystemReasonId: SystemReasonId;
 };
+
+type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
 
 
 StackExchange.ready(function () {
