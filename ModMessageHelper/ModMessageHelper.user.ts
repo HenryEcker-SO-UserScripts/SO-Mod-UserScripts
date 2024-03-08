@@ -370,18 +370,29 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
 
-    function appendTemplateNameInput() {
+    function appendTemplateNameInputField() {
         const $messageContentDiv = $(`#${formElementIds.messageContentSelector}`);
-        $messageContentDiv.before(`
-          <div id="${formElementIds.customTemplateNameSelector}" class="d-flex gy4 fd-column mb12">
-              <label class="flex--item s-label">Template Name</label>
-              <input class="flex--item s-input wmx4" maxlength="272">
-          </div>`);
+
+        const customTemplateDivHiddenClass = 'd-none';
+
+        const $customTemplateNameInput = $('<input class="flex--item s-input wmx4" maxlength="272">');
+        const $customTemplateDiv =
+            $(`<div id="${formElementIds.customTemplateNameSelector}" class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`)
+                .append('<label class="flex--item s-label">Template Name</label>')
+                .append($customTemplateNameInput);
+
+        $messageContentDiv.before($customTemplateDiv);
 
         // populate this field with the display text
         $templateSelector.on('change', function (e: JQuery.ChangeEvent<HTMLSelectElement>) {
-            const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
             $customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
+
+            // Only show custom template name input field when template has been selected
+            if ($templateSelector.val() === '0') {
+                $customTemplateDiv.addClass(customTemplateDivHiddenClass);
+            } else {
+                $customTemplateDiv.removeClass(customTemplateDivHiddenClass);
+            }
         });
     }
 
@@ -602,7 +613,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         });
     }
 
-    appendTemplateNameInput();
+    appendTemplateNameInputField();
     setupProxyForNonDefaults();
     addReasonsToSelect();
     fixAutoSuspendMessagePluralisation();

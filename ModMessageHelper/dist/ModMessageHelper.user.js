@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.16
+// @version      0.0.17
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -386,16 +386,19 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     };
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
     const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
-    function appendTemplateNameInput() {
+    function appendTemplateNameInputField() {
       const $messageContentDiv = $(`#${formElementIds.messageContentSelector}`);
-      $messageContentDiv.before(`
-          <div id="${formElementIds.customTemplateNameSelector}" class="d-flex gy4 fd-column mb12">
-              <label class="flex--item s-label">Template Name</label>
-              <input class="flex--item s-input wmx4" maxlength="272">
-          </div>`);
+      const customTemplateDivHiddenClass = "d-none";
+      const $customTemplateNameInput = $('<input class="flex--item s-input wmx4" maxlength="272">');
+      const $customTemplateDiv = $(`<div id="${formElementIds.customTemplateNameSelector}" class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`).append('<label class="flex--item s-label">Template Name</label>').append($customTemplateNameInput);
+      $messageContentDiv.before($customTemplateDiv);
       $templateSelector.on("change", function(e) {
-        const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
         $customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
+        if ($templateSelector.val() === "0") {
+          $customTemplateDiv.addClass(customTemplateDivHiddenClass);
+        } else {
+          $customTemplateDiv.removeClass(customTemplateDivHiddenClass);
+        }
       });
     }
     function fixAutoSuspendMessagePluralisation() {
@@ -550,7 +553,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         return false;
       });
     }
-    appendTemplateNameInput();
+    appendTemplateNameInputField();
     setupProxyForNonDefaults();
     addReasonsToSelect();
     fixAutoSuspendMessagePluralisation();
