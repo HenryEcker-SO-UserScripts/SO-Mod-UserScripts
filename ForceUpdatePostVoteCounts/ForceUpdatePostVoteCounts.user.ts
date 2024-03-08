@@ -59,4 +59,9 @@ function main() {
 
 if (StackExchange.options.user.isModerator === true) {
     main();
+    $(document).on('ajaxComplete', (_0, _1, {url}) => {
+        if (url.match(/users\/tab\/\d+\?tab=(answers|questions)/gi)) {
+            main();
+        }
+    });
 }

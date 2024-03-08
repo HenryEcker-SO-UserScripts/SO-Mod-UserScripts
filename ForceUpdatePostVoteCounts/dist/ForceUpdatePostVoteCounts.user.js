@@ -3,7 +3,7 @@
 // @description  Adds button to fetch vote count for all posts to update counts (e.g. after invalidation)
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ForceUpdatePostVoteCounts/dist/ForceUpdatePostVoteCounts.user.js
 // @updateURL    https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ForceUpdatePostVoteCounts/dist/ForceUpdatePostVoteCounts.user.js
 //
@@ -117,5 +117,10 @@
   }
   if (StackExchange.options.user.isModerator === true) {
     main();
+    $(document).on("ajaxComplete", (_0, _1, { url }) => {
+      if (url.match(/users\/tab\/\d+\?tab=(answers|questions)/gi)) {
+        main();
+      }
+    });
   }
 })();
