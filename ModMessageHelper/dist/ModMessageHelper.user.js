@@ -396,11 +396,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       get $templateSelector() {
         return $("#select-template-menu");
       }
-      set $templateSelector(newOptionValue) {
-        this.$templateSelector.val(newOptionValue);
-      }
       get reasonId() {
         return this.$templateSelector.val();
+      }
+      set reasonId(newOptionValue) {
+        this.$templateSelector.val(newOptionValue);
       }
       get displayedSelectedTemplate() {
         return this.$templateSelector.find("option:selected").text();
@@ -426,7 +426,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       get $editor() {
         return $("#wmd-input");
       }
-      set $editor(newText) {
+      get editorText() {
+        return this.$editor.val();
+      }
+      set editorText(newText) {
         this.$editor.val(newText);
       }
       refreshEditor() {
@@ -581,13 +584,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       ui.$form.on("submit", function(e) {
         if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
           ui.$templateSelector.append(`<option value="${ui.customTemplateName}">${ui.customTemplateName}</option>`);
-          ui.$templateSelector = ui.customTemplateName;
+          ui.reasonId = ui.customTemplateName;
         }
         if (ui.isSystemTemplate(ui.reasonId) || ui.suspendDays === 0) {
           return true;
         }
         e.preventDefault();
-        const text = window.modSuspendTokens(ui.$editor.val());
+        const text = window.modSuspendTokens(ui.editorText);
         if (!text) {
           StackExchange.helpers.showToast("Please fill out the mod message form", {
             type: "danger"
@@ -601,8 +604,8 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           );
           return false;
         }
-        ui.$editor = text;
-        ui.$templateSelector = "OtherViolation";
+        ui.editorText = text;
+        ui.reasonId = "OtherViolation";
         const url = new URL("/users/message/save", parentUrl);
         void submitFormAndAnnotate(
           url.pathname,

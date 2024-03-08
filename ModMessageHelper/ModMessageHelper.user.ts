@@ -362,7 +362,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         private readonly systemTemplateReasonIds: Set<string>;
 
         constructor() {
-            this.systemTemplateReasonIds = new Set([...(<JQuery<HTMLOptionElement>>this.$templateSelector.find('option')).map((_, n) => $(n).val() as string)]);
+            this.systemTemplateReasonIds = new Set([...(<JQuery<HTMLOptionElement>>this.$templateSelector.find('option')).map((_, n) => <string>$(n).val())]);
         }
 
         get $form(): JQuery<HTMLFormElement> {
@@ -385,12 +385,12 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             return $('#select-template-menu');
         }
 
-        set $templateSelector(newOptionValue: string) {
-            this.$templateSelector.val(newOptionValue);
-        }
-
         get reasonId(): string {
             return <string>this.$templateSelector.val();
+        }
+
+        set reasonId(newOptionValue: string) {
+            this.$templateSelector.val(newOptionValue);
         }
 
         get displayedSelectedTemplate(): string {
@@ -403,7 +403,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
 
         get customTemplateName(): string {
-            return this.$customTemplateNameInput.val() as string;
+            return <string>this.$customTemplateNameInput.val();
         }
 
         set customTemplateName(newTemplateName: string) {
@@ -426,7 +426,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             return $('#wmd-input');
         }
 
-        set $editor(newText: string) {
+        get editorText(): string {
+            return <string>this.$editor.val();
+        }
+
+        set editorText(newText: string) {
             this.$editor.val(newText);
         }
 
@@ -441,7 +445,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
 
         get autoSuspendMessageTemplateText(): string {
-            return this.$autoSuspendMessageField.val() as string;
+            return <string>this.$autoSuspendMessageField.val();
         }
 
         set autoSuspendMessageTemplateText(newValue: string) {
@@ -644,7 +648,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
                 // Create a new option and select it
                 ui.$templateSelector.append(`<option value="${ui.customTemplateName}">${ui.customTemplateName}</option>`);
-                ui.$templateSelector = ui.customTemplateName;
+                ui.reasonId = ui.customTemplateName;
             }
 
             // the backend will fail to apply the suspension when using custom template names
@@ -658,7 +662,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             e.preventDefault();
 
             // Replace Placeholders with real values
-            const text = window.modSuspendTokens(ui.$editor.val() as string);
+            const text = window.modSuspendTokens(ui.editorText);
             if (!text) {
                 StackExchange.helpers.showToast('Please fill out the mod message form', {
                     type: 'danger'
@@ -675,11 +679,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             }
 
             // Finally update editor text with the replaced values
-            ui.$editor = text;
+            ui.editorText = text;
 
             // fall back to the identifier for generic violations
             // the message will be sent as "Something else..." but the suspension gets applied
-            ui.$templateSelector = 'OtherViolation';
+            ui.reasonId = 'OtherViolation';
 
             // now we can send the message
             const url = new URL('/users/message/save', parentUrl);
