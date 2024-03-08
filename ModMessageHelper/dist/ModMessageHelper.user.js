@@ -427,7 +427,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           settings.success = new Proxy(settings.success, {
             apply: (target, thisArg, args) => {
               const [fieldDefaults] = args;
-              fieldDefaults.MessageTemplate.Footer = fieldDefaults.MessageTemplate.Footer.replace("Regards,\n\nStack", "Regards,  \nStack");
+              fieldDefaults.MessageTemplate.Footer = fieldDefaults.MessageTemplate.Footer.replace("Regards,\n\n", "Regards,  \n");
               Reflect.apply(target, thisArg, args);
             }
           });
