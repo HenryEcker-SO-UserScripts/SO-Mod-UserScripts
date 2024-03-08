@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.19
+// @version      0.1.0
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -375,43 +375,119 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         Footer: ""
       }
     ];
-    const formElementIds = {
-      formSelector: "js-msg-form",
-      templateSelector: "select-template-menu",
-      editor: "wmd-input",
-      messageContentSelector: "js-message-contents",
-      customTemplateNameSelector: "usr-template-name-label",
-      suspendOptions: "suspension-options",
-      jsAutoSuspendMessageTemplateText: "js-auto-suspend-message"
-    };
-    const $templateSelector = $(`#${formElementIds.templateSelector}`);
-    const systemTemplateReasonIds = /* @__PURE__ */ new Set([...$templateSelector.find("option").map((_, n) => $(n).val())]);
-    function appendTemplateNameInputField() {
-      const $messageContentDiv = $(`#${formElementIds.messageContentSelector}`);
+    class ModMessageForm {
+      blankTemplateOptionValue = "0";
+      systemTemplateReasonIds;
+      constructor() {
+        this.systemTemplateReasonIds = /* @__PURE__ */ new Set([...this.$templateSelector.find("option").map((_, n) => $(n).val())]);
+      }
+      get $form() {
+        return $("#js-msg-form");
+      }
+      get $messageContents() {
+        return $("#js-message-contents");
+      }
+      get $aboutUserId() {
+        return $('.js-about-user-id[name="userId"]');
+      }
+      get aboutUserId() {
+        return Number(this.$aboutUserId.val());
+      }
+      get $templateSelector() {
+        return $("#select-template-menu");
+      }
+      set $templateSelector(newOptionValue) {
+        this.$templateSelector.val(newOptionValue);
+      }
+      get reasonId() {
+        return this.$templateSelector.val();
+      }
+      get displayedSelectedTemplate() {
+        return this.$templateSelector.find("option:selected").text();
+      }
+      get $customTemplateNameInput() {
+        return $("#usr-template-name-input");
+      }
+      get customTemplateName() {
+        return this.$customTemplateNameInput.val();
+      }
+      set customTemplateName(newTemplateName) {
+        this.$customTemplateNameInput.val(newTemplateName);
+      }
+      get $suspensionOptions() {
+        return $("#suspension-options");
+      }
+      get $suspensionDays() {
+        return $('.js-suspension-days[name="suspendDays"]');
+      }
+      get suspendDays() {
+        return Number(this.$suspensionDays.val());
+      }
+      get $editor() {
+        return $("#wmd-input");
+      }
+      set $editor(newText) {
+        this.$editor.val(newText);
+      }
+      refreshEditor() {
+        StackExchange.MarkdownEditor.refreshAllPreviews();
+      }
+      get $autoSuspendMessageField() {
+        return $("#js-auto-suspend-message");
+      }
+      get autoSuspendMessageTemplateText() {
+        return this.$autoSuspendMessageField.val();
+      }
+      set autoSuspendMessageTemplateText(newValue) {
+        this.$autoSuspendMessageField.val(newValue);
+      }
+      isSystemTemplate(reasonId) {
+        return this.systemTemplateReasonIds.has(reasonId);
+      }
+      hasTemplateSelected() {
+        return this.reasonId !== this.blankTemplateOptionValue;
+      }
+    }
+    const ui = new ModMessageForm();
+    function attachTemplateNameInputField() {
       const customTemplateDivHiddenClass = "d-none";
-      const $customTemplateNameInput = $('<input class="flex--item s-input wmx4" maxlength="272">');
-      const $customTemplateDiv = $(`<div id="${formElementIds.customTemplateNameSelector}" class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`).append('<label class="flex--item s-label">Template Name</label>').append($customTemplateNameInput);
-      $messageContentDiv.before($customTemplateDiv);
-      $templateSelector.on("change", function(e) {
-        $customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
-        if ($templateSelector.val() === "0") {
-          $customTemplateDiv.addClass(customTemplateDivHiddenClass);
-        } else {
+      const $customTemplateDiv = $(`<div class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`).append('<label class="flex--item s-label">Template Name</label>').append('<input id="usr-template-name-input" class="flex--item s-input wmx4" maxlength="272">');
+      ui.$messageContents.before($customTemplateDiv);
+      ui.$templateSelector.on("change", (e) => {
+        ui.customTemplateName = e.target.options[e.target.selectedIndex].text;
+        if (ui.hasTemplateSelected()) {
           $customTemplateDiv.removeClass(customTemplateDivHiddenClass);
+        } else {
+          $customTemplateDiv.addClass(customTemplateDivHiddenClass);
         }
       });
     }
+    function addReasonsToSelect() {
+      const isStackOverflow = parentUrl === "https://stackoverflow.com";
+      const reasonsToAdd = customModMessages.reduce((acc, message) => {
+        if (message?.StackOverflowOnly === true && !isStackOverflow) {
+          return acc;
+        }
+        acc.push(message.TemplateName);
+        return acc;
+      }, []);
+      if (reasonsToAdd.length === 0) {
+        return;
+      }
+      ui.$templateSelector.find(`option[value!="${ui.blankTemplateOptionValue}"]`).wrapAll('<optgroup label="Stock Templates"></optgroup>');
+      ui.$templateSelector.append(
+        $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => {
+          return $("<option></option>").val(reasonId).text(reasonId);
+        }))
+      );
+    }
     function fixAutoSuspendMessagePluralisation() {
-      $(`#${formElementIds.suspendOptions}`).on("change", () => {
-        const suspensionDays = Number($('.js-suspension-days[name="suspendDays"]').val());
-        const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
-        $autoSuspendTemplate.val(
-          $autoSuspendTemplate.val().toString().replace(
-            /\$days\$ days?/,
-            suspensionDays === 1 ? "$days$ day" : "$days$ days"
-          )
+      ui.$suspensionOptions.on("change", () => {
+        ui.autoSuspendMessageTemplateText = ui.autoSuspendMessageTemplateText.replace(
+          /\$days\$ days?/,
+          ui.suspendDays === 1 ? "$days$ day" : "$days$ days"
         );
-        StackExchange.MarkdownEditor.refreshAllPreviews();
+        ui.refreshEditor();
       });
     }
     function setupProxyForNonDefaults() {
@@ -425,7 +501,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             return;
           }
           const reasonId = url.searchParams.get("reasonId");
-          if (systemTemplateReasonIds.has(reasonId)) {
+          if (ui.isSystemTemplate(reasonId)) {
             settings.success = new Proxy(settings.success, {
               apply: (target, thisArg, args) => {
                 const [fieldDefaults] = args;
@@ -462,25 +538,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
       });
     }
-    function addReasonsToSelect() {
-      const isStackOverflow = parentUrl === "https://stackoverflow.com";
-      const reasonsToAdd = customModMessages.reduce((acc, message) => {
-        if (message?.StackOverflowOnly === true && !isStackOverflow) {
-          return acc;
-        }
-        acc.push(message.TemplateName);
-        return acc;
-      }, []);
-      if (reasonsToAdd.length === 0) {
-        return;
-      }
-      $templateSelector.find('option[value!="0"]').wrapAll('<optgroup label="Stock Templates"></optgroup>');
-      $templateSelector.append(
-        $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => {
-          return $("<option></option>").val(reasonId).text(reasonId);
-        }))
-      );
-    }
     async function submitFormAndAnnotate(fetchPath, serialisedFormData, userId, annotationText) {
       try {
         assertValidAnnotationTextLength(annotationText.length);
@@ -499,7 +556,12 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           window.location.href = response.url;
         } catch (error) {
           console.error(error);
-          if (confirm("The message was sent but the profile was not annotated. Refresh anyway?")) {
+          const confirmRefresh = await StackExchange.helpers.showConfirmModal({
+            title: "Annotation Failed",
+            body: "The message was sent but the profile was not annotated. Refresh anyway?",
+            buttonLabel: "Refresh"
+          });
+          if (confirmRefresh) {
             window.location.href = response.url;
           }
         }
@@ -516,25 +578,16 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       }
     }
     function setupSubmitIntercept() {
-      $(`#${formElementIds.formSelector}`).on("submit", function(e) {
-        const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
-        const $userIdEl = $('.js-about-user-id[name="userId"]');
-        const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
-        const suspensionDays = Number($suspensionDaysEl.val());
-        const userId = $userIdEl.val();
-        const customTemplateName = $customTemplateNameInput.val();
-        const currentDisplay = $templateSelector.find("option:selected").text();
-        if (currentDisplay !== customTemplateName) {
-          $templateSelector.append(`<option value="${customTemplateName}">${customTemplateName}</option>`);
-          $templateSelector.val(customTemplateName);
+      ui.$form.on("submit", function(e) {
+        if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
+          ui.$templateSelector.append(`<option value="${ui.customTemplateName}">${ui.customTemplateName}</option>`);
+          ui.$templateSelector = ui.customTemplateName;
         }
-        const reasonId = $templateSelector.val();
-        if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
+        if (ui.isSystemTemplate(ui.reasonId) || ui.suspendDays === 0) {
           return true;
         }
         e.preventDefault();
-        const $editor = $(`#${formElementIds.editor}`);
-        const text = window.modSuspendTokens($editor.val());
+        const text = window.modSuspendTokens(ui.$editor.val());
         if (!text) {
           StackExchange.helpers.showToast("Please fill out the mod message form", {
             type: "danger"
@@ -548,21 +601,21 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           );
           return false;
         }
-        $editor.val(text);
-        $templateSelector.val("OtherViolation");
+        ui.$editor = text;
+        ui.$templateSelector = "OtherViolation";
         const url = new URL("/users/message/save", parentUrl);
         void submitFormAndAnnotate(
           url.pathname,
           $(this).serialize(),
-          userId,
-          `${reasonId} (content of previous entry)`
+          ui.aboutUserId,
+          `${ui.reasonId} (content of previous entry)`
         );
         return false;
       });
     }
-    appendTemplateNameInputField();
-    setupProxyForNonDefaults();
+    attachTemplateNameInputField();
     addReasonsToSelect();
+    setupProxyForNonDefaults();
     fixAutoSuspendMessagePluralisation();
     setupSubmitIntercept();
   });
