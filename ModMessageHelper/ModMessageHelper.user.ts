@@ -367,6 +367,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         jsAutoSuspendMessageTemplateText: 'js-auto-suspend-message'
     };
 
+    const formElementSelector = {
+        suspendDays: '.js-suspension-days[name="suspendDays"]',
+        userId: '.js-about-user-id[name="userId"]'
+    };
+
     const blankTemplateOptionValue = '0';
 
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
@@ -401,7 +406,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     function fixAutoSuspendMessagePluralisation() {
         $(`#${formElementIds.suspendOptions}`).on('change', () => {
-            const suspensionDays = Number($('.js-suspension-days[name="suspendDays"]').val());
+            const suspensionDays = Number($(formElementSelector.suspendDays).val());
 
             // Update Auto Suspend Template value to correctly pluralise suspend days
             const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
@@ -557,9 +562,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     }
 
     function setupSubmitIntercept() {
-        $(`#${formElementIds.formSelector}`).on('submit', function (e) {
-            const $suspensionDaysEl = $('.js-suspension-days[name="suspendDays"]');
-            const $userIdEl = $('.js-about-user-id[name="userId"]');
+        const $form = $(`#${formElementIds.formSelector}`);
+        $form.on('submit', function (e) {
+            const $suspensionDaysEl = $(formElementSelector.suspendDays);
+            const $userIdEl = $(formElementSelector.userId);
             const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
 
             const suspensionDays = Number($suspensionDaysEl.val());
