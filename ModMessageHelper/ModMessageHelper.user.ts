@@ -52,7 +52,6 @@ type UserDefinedMessageTemplate =
 
 type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
 
-
 StackExchange.ready(function () {
     if (!StackExchange?.options?.user?.isModerator) {
         return;
@@ -357,68 +356,172 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
     ];
 
-    const formElementIds = {
-        formSelector: 'js-msg-form',
-        templateSelector: 'select-template-menu',
-        editor: 'wmd-input',
-        messageContentSelector: 'js-message-contents',
-        customTemplateNameSelector: 'usr-template-name-label',
-        suspendOptions: 'suspension-options',
-        jsAutoSuspendMessageTemplateText: 'js-auto-suspend-message'
-    };
 
-    const formElementSelector = {
-        suspendDays: '.js-suspension-days[name="suspendDays"]',
-        userId: '.js-about-user-id[name="userId"]'
-    };
+    class ModMessageForm {
+        readonly blankTemplateOptionValue = '0';
+        private readonly systemTemplateReasonIds: Set<string>;
 
-    const blankTemplateOptionValue = '0';
+        constructor() {
+            this.systemTemplateReasonIds = new Set([...(<JQuery<HTMLOptionElement>>this.$templateSelector.find('option')).map((_, n) => $(n).val() as string)]);
+        }
 
-    const $templateSelector = $(`#${formElementIds.templateSelector}`);
+        get $form(): JQuery<HTMLFormElement> {
+            return $('#js-msg-form');
+        }
 
-    const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
+        get $messageContents(): JQuery<HTMLDivElement> {
+            return $('#js-message-contents');
+        }
 
-    function appendTemplateNameInputField() {
-        const $messageContentDiv = $(`#${formElementIds.messageContentSelector}`);
+        get $aboutUserId(): JQuery<HTMLInputElement> {
+            return $('.js-about-user-id[name="userId"]');
+        }
 
+        get aboutUserId(): number {
+            return Number(this.$aboutUserId.val());
+        }
+
+        get $templateSelector(): JQuery<HTMLSelectElement> {
+            return $('#select-template-menu');
+        }
+
+        set $templateSelector(newOptionValue: string) {
+            this.$templateSelector.val(newOptionValue);
+        }
+
+        get reasonId(): string {
+            return <string>this.$templateSelector.val();
+        }
+
+        get displayedSelectedTemplate(): string {
+            return this.$templateSelector.find('option:selected').text();
+        }
+
+        get $customTemplateNameInput(): JQuery<HTMLInputElement> {
+            // This user id is defined in attachTemplateNameInputField
+            return $('#usr-template-name-input');
+        }
+
+        get customTemplateName(): string {
+            return this.$customTemplateNameInput.val() as string;
+        }
+
+        set customTemplateName(newTemplateName: string) {
+            this.$customTemplateNameInput.val(newTemplateName);
+        }
+
+        get $suspensionOptions(): JQuery<HTMLFieldSetElement> {
+            return $('#suspension-options');
+        }
+
+        get $suspensionDays(): JQuery<HTMLInputElement> {
+            return $('.js-suspension-days[name="suspendDays"]');
+        }
+
+        get suspendDays(): number {
+            return Number(this.$suspensionDays.val());
+        }
+
+        get $editor(): JQuery<HTMLTextAreaElement> {
+            return $('#wmd-input');
+        }
+
+        set $editor(newText: string) {
+            this.$editor.val(newText);
+        }
+
+        refreshEditor() {
+            // Refresh previews
+            // @ts-expect-error MarkdownEditor is not in StackExchange Type
+            StackExchange.MarkdownEditor.refreshAllPreviews();
+        }
+
+        get $autoSuspendMessageField(): JQuery<HTMLInputElement> {
+            return $('#js-auto-suspend-message');
+        }
+
+        get autoSuspendMessageTemplateText(): string {
+            return this.$autoSuspendMessageField.val() as string;
+        }
+
+        set autoSuspendMessageTemplateText(newValue: string) {
+            this.$autoSuspendMessageField.val(newValue);
+        }
+
+        isSystemTemplate(reasonId: string): boolean {
+            return this.systemTemplateReasonIds.has(reasonId);
+        }
+
+        hasTemplateSelected(): boolean {
+            return this.reasonId !== this.blankTemplateOptionValue;
+        }
+    }
+
+    const ui = new ModMessageForm();
+
+    function attachTemplateNameInputField() {
         const customTemplateDivHiddenClass = 'd-none';
 
-        const $customTemplateNameInput = $('<input class="flex--item s-input wmx4" maxlength="272">');
         const $customTemplateDiv =
-            $(`<div id="${formElementIds.customTemplateNameSelector}" class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`)
+            $(`<div class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`)
                 .append('<label class="flex--item s-label">Template Name</label>')
-                .append($customTemplateNameInput);
+                .append('<input id="usr-template-name-input" class="flex--item s-input wmx4" maxlength="272">');
 
-        $messageContentDiv.before($customTemplateDiv);
+        ui.$messageContents.before($customTemplateDiv);
 
         // populate this field with the display text
-        $templateSelector.on('change', function (e: JQuery.ChangeEvent<HTMLSelectElement>) {
-            $customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
+        ui.$templateSelector.on('change', (e: JQuery.ChangeEvent<HTMLSelectElement>) => {
+            ui.customTemplateName = e.target.options[e.target.selectedIndex].text;
 
             // Only show custom template name input field when template has been selected
-            if ($templateSelector.val() === blankTemplateOptionValue) {
-                $customTemplateDiv.addClass(customTemplateDivHiddenClass);
-            } else {
+            if (ui.hasTemplateSelected()) {
                 $customTemplateDiv.removeClass(customTemplateDivHiddenClass);
+            } else {
+                $customTemplateDiv.addClass(customTemplateDivHiddenClass);
             }
         });
     }
 
-    function fixAutoSuspendMessagePluralisation() {
-        $(`#${formElementIds.suspendOptions}`).on('change', () => {
-            const suspensionDays = Number($(formElementSelector.suspendDays).val());
+    function addReasonsToSelect() {
+        const isStackOverflow = parentUrl === 'https://stackoverflow.com';
 
+        const reasonsToAdd: string[] = customModMessages
+            .reduce((acc, message) => {
+                // If is a StackOverflowOnly Template and this is not Stack Overflow don't include in result
+                if (message?.StackOverflowOnly === true && !isStackOverflow) {
+                    return acc;
+                }
+
+                acc.push(message.TemplateName);
+
+                return acc;
+            }, []);
+
+        if (reasonsToAdd.length === 0) {
+            return; // Don't make any changes if there are no custom templates
+        }
+
+        // Move default templates into an optgroup (excluding value blankTemplateOptionValue which is "Please select a template..."
+        ui.$templateSelector.find(`option[value!="${ui.blankTemplateOptionValue}"]`).wrapAll('<optgroup label="Stock Templates"></optgroup>');
+
+        // Create new optgroup with custom templates
+        ui.$templateSelector.append(
+            $('<optgroup label="Custom Templates"></optgroup>')
+                .append(...reasonsToAdd.map(reasonId => {
+                    return $('<option></option>').val(reasonId).text(reasonId);
+                }))
+        );
+    }
+
+    function fixAutoSuspendMessagePluralisation() {
+        ui.$suspensionOptions.on('change', () => {
             // Update Auto Suspend Template value to correctly pluralise suspend days
-            const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
-            $autoSuspendTemplate.val(
-                $autoSuspendTemplate.val().toString().replace(
-                    /\$days\$ days?/,
-                    suspensionDays === 1 ? '$days$ day' : '$days$ days'
-                )
+            ui.autoSuspendMessageTemplateText = ui.autoSuspendMessageTemplateText.replace(
+                /\$days\$ days?/,
+                ui.suspendDays === 1 ? '$days$ day' : '$days$ days'
             );
-            // Refresh previews
-            // @ts-expect-error MarkdownEditor is not in StackExchange Type
-            StackExchange.MarkdownEditor.refreshAllPreviews();
+            // Force Editor to rerender with new template values
+            ui.refreshEditor();
         });
     }
 
@@ -440,7 +543,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 const reasonId = url.searchParams.get('reasonId');
 
                 // If this is one of the system templates
-                if (systemTemplateReasonIds.has(reasonId)) {
+                if (ui.isSystemTemplate(reasonId)) {
                     // Create a proxy to fix the paragraph break in the footer
                     // also fixes custom reasons due to the call to an AnalogousSystemReasonId to populate the majority of fields
                     settings.success = new Proxy(settings.success, {
@@ -489,37 +592,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         });
     }
 
-    function addReasonsToSelect() {
-        const isStackOverflow = parentUrl === 'https://stackoverflow.com';
-
-        const reasonsToAdd: string[] = customModMessages
-            .reduce((acc, message) => {
-                // If is a StackOverflowOnly Template and this is not Stack Overflow don't include in result
-                if (message?.StackOverflowOnly === true && !isStackOverflow) {
-                    return acc;
-                }
-
-                acc.push(message.TemplateName);
-
-                return acc;
-            }, []);
-
-        if (reasonsToAdd.length === 0) {
-            return; // Don't make any changes if there are no custom templates
-        }
-
-        // Move default templates into an optgroup (excluding value blankTemplateOptionValue which is "Please select a template..."
-        $templateSelector.find(`option[value!="${blankTemplateOptionValue}"]`).wrapAll('<optgroup label="Stock Templates"></optgroup>');
-
-        // Create new optgroup with custom templates
-        $templateSelector.append(
-            $('<optgroup label="Custom Templates"></optgroup>')
-                .append(...reasonsToAdd.map(reasonId => {
-                    return $('<option></option>').val(reasonId).text(reasonId);
-                }))
-        );
-    }
-
     async function submitFormAndAnnotate(fetchPath: string, serialisedFormData: string, userId: IdType, annotationText: string) {
         try {
             // Ensure that the annotation won't fail due to its length
@@ -562,30 +634,18 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     }
 
     function setupSubmitIntercept() {
-        const $form = $(`#${formElementIds.formSelector}`);
-        $form.on('submit', function (e) {
-            const $suspensionDaysEl = $(formElementSelector.suspendDays);
-            const $userIdEl = $(formElementSelector.userId);
-            const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
-
-            const suspensionDays = Number($suspensionDaysEl.val());
-            const userId = $userIdEl.val() as string;
-            const customTemplateName = $customTemplateNameInput.val() as string;
-            const currentDisplay = $templateSelector.find('option:selected').text();
-
+        ui.$form.on('submit', function (e) {
             // If the selected template dropdown doesn't match the custom template text field add a new option
-            if (currentDisplay !== customTemplateName) {
+            if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
                 // Create a new option and select it
-                $templateSelector.append(`<option value="${customTemplateName}">${customTemplateName}</option>`);
-                $templateSelector.val(customTemplateName);
+                ui.$templateSelector.append(`<option value="${ui.customTemplateName}">${ui.customTemplateName}</option>`);
+                ui.$templateSelector = ui.customTemplateName;
             }
-
-            const reasonId = $templateSelector.val() as string;
 
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
             // submitting the form as-is works as intended
-            if (systemTemplateReasonIds.has(reasonId) || suspensionDays === 0) {
+            if (ui.isSystemTemplate(ui.reasonId) || ui.suspendDays === 0) {
                 return true;
             }
 
@@ -593,8 +653,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             e.preventDefault();
 
             // Replace Placeholders with real values
-            const $editor = $(`#${formElementIds.editor}`);
-            const text = window.modSuspendTokens($editor.val() as string);
+            const text = window.modSuspendTokens(ui.$editor.val() as string);
             if (!text) {
                 StackExchange.helpers.showToast('Please fill out the mod message form', {
                     type: 'danger'
@@ -611,11 +670,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             }
 
             // Finally update editor text with the replaced values
-            $editor.val(text);
+            ui.$editor = text;
 
             // fall back to the identifier for generic violations
             // the message will be sent as "Something else..." but the suspension gets applied
-            $templateSelector.val('OtherViolation');
+            ui.$templateSelector = 'OtherViolation';
 
             // now we can send the message
             const url = new URL('/users/message/save', parentUrl);
@@ -624,16 +683,16 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             void submitFormAndAnnotate(
                 url.pathname,
                 $(this).serialize(),
-                userId,
-                `${reasonId} (content of previous entry)`
+                ui.aboutUserId,
+                `${ui.reasonId} (content of previous entry)`
             );
             return false;
         });
     }
 
-    appendTemplateNameInputField();
-    setupProxyForNonDefaults();
+    attachTemplateNameInputField();
     addReasonsToSelect();
+    setupProxyForNonDefaults();
     fixAutoSuspendMessagePluralisation();
     setupSubmitIntercept();
 });
