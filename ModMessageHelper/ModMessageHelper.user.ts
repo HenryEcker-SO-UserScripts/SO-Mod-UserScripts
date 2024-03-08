@@ -362,6 +362,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         editor: 'wmd-input',
         messageContentSelector: 'js-message-contents',
         customTemplateNameSelector: 'usr-template-name-label',
+        suspendOptions: 'suspension-options',
         jsAutoSuspendMessageTemplateText: 'js-auto-suspend-message'
     };
 
@@ -381,6 +382,24 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         $templateSelector.on('change', function (e: JQuery.ChangeEvent<HTMLSelectElement>) {
             const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
             $customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
+        });
+    }
+
+    function fixAutoSuspendMessagePluralisation() {
+        $(`#${formElementIds.suspendOptions}`).on('change', () => {
+            const suspensionDays = Number($('.js-suspension-days[name="suspendDays"]').val());
+
+            // Update Auto Suspend Template value to correctly pluralise suspend days
+            const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
+            $autoSuspendTemplate.val(
+                $autoSuspendTemplate.val().toString().replace(
+                    /\$days\$ days?/,
+                    suspensionDays === 1 ? '$days$ day' : '$days$ days'
+                )
+            );
+            // Refresh previews
+            // @ts-expect-error MarkdownEditor is not in StackExchange Type
+            StackExchange.MarkdownEditor.refreshAllPreviews();
         });
     }
 
@@ -544,15 +563,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // otherwise do things manually
             e.preventDefault();
 
-            // Update Auto Suspend Template value to correctly pluralise suspend days
-            const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
-            $autoSuspendTemplate.val(
-                $autoSuspendTemplate.val().toString().replace(
-                    /\$days\$ days?/,
-                    suspensionDays === 1 ? '$days$ day' : '$days$ days'
-                )
-            );
-
             // Replace Placeholders with real values
             const $editor = $(`#${formElementIds.editor}`);
             const text = window.modSuspendTokens($editor.val() as string);
@@ -595,5 +605,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     appendTemplateNameInput();
     setupProxyForNonDefaults();
     addReasonsToSelect();
+    fixAutoSuspendMessagePluralisation();
     setupSubmitIntercept();
 });

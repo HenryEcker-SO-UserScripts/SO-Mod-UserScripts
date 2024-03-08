@@ -381,6 +381,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       editor: "wmd-input",
       messageContentSelector: "js-message-contents",
       customTemplateNameSelector: "usr-template-name-label",
+      suspendOptions: "suspension-options",
       jsAutoSuspendMessageTemplateText: "js-auto-suspend-message"
     };
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
@@ -395,6 +396,19 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       $templateSelector.on("change", function(e) {
         const $customTemplateNameInput = $(`#${formElementIds.customTemplateNameSelector} input`);
         $customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
+      });
+    }
+    function fixAutoSuspendMessagePluralisation() {
+      $(`#${formElementIds.suspendOptions}`).on("change", () => {
+        const suspensionDays = Number($('.js-suspension-days[name="suspendDays"]').val());
+        const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
+        $autoSuspendTemplate.val(
+          $autoSuspendTemplate.val().toString().replace(
+            /\$days\$ days?/,
+            suspensionDays === 1 ? "$days$ day" : "$days$ days"
+          )
+        );
+        StackExchange.MarkdownEditor.refreshAllPreviews();
       });
     }
     function setupProxyForNonDefaults() {
@@ -509,13 +523,6 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           return true;
         }
         e.preventDefault();
-        const $autoSuspendTemplate = $(`#${formElementIds.jsAutoSuspendMessageTemplateText}`);
-        $autoSuspendTemplate.val(
-          $autoSuspendTemplate.val().toString().replace(
-            /\$days\$ days?/,
-            suspensionDays === 1 ? "$days$ day" : "$days$ days"
-          )
-        );
         const $editor = $(`#${formElementIds.editor}`);
         const text = window.modSuspendTokens($editor.val());
         if (!text) {
@@ -546,6 +553,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     appendTemplateNameInput();
     setupProxyForNonDefaults();
     addReasonsToSelect();
+    fixAutoSuspendMessagePluralisation();
     setupSubmitIntercept();
   });
 })();
