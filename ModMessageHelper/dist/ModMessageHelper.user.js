@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.17
+// @version      0.0.18
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -424,6 +424,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           if (!url.searchParams.has("reasonId")) {
             return;
           }
+          settings.success = new Proxy(settings.success, {
+            apply: (target, thisArg, args) => {
+              const [fieldDefaults] = args;
+              fieldDefaults.MessageTemplate.Footer = fieldDefaults.MessageTemplate.Footer.replace("Regards,\n\nStack", "Regards,  \nStack");
+              Reflect.apply(target, thisArg, args);
+            }
+          });
           const reasonId = url.searchParams.get("reasonId");
           if (systemTemplateReasonIds.has(reasonId)) {
             return;

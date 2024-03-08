@@ -8,6 +8,7 @@ declare global {
     }
 }
 
+type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
 
 interface ModMessageTemplate {
     ModMessageReason: number;
@@ -429,12 +430,23 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                     return;
                 }
 
+                // Create a proxy to fix the paragraph break in the footer (applies to both stock and custom reasons)
+                settings.success = new Proxy(settings.success, {
+                    apply: (target: AjaxSuccess, thisArg, args: Parameters<AjaxSuccess>) => {
+                        const [fieldDefaults] = args;
+                        fieldDefaults.MessageTemplate.Footer = fieldDefaults.MessageTemplate.Footer.replace('Regards,\n\nStack', 'Regards,  \nStack');
+                        Reflect.apply(target, thisArg, args);
+                    }
+                });
+
+
                 const reasonId = url.searchParams.get('reasonId');
+
+
                 // If this is one of the system templates
                 if (systemTemplateReasonIds.has(reasonId)) {
                     return;
                 }
-
                 // Abort the request preemptively (it will fail since reasonId must be a custom reason)
                 jqXHR.abort();
 
@@ -460,11 +472,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                         // Merge returned Values with template specified values
                         fieldDefaults.MessageTemplate = {
                             ...fieldDefaults.MessageTemplate,
-                            ...selectedTemplate
+                            ...selectedTemplate,
                         };
 
                         // Force call the old Success function with updated values
-                        (<(data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void>settings.success)(fieldDefaults, 'success', jqXHR);
+                        (<AjaxSuccess>settings.success)(fieldDefaults, 'success', jqXHR);
                     },
                     error: settings.error
                 });
