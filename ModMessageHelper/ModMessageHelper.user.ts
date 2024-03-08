@@ -30,22 +30,22 @@ interface TemplateRequestResponse {
 
 // To create run the following code with no UserScripts running
 // console.log($('#select-template-menu option').map((_, n) => `'${$(n).val()}'`).toArray().slice(1).join('|\n'))
-type SystemReasonId = 'LowQualityQuestions'|
-    'QuestionRepetition'|
-    'SockPuppetVoting'|
-    'TargetedVotes'|
-    'AbusiveToOthers'|
-    'RevengeDownvoting'|
-    'SelfDestructionOfUsefulContent'|
-    'SignaturesOrTaglines'|
-    'ExcessiveSelfPromotion'|
-    'ExcessiveDiscussionInComments'|
-    'Plagiarism'|
-    'RollbackWar'|
-    'InappropriateUsername'|
-    'BanEvasionMultipleAccounts'|
-    'InaccurateAIContent'|
-    'SpamRecidivism'|
+type SystemReasonId = 'LowQualityQuestions' |
+    'QuestionRepetition' |
+    'SockPuppetVoting' |
+    'TargetedVotes' |
+    'AbusiveToOthers' |
+    'RevengeDownvoting' |
+    'SelfDestructionOfUsefulContent' |
+    'SignaturesOrTaglines' |
+    'ExcessiveSelfPromotion' |
+    'ExcessiveDiscussionInComments' |
+    'Plagiarism' |
+    'RollbackWar' |
+    'InappropriateUsername' |
+    'BanEvasionMultipleAccounts' |
+    'InaccurateAIContent' |
+    'SpamRecidivism' |
     'OtherViolation';
 
 type UserDefinedMessageTemplate =
@@ -492,6 +492,12 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         });
     }
 
+    function createReasonOption(newOptionValue: string): JQuery<HTMLOptionElement>;
+    function createReasonOption(newOptionValue: string, newOptionText: string): JQuery<HTMLOptionElement>;
+    function createReasonOption(newOptionValue: string, newOptionText?: string): JQuery<HTMLOptionElement> {
+        return $(`<option value="${newOptionValue}">${newOptionText ?? newOptionValue}</option>`);
+    }
+
     function addReasonsToSelect() {
         const isStackOverflow = parentUrl === 'https://stackoverflow.com';
 
@@ -517,9 +523,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         // Create new optgroup with custom templates
         ui.$templateSelector.append(
             $('<optgroup label="Custom Templates"></optgroup>')
-                .append(...reasonsToAdd.map(reasonId => {
-                    return $('<option></option>').val(reasonId).text(reasonId);
-                }))
+                .append(...reasonsToAdd.map(reasonId => createReasonOption(reasonId)))
         );
     }
 
@@ -653,7 +657,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // If the selected template dropdown doesn't match the custom template text field add a new option
             if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
                 // Create a new option and select it
-                ui.$templateSelector.append(`<option value="${ui.customTemplateName}">${ui.customTemplateName}</option>`);
+                ui.$templateSelector.append(createReasonOption(ui.customTemplateName));
                 ui.reasonId = ui.customTemplateName;
             }
 

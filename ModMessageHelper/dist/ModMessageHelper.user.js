@@ -465,6 +465,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
       });
     }
+    function createReasonOption(newOptionValue, newOptionText) {
+      return $(`<option value="${newOptionValue}">${newOptionText ?? newOptionValue}</option>`);
+    }
     function addReasonsToSelect() {
       const isStackOverflow = parentUrl === "https://stackoverflow.com";
       const reasonsToAdd = customModMessages.reduce((acc, message) => {
@@ -479,9 +482,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       }
       ui.$templateSelector.find(`option[value!="${ui.blankTemplateOptionValue}"]`).wrapAll('<optgroup label="Stock Templates"></optgroup>');
       ui.$templateSelector.append(
-        $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => {
-          return $("<option></option>").val(reasonId).text(reasonId);
-        }))
+        $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => createReasonOption(reasonId)))
       );
     }
     function fixAutoSuspendMessagePluralisation() {
@@ -583,7 +584,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     function setupSubmitIntercept() {
       ui.$form.on("submit", function(e) {
         if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
-          ui.$templateSelector.append(`<option value="${ui.customTemplateName}">${ui.customTemplateName}</option>`);
+          ui.$templateSelector.append(createReasonOption(ui.customTemplateName));
           ui.reasonId = ui.customTemplateName;
         }
         if (ui.isSystemTemplate(ui.reasonId) || ui.suspendDays === 0) {
