@@ -367,6 +367,8 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         jsAutoSuspendMessageTemplateText: 'js-auto-suspend-message'
     };
 
+    const blankTemplateOptionValue = '0';
+
     const $templateSelector = $(`#${formElementIds.templateSelector}`);
 
     const systemTemplateReasonIds: Set<string> = new Set([...$templateSelector.find('option').map((_, n) => $(n).val() as string)]);
@@ -389,7 +391,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             $customTemplateNameInput.val(e.target.options[e.target.selectedIndex].text);
 
             // Only show custom template name input field when template has been selected
-            if ($templateSelector.val() === '0') {
+            if ($templateSelector.val() === blankTemplateOptionValue) {
                 $customTemplateDiv.addClass(customTemplateDivHiddenClass);
             } else {
                 $customTemplateDiv.removeClass(customTemplateDivHiddenClass);
@@ -501,8 +503,8 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             return; // Don't make any changes if there are no custom templates
         }
 
-        // Move default templates into an optgroup (excluding value "0" which is "Please select a template..."
-        $templateSelector.find('option[value!="0"]').wrapAll('<optgroup label="Stock Templates"></optgroup>');
+        // Move default templates into an optgroup (excluding value blankTemplateOptionValue which is "Please select a template..."
+        $templateSelector.find(`option[value!="${blankTemplateOptionValue}"]`).wrapAll('<optgroup label="Stock Templates"></optgroup>');
 
         // Create new optgroup with custom templates
         $templateSelector.append(
