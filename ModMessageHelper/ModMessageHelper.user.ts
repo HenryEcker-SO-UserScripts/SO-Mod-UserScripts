@@ -458,12 +458,16 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             this.$autoSuspendMessageField.val(newValue);
         }
 
-        isSystemTemplate(reasonId: string): boolean {
-            return this.systemTemplateReasonIds.has(reasonId);
+        isSystemTemplate(reasonId?: string): boolean {
+            return this.systemTemplateReasonIds.has(reasonId ?? this.reasonId);
         }
 
         hasTemplateSelected(): boolean {
             return this.reasonId !== this.blankTemplateOptionValue;
+        }
+
+        hasCustomTemplateName(): boolean {
+            return this.displayedSelectedTemplate !== this.customTemplateName;
         }
     }
 
@@ -654,8 +658,8 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     function setupSubmitIntercept() {
         ui.$form.on('submit', function (e) {
-            // If the selected template dropdown doesn't match the custom template text field add a new option
-            if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
+            // If a custom template is used add a new option
+            if (ui.hasCustomTemplateName()) {
                 // Create a new option and select it
                 ui.$templateSelector.append(createReasonOption(ui.customTemplateName));
                 ui.reasonId = ui.customTemplateName;
@@ -664,7 +668,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // the backend will fail to apply the suspension when using custom template names
             // though in case of official templates or custom ones without a suspension,
             // submitting the form as-is works as intended
-            if (ui.isSystemTemplate(ui.reasonId) || ui.suspendDays === 0) {
+            if (ui.isSystemTemplate() || ui.suspendDays === 0) {
                 return true;
             }
 

@@ -445,10 +445,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         this.$autoSuspendMessageField.val(newValue);
       }
       isSystemTemplate(reasonId) {
-        return this.systemTemplateReasonIds.has(reasonId);
+        return this.systemTemplateReasonIds.has(reasonId ?? this.reasonId);
       }
       hasTemplateSelected() {
         return this.reasonId !== this.blankTemplateOptionValue;
+      }
+      hasCustomTemplateName() {
+        return this.displayedSelectedTemplate !== this.customTemplateName;
       }
     }
     const ui = new ModMessageForm();
@@ -583,11 +586,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     }
     function setupSubmitIntercept() {
       ui.$form.on("submit", function(e) {
-        if (ui.displayedSelectedTemplate !== ui.customTemplateName) {
+        if (ui.hasCustomTemplateName()) {
           ui.$templateSelector.append(createReasonOption(ui.customTemplateName));
           ui.reasonId = ui.customTemplateName;
         }
-        if (ui.isSystemTemplate(ui.reasonId) || ui.suspendDays === 0) {
+        if (ui.isSystemTemplate() || ui.suspendDays === 0) {
           return true;
         }
         e.preventDefault();
