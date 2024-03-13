@@ -125,7 +125,7 @@ function main() {
         return;
     }
 
-    $('#mainbar header .s-page-title--header').append(` (on ${uniquePostCount} Posts)`);
+    $('#mainbar header .s-page-title--header').append(` (on ${uniquePostCount} ${pluralise(uniquePostCount, 'post')})`);
 
     const {summaryStats, flaggedUserSummaryStats, flaggerSummaryStats} = computeStats($postContainers);
     const $userScriptMasterContainer = $('<div id="dbfs-summary" class="mb24"></div>');
