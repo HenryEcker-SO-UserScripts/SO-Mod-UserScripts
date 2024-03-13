@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.0
+// @version      0.1.1
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -460,6 +460,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       const $customTemplateDiv = $(`<div class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`).append('<label class="flex--item s-label">Template Name</label>').append('<input id="usr-template-name-input" class="flex--item s-input wmx4" maxlength="272">');
       ui.$messageContents.before($customTemplateDiv);
       ui.$templateSelector.on("change", (e) => {
+        if (!e.target.options[e.target.selectedIndex]) {
+          return;
+        }
         ui.customTemplateName = e.target.options[e.target.selectedIndex].text;
         if (ui.hasTemplateSelected()) {
           $customTemplateDiv.removeClass(customTemplateDivHiddenClass);
@@ -487,6 +490,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       ui.$templateSelector.append(
         $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => createReasonOption(reasonId)))
       );
+    }
+    function checkForURLSearchParams() {
+      const reasonIdParam = new URLSearchParams(window.location.search).get("reasonId");
+      if (reasonIdParam) {
+        ui.reasonId = reasonIdParam;
+        ui.$templateSelector.trigger("change");
+      }
     }
     function fixAutoSuspendMessagePluralisation() {
       ui.$suspensionOptions.on("change", () => {
@@ -622,6 +632,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     }
     attachTemplateNameInputField();
     addReasonsToSelect();
+    checkForURLSearchParams();
     setupProxyForNonDefaults();
     fixAutoSuspendMessagePluralisation();
     setupSubmitIntercept();

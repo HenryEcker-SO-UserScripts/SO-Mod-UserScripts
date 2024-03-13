@@ -485,6 +485,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
         // populate this field with the display text
         ui.$templateSelector.on('change', (e: JQuery.ChangeEvent<HTMLSelectElement>) => {
+            if (!e.target.options[e.target.selectedIndex]) {
+                // Don't do anything if there's no selected index (some error in selection happened)
+                return;
+            }
             ui.customTemplateName = e.target.options[e.target.selectedIndex].text;
 
             // Only show custom template name input field when template has been selected
@@ -529,6 +533,15 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             $('<optgroup label="Custom Templates"></optgroup>')
                 .append(...reasonsToAdd.map(reasonId => createReasonOption(reasonId)))
         );
+    }
+
+    function checkForURLSearchParams() {
+        const reasonIdParam = new URLSearchParams(window.location.search).get('reasonId');
+        if (reasonIdParam) {
+            ui.reasonId = reasonIdParam;
+            // Trigger a change event to notify the change listener in attachTemplateNameInputField
+            ui.$templateSelector.trigger('change');
+        }
     }
 
     function fixAutoSuspendMessagePluralisation() {
@@ -715,6 +728,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
     attachTemplateNameInputField();
     addReasonsToSelect();
+    checkForURLSearchParams();
     setupProxyForNonDefaults();
     fixAutoSuspendMessagePluralisation();
     setupSubmitIntercept();
