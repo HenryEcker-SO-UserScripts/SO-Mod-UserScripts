@@ -1,11 +1,9 @@
-type DiscussionFlagType = 'Spam' | 'Should be a question' | 'Something else' | 'Rude or abusive';
-
 interface CountRecord {
     unduplicatedCount: number;
     count: number;
 }
 
-type SummaryFlagCount = Record<DiscussionFlagType, CountRecord>;
+type SummaryFlagCount = Record<string, CountRecord>;
 type UserStats = {
     displayName: string;
 } & SummaryFlagCount;
@@ -36,7 +34,7 @@ function computeStats($postContainers: JQuery<HTMLElement>) {
 
     function getPostFlagDetails($postFlagGroup: JQuery<HTMLElement>): {
         flagCount: number;
-        flagType: DiscussionFlagType;
+        flagType: string;
         $flaggers: JQuery<HTMLElement>;
     } {
         const flagCount = Number(
@@ -60,7 +58,7 @@ function computeStats($postContainers: JQuery<HTMLElement>) {
 
         return {
             flagCount,
-            flagType: <DiscussionFlagType>flagType,
+            flagType,
             $flaggers: $flagDetailElem.find('a[href^="/users/"]')
         };
     }
@@ -72,7 +70,7 @@ function computeStats($postContainers: JQuery<HTMLElement>) {
         };
     }
 
-    function accumulateUserSummaryStats(uss: UserSummaryStats, userInfo: UserInfo, flagType: DiscussionFlagType, flagCount: number) {
+    function accumulateUserSummaryStats(uss: UserSummaryStats, userInfo: UserInfo, flagType: string, flagCount: number) {
         if (uss?.[userInfo.userId] === undefined) {
             uss[userInfo.userId] = <UserStats>{
                 displayName: userInfo.displayName
@@ -194,7 +192,7 @@ function main() {
     $userScriptMasterContainer
         .append(buildSummaryTable(summaryStats));
 
-    function buildUserTable(title: string, flagTypes: DiscussionFlagType[], uss: UserSummaryStats, linkSuffix = '', useDetailCount = true): JQuery<HTMLElement> {
+    function buildUserTable(title: string, flagTypes: string[], uss: UserSummaryStats, linkSuffix = '', useDetailCount = true): JQuery<HTMLElement> {
         const tbodyData = (<[string, { total: number; } & UserStats][]>Object.entries(uss)).map((e) => {
             e[1].total = 0;
             for (const ft of flagTypes) {
@@ -224,9 +222,9 @@ function main() {
         );
     }
 
-    const filteredFlagTypes = (<[DiscussionFlagType, CountRecord][]>Object.entries(summaryStats))
-            .sort(([_0, a], [_1, b]) => b.count - a.count)
-            .map(([e, _0]) => e);
+    const filteredFlagTypes = (<[string, CountRecord][]>Object.entries(summaryStats))
+        .sort(([_0, a], [_1, b]) => b.count - a.count)
+        .map(([e, _0]) => e);
 
     $userScriptMasterContainer
         .append(buildUserTable('Flagged User', filteredFlagTypes, flaggedUserSummaryStats, '?tab=activity&sort=discussions'))
