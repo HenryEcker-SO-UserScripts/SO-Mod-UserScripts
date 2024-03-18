@@ -717,6 +717,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             // Finally update editor text with the replaced values
             ui.editorText = text;
 
+            // Save current reason id before updating the UI
+            const reasonIdForAnnotation = ui.reasonId;
+
             // fall back to the identifier for generic violations
             // the message will be sent as "Something else..." but the suspension gets applied
             ui.reasonId = 'OtherViolation';
@@ -729,7 +732,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 url.pathname,
                 $(this).serialize(),
                 ui.aboutUserId,
-                `${ui.reasonId} (content of previous entry)`
+                `${reasonIdForAnnotation} (content of previous entry)`
             );
             return false;
         });
