@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.1
+// @version      0.1.2
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -469,6 +469,13 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         } else {
           $customTemplateDiv.addClass(customTemplateDivHiddenClass);
         }
+      });
+      ui.$customTemplateNameInput.on("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          return false;
+        }
+        return true;
       });
     }
     function createReasonOption(newOptionValue, newOptionText) {

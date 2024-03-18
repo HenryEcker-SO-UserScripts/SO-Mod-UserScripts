@@ -498,6 +498,15 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 $customTemplateDiv.addClass(customTemplateDivHiddenClass);
             }
         });
+
+        // Prevent enter key press in template name field from submitting form
+        ui.$customTemplateNameInput.on('keydown', (ev: JQuery.KeyDownEvent<HTMLInputElement>) => {
+            if (ev.key === 'Enter') {
+                ev.preventDefault();
+                return false;
+            }
+            return true;
+        });
     }
 
     function createReasonOption(newOptionValue: string): JQuery<HTMLOptionElement>;
