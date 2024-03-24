@@ -53,14 +53,14 @@
       return e.toString();
     }
   }
-  async function disableSubmitButtonAndToastErrors(jSubmitButton, handleActions) {
-    jSubmitButton.prop("disabled", true).addClass("is-loading");
+  async function disableSubmitButtonAndToastErrors($jSubmitButton, handleActions) {
+    $jSubmitButton.prop("disabled", true).addClass("is-loading");
     try {
       await handleActions();
     } catch (error) {
       StackExchange.helpers.showToast(getMessageFromCaughtElement(error), { type: "danger" });
     } finally {
-      jSubmitButton.prop("disabled", false).removeClass("is-loading");
+      $jSubmitButton.prop("disabled", false).removeClass("is-loading");
     }
   }
   function sleep(ms) {
