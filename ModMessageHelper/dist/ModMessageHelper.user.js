@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.1.3
+// @version      0.1.4
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -20,48 +20,6 @@
 /* globals StackExchange, $ */
 (function() {
   "use strict";
-  function ajaxPostWithData(endPoint, data, shouldReturnData = true) {
-    return new Promise((resolve, reject) => {
-      void $.ajax({
-        type: "POST",
-        url: endPoint,
-        data
-      }).done((resData, textStatus, xhr) => {
-        resolve(
-          shouldReturnData ? resData : {
-            status: xhr.status,
-            statusText: textStatus
-          }
-        );
-      }).fail((res) => {
-        reject(res.responseText ?? "An unknown error occurred");
-      });
-    });
-  }
-  function annotateUser(userId, annotationDetails) {
-    return ajaxPostWithData(
-      `/admin/users/${userId}/annotate`,
-      {
-        fkey: StackExchange.options.user.fkey,
-        annotation: annotationDetails
-      },
-      false
-    );
-  }
-  function isInValidationBounds(textLength, bounds) {
-    const min = bounds.min ?? 0;
-    if (bounds.max === void 0) {
-      return min <= textLength;
-    }
-    return min <= textLength && textLength <= bounds.max;
-  }
-  const annotationTextLengthBounds = { min: 10, max: 300 };
-  function assertValidAnnotationTextLength(annotationLength) {
-    if (!isInValidationBounds(annotationLength, annotationTextLengthBounds)) {
-      throw new Error(`Annotation text must be between ${annotationTextLengthBounds.min} and ${annotationTextLengthBounds.max} characters.`);
-    }
-    return true;
-  }
   StackExchange.ready(function() {
     if (!StackExchange?.options?.user?.isModerator) {
       return;
@@ -251,7 +209,7 @@ However, please do not keep re-asking the same question. If your ability to ask 
         AnalogousSystemReasonId: "OtherViolation",
         StackOverflowOnly: true,
         // because template has SO-only meta links
-        TemplateName: 'demands to show effort/"not a code-writing service"',
+        TemplateName: "demands to show effort/not a code-writing service",
         DefaultSuspendDays: 0,
         TemplateBody: `It has come to our attention that you've left one or more comments similar to the following:
 
@@ -402,6 +360,15 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
       set reasonId(newOptionValue) {
         this.$templateSelector.val(newOptionValue);
       }
+      get $suspendReasonInput() {
+        return $("#usr-js-suspend-reason");
+      }
+      get suspendReason() {
+        return this.$suspendReasonInput.val();
+      }
+      set suspendReason(newSuspendReason) {
+        this.$suspendReasonInput.val(newSuspendReason);
+      }
       get displayedSelectedTemplate() {
         return this.$templateSelector.find("option:selected").text();
       }
@@ -457,7 +424,8 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     const ui = new ModMessageForm();
     function attachTemplateNameInputField() {
       const customTemplateDivHiddenClass = "d-none";
-      const $customTemplateDiv = $(`<div class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`).append('<label class="flex--item s-label">Template Name</label>').append('<input id="usr-template-name-input" class="flex--item s-input wmx4" maxlength="272">');
+      ui.$templateSelector.removeAttr("name");
+      const $customTemplateDiv = $(`<div class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`).append('<label class="flex--item s-label">Template Name</label>').append('<input id="usr-template-name-input" name="templateName" class="flex--item s-input wmx4" maxlength="272">');
       ui.$messageContents.before($customTemplateDiv);
       ui.$templateSelector.on("change", (e) => {
         if (!e.target.options[e.target.selectedIndex]) {
@@ -477,6 +445,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
         return true;
       });
+    }
+    function attachSuspendReasonHiddenField() {
+      ui.$form.append('<input type="hidden" name="suspendReason" id="usr-js-suspend-reason"/>');
     }
     function createReasonOption(newOptionValue, newOptionText) {
       return $(`<option value="${newOptionValue}">${newOptionText ?? newOptionValue}</option>`);
@@ -526,6 +497,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
           }
           const reasonId = url.searchParams.get("reasonId");
           if (ui.isSystemTemplate(reasonId)) {
+            ui.suspendReason = "";
             settings.success = new Proxy(settings.success, {
               apply: (target, thisArg, args) => {
                 const [fieldDefaults] = args;
@@ -555,6 +527,7 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 ...fieldDefaults.MessageTemplate,
                 ...selectedTemplate
               };
+              ui.suspendReason = selectedTemplate.AnalogousSystemReasonId;
               settings.success(fieldDefaults, "success", jqXHR);
             },
             error: settings.error
@@ -562,87 +535,11 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         }
       });
     }
-    async function submitFormAndAnnotate(fetchPath, serialisedFormData, userId, annotationText) {
-      try {
-        assertValidAnnotationTextLength(annotationText.length);
-        const response = await fetch(fetchPath, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: serialisedFormData
-        });
-        if (!response.ok) {
-          throw new Error("Failed to send message");
-        }
-        try {
-          await annotateUser(userId, annotationText);
-          window.location.href = response.url;
-        } catch (error) {
-          console.error(error);
-          const confirmRefresh = await StackExchange.helpers.showConfirmModal({
-            title: "Annotation Failed",
-            body: "The message was sent but the profile was not annotated. Refresh anyway?",
-            buttonLabel: "Refresh"
-          });
-          if (confirmRefresh) {
-            window.location.href = response.url;
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        StackExchange.helpers.showToast(
-          "Something went wrong, inspect the console for details",
-          {
-            type: "danger",
-            transient: true,
-            transientTimeout: 3e3
-          }
-        );
-      }
-    }
-    function setupSubmitIntercept() {
-      ui.$form.on("submit", function(e) {
-        if (ui.hasCustomTemplateName()) {
-          ui.$templateSelector.append(createReasonOption(ui.customTemplateName));
-          ui.reasonId = ui.customTemplateName;
-        }
-        if (ui.isSystemTemplate() || ui.suspendDays === 0) {
-          return true;
-        }
-        e.preventDefault();
-        const text = window.modSuspendTokens(ui.editorText);
-        if (!text) {
-          StackExchange.helpers.showToast("Please fill out the mod message form", {
-            type: "danger"
-          });
-          return false;
-        }
-        if (text.match(/\{todo/i) || text.match(/\{suspensionDurationDays/i)) {
-          StackExchange.helpers.showToast(
-            "It looks like there are incomplete placeholders; please ensure all necessary detail is complete",
-            { type: "danger" }
-          );
-          return false;
-        }
-        ui.editorText = text;
-        const reasonIdForAnnotation = ui.reasonId;
-        ui.reasonId = "OtherViolation";
-        const url = new URL("/users/message/save", parentUrl);
-        void submitFormAndAnnotate(
-          url.pathname,
-          $(this).serialize(),
-          ui.aboutUserId,
-          `${reasonIdForAnnotation} (content of previous entry)`
-        );
-        return false;
-      });
-    }
     attachTemplateNameInputField();
+    attachSuspendReasonHiddenField();
     addReasonsToSelect();
     checkForURLSearchParams();
     setupProxyForNonDefaults();
     fixAutoSuspendMessagePluralisation();
-    setupSubmitIntercept();
   });
 })();
