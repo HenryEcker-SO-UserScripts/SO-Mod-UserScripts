@@ -43,7 +43,7 @@ type UserDefinedMessageTemplate =
     & Pick<ModMessageTemplate, 'TemplateName' | 'TemplateBody'>
     & {
     StackOverflowOnly?: boolean;
-    AnalogousSystemReasonId: SystemReasonId;
+    AnalogousSystemReasonId: SystemReasonId; // This is attached to the suspendReason hidden field and is used to look up the suspension banner text
 };
 
 type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
@@ -110,7 +110,7 @@ In the best case, comments like these are merely noise, redundant with system-le
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'author minor edits bumping post',
-            DefaultSuspendDays: 0,
+            DefaultSuspendDays: 3,
             TemplateBody: `You appear to be editing your post to attract attention, rather than to improve it. Periodic cosmetic edits are not constructive and needlessly bump your post, displacing actually active posts that require more community attention. To quote the Help Center [How does editing work?](${parentUrl}/help/editing):
 
 > **Tiny, trivial edits are discouraged**; try to make the post significantly better when you edit, correcting all problems that you observe.
@@ -120,7 +120,7 @@ Please only edit your post to correct errors, to include additional insights, or
         {
             AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'minor/trivial suggested edits',
-            DefaultSuspendDays: 0,
+            DefaultSuspendDays: 3,
             TemplateBody: `We have noticed that your recent suggested edits are just correcting a typo in the title and haven't handled any of the other problems with a question. Please note that we expect suggested edits to fix all issues with a post, rather than correcting only a single thing. To quote the Help Center [How does editing work?](${parentUrl}/help/editing):
 
 > **Tiny, trivial edits are discouraged**; try to make the post significantly better when you edit, correcting all problems that you observe.
@@ -213,7 +213,7 @@ Should you wish to appeal this decision, you can use the [Contact Us](${parentUr
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'ban evasion, multiple accounts',
-            DefaultSuspendDays: 0,
+            DefaultSuspendDays: 7,
             TemplateBody: `It has come to our attention that you have been using multiple accounts to work around system limitations. The extra accounts will be removed together with any unanswered questions. Please refrain from using secondary accounts to circumvent our systems in the future.
 
 All system and moderator-imposed limits/blocks/bans/suspensions/etc. apply to the user, not just a single account. You are not permitted to create one or more new accounts in order to get around such limitations. If you are hitting a limit on one account, then you should act as if you were hitting that limit on each of your accounts.
@@ -226,7 +226,7 @@ Having more than one account is permitted, if the additional account is not used
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'question repetition, multiple accounts',
-            DefaultSuspendDays: 0,
+            DefaultSuspendDays: 7,
             TemplateBody: `It has been called to our attention that you have asked the same question from multiple accounts. The extra accounts will be removed together with any unanswered questions. Please refrain from using secondary accounts to circumvent our systems in the future.
 
 If your question was closed or did not attract responses, then the first thing to do is to *improve the question*; some guidance for this is [given here](https://stackoverflow.com/help/how-to-ask). Questions that aren’t up to standards are voted on and may be closed: this doesn’t mean they’re gone forever, as they can be reopened if improved or clarified (as appropriate). Please see our [editing](https://stackoverflow.com/editing-help) guidelines for how to improve your question.
@@ -252,7 +252,7 @@ Please do not post any more of these comments. They add noise for moderators to 
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'self tag burnination',
-            DefaultSuspendDays: 0,
+            DefaultSuspendDays: 7,
             TemplateBody: `As you should be aware, there is [a process for mass tag removal](https://meta.stackoverflow.com/q/324070), also known as burnination. The [policy from Stack Exchange](https://meta.stackoverflow.com/q/356963) is that the process **must** be followed and that burninations of tags which are used on more than 50 questions **must** be discussed on Meta Stack Overflow *prior* to beginning to edit to remove the tag.
 
 You have recently removed many tags from questions without following the burnination process. Do not do that. This message is a warning. If you do this again, with this or any other tag, then there will be further consequences.
@@ -263,7 +263,7 @@ The edits you made will be reverted. Some of the edits have other beneficial cha
             AnalogousSystemReasonId: 'Plagiarism',
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'mass plagiarism',
-            DefaultSuspendDays: 0,
+            DefaultSuspendDays: 7,
             TemplateBody: `It has come to our attention that some of your answers contain text copied from other answers or websites without giving credit to the source of the text.  This is considered plagiarism, and it is a violation of our Terms of Service and the license agreement.
 
 You are not allowed to copy content already available elsewhere and claim it as your own.  That is, you must _at least_ provide [clear attribution](/help/referencing).
@@ -315,33 +315,7 @@ If you do include a link to something, then the link needs to be directly releva
         },
         {
             AnalogousSystemReasonId: 'OtherViolation',
-            StackOverflowOnly: true, // because template has SO-only meta links
-            TemplateName: 'ChatGPT banned; plagiarism (AI); inaccurate AI content',
-            DefaultSuspendDays: 0,
-            TemplateBody: `**Use of ChatGPT for content while its use is banned:**  \nThe use of ChatGPT as a source for content on ${parentName} is currently banned. Please see the Meta Stack Overflow question "[Temporary policy: ChatGPT is banned](https://meta.stackoverflow.com/q/421831)". It is not permitted for you to use ChatGPT to create content on ${parentName} during this ban.
-
-**Plagiarism / failure to indicate or attribute work that's not your own (AI generated text):**  \nWe’ve noticed that at least one of your posts contains text for which you are not the author, which includes AI generated text. Current consensus is that AI generated text requires attribution. See "[Is it acceptable to post answers generated by an AI, such as GitHub Copilot?](https://meta.stackoverflow.com/q/412696)" for more information.
-
-As a general rule, posts should be **your** original work, but including a small passage of text from another source can be a great way to support your post. Please note that **we require full attribution** with a citation/link indicating the original source, and make sure that you **clearly distinguish quoted text from text written by you**. For more information, please see [how to reference material written by others](${parentUrl}/help/referencing).
-
-**Posting AI generated content without regard to accuracy:**  \nIt is our experience that many users who rapidly obtain content which is AI generated and then copy and paste it into answers are not vetting that content for quality. Using AI as a *tool* to *assist* generating good quality content *might be* reasonable.
-
-Using AI, or other tools, to generate a large quantity of answers without regard to if those answers are *correct and actually answer* the question on which they are posted is not acceptable. Relying solely on readers to judge the correctness of the answer, or even that the answer actually answers the question, is not permitted. It brings down the overall quality of the site. It is *harmful* to your fellow users, burdening them with having to wade through a substantial amount of poor answers. It is often harmful to the question authors on whose questions the answers are posted, as the answers often superficially look reasonable, so the question author spends time on trying to understand the answer, thinking that the person who posted it actually knows what they are talking about, when in reality the answer doesn't really answer the question or is substantially incorrect.
-
-The policies for what, if any, use will be acceptable of AI or similar technologies as a *tool* to **assist** *you* creating content, particularly answers, on ${parentName} are currently in flux. The restrictions which were in place prior to the existence of ChatGPT were:
-
-1. *You* confirm that what is posted as an answer *actually answers the question*;
-2. *You* have sufficient subject matter expertise in the topic of the question to be able to assure that any answer you post is correct (as if you wrote it); and
-3. The content copied from such tools is indicated as not your own work by following the requirements for referencing the work of others in [how to reference material written by others](${parentUrl}/help/referencing), including, but not limited to, that the text which you copy from the AI is indicated as a quote by being in blockquote formatting, and you explicitly attribute the text.
-
-It's expected that whatever is decided upon as the new policy for using such tools will have *at least* the above requirements, if not be even more stringent, perhaps prohibiting the use of such technologies altogether.
-
-**Some, many, or all of your posts have been deleted:**  \nSome, many, or all of your posts may have been or will be deleted, because we believe they violate the rules and guidelines mentioned above. If you believe we are in error regarding a specific post, then feel free to raise an "in need of moderator intervention" flag on that post explaining the issue and request the post be reevaluated. You can find links to your deleted posts from your "[deleted questions](${parentUrl}/users/deleted-questions/current)" and your "[deleted answers](${parentUrl}/users/deleted-answers/current)" pages. Links to the above mentioned deleted post pages can be found at the bottom of the respective [questions](${parentUrl}/users/current?tab=questions) and [answers](${parentUrl}/users/current?tab=answers) tabs in your profile.`,
-        },
-        {
-            AnalogousSystemReasonId: 'OtherViolation',
             TemplateName: 'voluntary suspension',
-            DefaultSuspensionReason: 'upon request',
             TemplateBody: `We have temporarily suspended your account for {suspensionDurationDays} days upon request.
 
 Since this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.
