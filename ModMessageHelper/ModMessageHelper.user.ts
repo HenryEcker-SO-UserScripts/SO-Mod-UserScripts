@@ -264,6 +264,7 @@ The edits you made will be reverted. Some of the edits have other beneficial cha
             StackOverflowOnly: true, // because template has SO-only meta links
             TemplateName: 'mass plagiarism',
             DefaultSuspendDays: 7,
+            IncludeSuspensionFooter: false,
             TemplateBody: `It has come to our attention that some of your answers contain text copied from other answers or websites without giving credit to the source of the text.  This is considered plagiarism, and it is a violation of our Terms of Service and the license agreement.
 
 You are not allowed to copy content already available elsewhere and claim it as your own.  That is, you must _at least_ provide [clear attribution](/help/referencing).
