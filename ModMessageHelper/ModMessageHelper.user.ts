@@ -1,10 +1,3 @@
-// @ts-expect-error - This will be fine; it's mad about global here, but that's just because it's missing context
-declare global {
-    interface Window {
-        modSuspendTokens: (text: string) => string;
-    }
-}
-
 interface ModMessageTemplate {
     ModMessageReason: number;
     IsCommunityTeamMessage: boolean;
