@@ -145,7 +145,7 @@ Thank you, and we look forward to your contributions in the future.`,
             DefaultSuspendDays: 0,
             TemplateBody: `We have noticed you have used your gold badge privilege to reopen a question closed as duplicate, answer it, and immediately close it again.
 
-- <!-- Add examples of question(s) that user have reopened -->
+- <!-- {todo} Add examples of question(s) that user have reopened -->
 
 Please note that this is not how you are supposed to use a gold tag badge.
 
@@ -170,7 +170,7 @@ There are a few other appropriate actions that we ask you to consider:
             DefaultSuspendDays: 0,
             TemplateBody: `We have noticed you have used your gold badge privilege to reopen a question others have closed as duplicate, when you have a stake in the question.
 
-- <!-- Add examples of question(s) that user have reopened -->
+- <!-- {todo} Add examples of question(s) that user have reopened -->
 
 Please note that this is not how you are supposed to use a gold tag badge.
 
@@ -279,11 +279,11 @@ Even if you change some of the wording or code a bit, you still must credit the 
 
 Any answers that we found with copied content that did not reference its source have been deleted.  If you wish to review them, you can view the [list of all of your deleted answers](/users/deleted-answers/current) (which may also have answers deleted for other reasons).  If you have other answers that do not properly credit their sources, and you want to avoid them being removed, please edit them to follow the above requirements.
 
-<!-- Remove if not suspending -->
+<!-- {todo} Remove if not suspending -->
 
 Due to the large number of plagiarized posts (requiring large amounts of volunteer moderator time to check), **your account has been temporarily suspended for {suspensionDurationDays} days.** While you're suspended, your reputation will show as 1 but will be restored once the suspension ends.
 
-<!-- Remove the following if not bulk deleting -->
+<!-- {todo} Remove the following if not bulk deleting -->
 
 Due to the large percentage of plagiarized content, we have also opted to delete many of your answers that we were not able to check for copied content in a reasonable amount of time. While there may be some of your answers that were not plagiarized, we simply don't have the time to check every individual answer that you have posted to this site.
 
