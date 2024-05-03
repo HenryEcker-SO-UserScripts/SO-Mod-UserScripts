@@ -1,13 +1,3 @@
-import {annotateUser} from 'se-ts-userscript-utilities/Moderators/UserModActions';
-import {type IdType} from 'se-ts-userscript-utilities/Utilities/Types';
-import {assertValidAnnotationTextLength} from 'se-ts-userscript-utilities/Validators/TextLengthValidators';
-
-declare global {
-    interface Window {
-        modSuspendTokens: (text: string) => string;
-    }
-}
-
 interface ModMessageTemplate {
     ModMessageReason: number;
     IsCommunityTeamMessage: boolean;
@@ -246,7 +236,7 @@ However, please do not keep re-asking the same question. If your ability to ask 
         {
             AnalogousSystemReasonId: 'OtherViolation',
             StackOverflowOnly: true, // because template has SO-only meta links
-            TemplateName: 'demands to show effort/"not a code-writing service"',
+            TemplateName: 'demands to show effort/not a code-writing service',
             DefaultSuspendDays: 0,
             TemplateBody: `It has come to our attention that you've left one or more comments similar to the following:
 
@@ -399,6 +389,18 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             this.$templateSelector.val(newOptionValue);
         }
 
+        get $suspendReasonInput(): JQuery<HTMLInputElement> {
+            return $('#usr-js-suspend-reason');
+        }
+
+        get suspendReason(): string {
+            return <string>this.$suspendReasonInput.val();
+        }
+
+        set suspendReason(newSuspendReason: string) {
+            this.$suspendReasonInput.val(newSuspendReason);
+        }
+
         get displayedSelectedTemplate(): string {
             return this.$templateSelector.find('option:selected').text();
         }
@@ -476,10 +478,14 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
     function attachTemplateNameInputField() {
         const customTemplateDivHiddenClass = 'd-none';
 
+        // Get rid of the name field of the template selector dropdown
+        // Use the input field for this value instead
+        ui.$templateSelector.removeAttr('name');
+
         const $customTemplateDiv =
             $(`<div class="${customTemplateDivHiddenClass} d-flex gy4 fd-column mb12"></div>`)
                 .append('<label class="flex--item s-label">Template Name</label>')
-                .append('<input id="usr-template-name-input" class="flex--item s-input wmx4" maxlength="272">');
+                .append('<input id="usr-template-name-input" name="templateName" class="flex--item s-input wmx4" maxlength="272">');
 
         ui.$messageContents.before($customTemplateDiv);
 
@@ -507,6 +513,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
             }
             return true;
         });
+    }
+
+    function attachSuspendReasonHiddenField() {
+        ui.$form.append('<input type="hidden" name="suspendReason" id="usr-js-suspend-reason"/>');
     }
 
     function createReasonOption(newOptionValue: string): JQuery<HTMLOptionElement>;
@@ -584,6 +594,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
 
                 // If this is one of the system templates
                 if (ui.isSystemTemplate(reasonId)) {
+
+                    // Clear out suspend reason (only needed for custom templates)
+                    ui.suspendReason = '';
+
                     // Create a proxy to fix the paragraph break in the footer
                     // also fixes custom reasons due to the call to an AnalogousSystemReasonId to populate the majority of fields
                     settings.success = new Proxy(settings.success, {
@@ -623,6 +637,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                             ...selectedTemplate,
                         };
 
+                        // Set Suspend Reason Field to AnalogousSystemReasonId
+                        ui.suspendReason = selectedTemplate.AnalogousSystemReasonId;
+
                         // Force call the old Success function with updated values
                         (<AjaxSuccess>settings.success)(fieldDefaults, 'success', jqXHR);
                     },
@@ -632,116 +649,10 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
         });
     }
 
-    async function submitFormAndAnnotate(fetchPath: string, serialisedFormData: string, userId: IdType, annotationText: string) {
-        try {
-            // Ensure that the annotation won't fail due to its length
-            assertValidAnnotationTextLength(annotationText.length);
-
-            // use fetch instead of ajax to handle the redirect manually
-            const response = await fetch(fetchPath, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: serialisedFormData
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
-
-            try {
-                // annotate the profile with the name of the custom template
-                await annotateUser(userId, annotationText);
-                window.location.href = response.url;
-            } catch (error) {
-                console.error(error);
-                const confirmRefresh = await StackExchange.helpers.showConfirmModal({
-                    title: 'Annotation Failed',
-                    body: 'The message was sent but the profile was not annotated. Refresh anyway?',
-                    buttonLabel: 'Refresh'
-                });
-                if (confirmRefresh) {
-                    window.location.href = response.url;
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            StackExchange.helpers.showToast(
-                'Something went wrong, inspect the console for details',
-                {
-                    type: 'danger',
-                    transient: true,
-                    transientTimeout: 3000
-                }
-            );
-        }
-    }
-
-    function setupSubmitIntercept() {
-        ui.$form.on('submit', function (e) {
-            // If a custom template is used add a new option
-            if (ui.hasCustomTemplateName()) {
-                // Create a new option and select it
-                ui.$templateSelector.append(createReasonOption(ui.customTemplateName));
-                ui.reasonId = ui.customTemplateName;
-            }
-
-            // the backend will fail to apply the suspension when using custom template names
-            // though in case of official templates or custom ones without a suspension,
-            // submitting the form as-is works as intended
-            if (ui.isSystemTemplate() || ui.suspendDays === 0) {
-                return true;
-            }
-
-            // otherwise do things manually
-            e.preventDefault();
-
-            // Replace Placeholders with real values
-            const text = window.modSuspendTokens(ui.editorText);
-            if (!text) {
-                StackExchange.helpers.showToast('Please fill out the mod message form', {
-                    type: 'danger'
-                });
-                return false;
-            }
-            // Validate placeholders
-            if (text.match(/\{todo/i) || text.match(/\{suspensionDurationDays/i)) {
-                StackExchange.helpers.showToast(
-                    'It looks like there are incomplete placeholders; please ensure all necessary detail is complete',
-                    {type: 'danger'}
-                );
-                return false;
-            }
-
-            // Finally update editor text with the replaced values
-            ui.editorText = text;
-
-            // Save current reason id before updating the UI
-            const reasonIdForAnnotation = ui.reasonId;
-
-            // fall back to the identifier for generic violations
-            // the message will be sent as "Something else..." but the suspension gets applied
-            ui.reasonId = 'OtherViolation';
-
-            // now we can send the message
-            const url = new URL('/users/message/save', parentUrl);
-
-            // Preform Form Submission and Annotation
-            void submitFormAndAnnotate(
-                url.pathname,
-                $(this).serialize(),
-                ui.aboutUserId,
-                `${reasonIdForAnnotation} (content of previous entry)`
-            );
-            return false;
-        });
-    }
-
     attachTemplateNameInputField();
+    attachSuspendReasonHiddenField();
     addReasonsToSelect();
     checkForURLSearchParams();
     setupProxyForNonDefaults();
     fixAutoSuspendMessagePluralisation();
-    setupSubmitIntercept();
 });
