@@ -58,6 +58,25 @@ StackExchange.ready(function () {
 
     const customModMessages: UserDefinedMessageTemplate[] = [
         {
+            AnalogousSystemReasonId: 'SelfDestructionOfUsefulContent',
+            TemplateName: 'Vandalism (OpenAI protest)',
+            DefaultSuspendDays: 30,
+            IncludeSuspensionFooter: true,
+            TemplateBody: `It has come to our attention that you've removed or otherwise defaced some of your content in a manner that appears related to the recent announcement of Stack Exchange's partnership with OpenAI.
+
+We, the [volunteer community moderators](${parentUrl}/help/site-moderators), believe this is misguided. Our assumption is that Stack Overflow's content has long since been fed into many AI large language models (LLMs) already, [probably including the model powering ChatGPT](https://ai.stackexchange.com/a/38663), and nothing you or we do (or don't do) will change that.
+
+Thus, by destroying the copy that exists here, you are primarily harming two groups of people: 1) people who need answers to questions, search Stack Overflow for them, and find your posts, and 2) the volunteer moderators and curators who work to preserve Stack Overflow as a resource for others in the community.  LLM users will continue to be able to access answers regardless.
+
+We want Stack Overflow to remain a useful source of information for people who want vetted answers from humans. You may be assured that this is something we are willing to defend. When company policy threatened this, [we went on strike](https://meta.stackexchange.com/q/389811).
+
+While we are working to get further clarity and better public messaging, it is our current understanding (based on [this official statement from Stack Exchange](https://meta.stackexchange.com/a/399630)) that these agreements are a way to work with companies using Stack Exchange data to provide appropriate attribution (as per [the CC by-SA license](${parentUrl}/help/licensing)), rather than simply providing answers without attribution, as many do today.
+
+If you nonetheless wish to delete your account, please see [How do I delete my account?](https://meta.stackexchange.com/help/deleting-account). For requests regarding your personal data, use the [Stack Exchange Privacy Webform](https://policies.stackoverflow.co/data-request/); however, note that questions, answers, comments and other non-personally identifiable content posted on the site are not, generally, covered by privacy regulations like GDPR.  For general questions for staff, you can use the [contact form](${parentUrl}/contact).
+
+If there is something we've misunderstood about your actions, please let us know by replying to this message on the website.`
+        },
+        {
             AnalogousSystemReasonId: 'LowQualityQuestions',
             TemplateName: 'low quality answers',
             DefaultSuspendDays: 0,
@@ -267,18 +286,18 @@ The edits you made will be reverted. Some of the edits have other beneficial cha
             IncludeSuspensionFooter: false,
             TemplateBody: `It has come to our attention that some of your answers contain text copied from other answers or websites without giving credit to the source of the text.  This is considered plagiarism, and it is a violation of our Terms of Service and the license agreement.
 
-You are not allowed to copy content already available elsewhere and claim it as your own.  That is, you must _at least_ provide [clear attribution](/help/referencing).
+You are not allowed to copy content already available elsewhere and claim it as your own.  That is, you must _at least_ provide [clear attribution](${parentUrl}/help/referencing).
 
 **Posts containing content from other sources must:**
 
   - Include the name of the original author.
   - Include a link to the original source.
-  - Make it clear (using [quote formatting](/editing-help#simple-blockquotes)) **which parts of the answer are copied, and from where.** *Just putting a link to the original source somewhere in the post is not enough*, because it does not make it clear that it is the source of the content.  For more information, see [this answer](https://meta.stackoverflow.com/a/321326).
+  - Make it clear (using [quote formatting](${parentUrl}/editing-help#simple-blockquotes)) **which parts of the answer are copied, and from where.** *Just putting a link to the original source somewhere in the post is not enough*, because it does not make it clear that it is the source of the content.  For more information, see [this answer](https://meta.stackoverflow.com/a/321326).
   - Add your own content to the post.  It should not be entirely (or almost entirely) copied content.
 
 Even if you change some of the wording or code a bit, you still must credit the original source.  As a general rule, if it's recognizable when you compare the two side-by-side, it needs to give credit.
 
-Any answers that we found with copied content that did not reference its source have been deleted.  If you wish to review them, you can view the [list of all of your deleted answers](/users/deleted-answers/current) (which may also have answers deleted for other reasons).  If you have other answers that do not properly credit their sources, and you want to avoid them being removed, please edit them to follow the above requirements.
+Any answers that we found with copied content that did not reference its source have been deleted.  If you wish to review them, you can view the [list of all of your deleted answers](${parentUrl}/users/deleted-answers/current) (which may also have answers deleted for other reasons).  If you have other answers that do not properly credit their sources, and you want to avoid them being removed, please edit them to follow the above requirements.
 
 <!-- {todo} Remove if not suspending -->
 
