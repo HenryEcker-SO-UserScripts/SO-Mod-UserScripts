@@ -589,8 +589,9 @@ We wish you a pleasant vacation from the site, and we look forward to your retur
                 // If this is one of the system templates
                 if (ui.isSystemTemplate(reasonId)) {
 
-                    // Clear out suspend reason (only needed for custom templates)
-                    ui.suspendReason = '';
+                    // Set suspendReason to reasonId; this makes sure the correct suspend reason is chosen
+                    // if starting with a stock template then later changing the template name text field
+                    ui.suspendReason = reasonId;
 
                     // Create a proxy to fix the paragraph break in the footer
                     // also fixes custom reasons due to the call to an AnalogousSystemReasonId to populate the majority of fields
