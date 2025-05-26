@@ -3,7 +3,7 @@
 // @description  Searches timelines for any pending flags on posts by deleted users
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.0.6
+// @version      0.0.7
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/PendingFlagsByDeletedUser/dist/PendingFlagsByDeletedUser.user.js
 //
 // @match        *://*.askubuntu.com/admin/posts-by-deleted-user/*
@@ -21,9 +21,10 @@
 (function() {
   "use strict";
   function getPostIds() {
-    return $(".question-hyperlink,.answer-hyperlink").map((i, n) => {
+    const questionAndAnswerPattern = /.*?#(?<answerid>\d+)$|^\/questions\/(?<questionid>\d+)\/.*/;
+    return $("a").filter((i, n) => questionAndAnswerPattern.test($(n).attr("href"))).map((i, n) => {
       const $link = $(n);
-      const match = $link.attr("href").match(/.*?#(?<answerid>\d+)$|^\/questions\/(?<questionid>\d+)\/.*/);
+      const match = $link.attr("href").match(questionAndAnswerPattern);
       return {
         $link,
         postId: match.groups.answerid ?? match.groups.questionid
@@ -81,6 +82,6 @@
     $button.on("click", () => {
       void main($buttonContainer);
     });
-    $("#mainbar").append($buttonContainer.append($button));
+    $("#content").append($buttonContainer.append($button));
   });
 })();

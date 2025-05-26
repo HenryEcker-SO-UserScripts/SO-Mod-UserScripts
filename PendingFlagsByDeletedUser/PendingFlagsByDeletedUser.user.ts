@@ -4,14 +4,18 @@ interface PostData {
 }
 
 function getPostIds(): PostData[] {
-    return $('.question-hyperlink,.answer-hyperlink').map((i, n) => {
-        const $link = $(n);
-        const match = $link.attr('href').match(/.*?#(?<answerid>\d+)$|^\/questions\/(?<questionid>\d+)\/.*/);
-        return {
-            $link: $link,
-            postId: match.groups.answerid ?? match.groups.questionid
-        } satisfies PostData;
-    }).toArray();
+    const questionAndAnswerPattern = /.*?#(?<answerid>\d+)$|^\/questions\/(?<questionid>\d+)\/.*/;
+    return $('a')
+        .filter((i, n) => questionAndAnswerPattern.test($(n).attr('href')))
+        .map((i, n) => {
+            const $link = $(n);
+            const match = $link.attr('href').match(questionAndAnswerPattern);
+            return {
+                $link: $link,
+                postId: match.groups.answerid ?? match.groups.questionid
+            } satisfies PostData;
+        })
+        .toArray();
 }
 
 function fetchTimelinePage(postId: string | number) {
@@ -72,5 +76,5 @@ StackExchange.ready(() => {
     $button.on('click', () => {
         void main($buttonContainer);
     });
-    $('#mainbar').append($buttonContainer.append($button));
+    $('#content').append($buttonContainer.append($button));
 });
