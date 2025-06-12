@@ -4,7 +4,7 @@ interface PostData {
 }
 
 function getPostIds(): PostData[] {
-    const questionAndAnswerPattern = /.*?#(?<answerid>\d+)$|^\/questions\/(?<questionid>\d+)\/.*/;
+    const questionAndAnswerPattern = /.*?#(?<answerid>\d+)$|\/questions\/(?<questionid>\d+)\/.*/;
     return $('a')
         .filter((i, n) => questionAndAnswerPattern.test($(n).attr('href')))
         .map((i, n) => {
