@@ -38,6 +38,26 @@ export type SystemReasonId = 'LowQualityQuestions' |
     'SpamRecidivism' |
     'OtherViolation';
 
+export const SystemReasonIdList: SystemReasonId[] = [
+    'LowQualityQuestions',
+    'QuestionRepetition',
+    'SockPuppetVoting',
+    'TargetedVotes',
+    'AbusiveToOthers',
+    'RevengeDownvoting',
+    'SelfDestructionOfUsefulContent',
+    'SignaturesOrTaglines',
+    'ExcessiveSelfPromotion',
+    'ExcessiveDiscussionInComments',
+    'Plagiarism',
+    'RollbackWar',
+    'InappropriateUsername',
+    'BanEvasionMultipleAccounts',
+    'InaccurateAIContent',
+    'SpamRecidivism',
+    'OtherViolation'
+];
+
 export type UserDefinedMessageTemplate =
     Partial<ModMessageTemplate>
     & Pick<ModMessageTemplate, 'TemplateName' | 'TemplateBody'>

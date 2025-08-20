@@ -37,7 +37,7 @@ export function $messageTemplateEditorModal(): JQuery {
             </div>
             <div class="d-grid grid__auto pt16">
                 <div class="grid--item" id="${templateListContainerId}"></div>
-                <div class="grid--item"></div>
+                <div class="grid--item"><input id="test1234"/></div>
             </div>
         </div>
         <div class="d-flex gx8 s-modal--footer ai-center"></div>
@@ -48,6 +48,17 @@ export function $messageTemplateEditorModal(): JQuery {
         </button>
     </div>
 </aside>`);
+
+    $(`#${importTemplateButtonId}`, $aside).on('click', (ev) => {
+        ev.preventDefault();
+        const $inputField = $('#test1234');
+        void templateManager.importTemplate($inputField.val().toString())
+            .then(success => {
+                if (success) {
+                    $inputField.val('');
+                }
+            });
+    });
 
     // Populate the list of templates
     const $templateList = $('<ol>');
@@ -77,8 +88,7 @@ export function $messageTemplateEditorModal(): JQuery {
         $templateList.append($elem);
     }
 
-    $aside
-        .find(`#${templateListContainerId}`)
+    $(`#${templateListContainerId}`, $aside)
         .append($templateList);
 
 
