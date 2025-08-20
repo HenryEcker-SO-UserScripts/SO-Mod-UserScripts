@@ -187,10 +187,18 @@ StackExchange.ready(function () {
 
     // TODO: This should be run only on settings button click
     function addModMessageTemplateEditorModal() {
-        $('body').append($messageTemplateEditorModal());
-        setTimeout(() => {
-            Stacks.showModal(document.getElementById(modalId));
-        }, 0);
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+
+            $('body').append($messageTemplateEditorModal());
+
+            setTimeout(() => {
+                const modal = document.getElementById(modalId);
+                Stacks.showModal(modal);
+            }, 0);
+        } else {
+            Stacks.showModal(modal);
+        }
     }
 
     attachTemplateNameInputField();
