@@ -9,12 +9,13 @@ export default buildViteConfig(
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      0.2.4
+// @version      0.2.5
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 ${buildMatchPatterns('// @match        ', '/users/message/create/*')}
 //
-// @grant        none
+// @grant        GM_getValue
+// @grant        GM_setValue
 //
 // ==/UserScript==
 /* globals StackExchange, $ */`
