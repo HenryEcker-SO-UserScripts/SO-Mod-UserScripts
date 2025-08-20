@@ -149,7 +149,7 @@ StackExchange.ready(function () {
                 jqXHR.abort();
 
                 // Find the selected reason in the list of templates
-                const templateSearch = templateManager.getCustomMessageTemplateByReasonId(reasonId);
+                const templateSearch = templateManager.lookupByReasonId(reasonId);
 
                 if (templateSearch.length !== 1) {
                     StackExchange.helpers.showToast('UserScript Message - Template with that name not found!', {type: 'danger'});
@@ -185,6 +185,7 @@ StackExchange.ready(function () {
         });
     }
 
+    // TODO: This should be run only on settings button click
     function addModMessageTemplateEditorModal() {
         $('body').append($messageTemplateEditorModal());
         setTimeout(() => {
