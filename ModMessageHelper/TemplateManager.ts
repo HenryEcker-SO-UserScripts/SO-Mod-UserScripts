@@ -40,8 +40,17 @@ class TemplateManager {
         this.templates = GM_getValue<UserDefinedMessageTemplate[]>(this.GM_Store_Key, []);
     }
 
+    private save() {
+        // Update GM Store
+        GM_setValue(this.GM_Store_Key, this.templates);
+    }
+
     get customMessageTemplates() {
         return this.templates;
+    }
+
+    lookupByIndex(index: number): UserDefinedMessageTemplate {
+        return this.templates[index];
     }
 
     lookupByReasonId(reasonId: string): UserDefinedMessageTemplate[] {
@@ -73,6 +82,26 @@ class TemplateManager {
         this.templates[existingTemplateIndex] = newTemplate;
     }
 
+    has(index: number): boolean {
+        return this.templates?.[index] !== undefined;
+    }
+
+    async delete(index: number): Promise<void> {
+        if (!this.has(index)) {
+            return;
+        }
+        const shouldDelete = await StackExchange.helpers.showConfirmModal({
+            title: 'Template Deletion',
+            bodyHtml: `<div><p>This will delete the following template "${this.templates[index].TemplateName}"</p><p>Are you sure you want to permenantly delete this template?</p></div>`,
+            buttonLabel: 'Yes'
+        });
+        if (!shouldDelete) {
+            return;
+        }
+        this.templates.splice(index, 1);
+        this.save();
+    }
+
     async importFromJSONString(jsonString: string): Promise<boolean> {
         try {
             let maybeTemplateArray: unknown[] = JSON.parse(jsonString);
@@ -89,8 +118,8 @@ class TemplateManager {
             for (const newTemplate of maybeTemplateArray) {
                 await this.insertOrUpdate(newTemplate);
             }
-            // Update GM Store
-            GM_setValue(this.GM_Store_Key, this.templates);
+
+            this.save();
             return true;
         } catch (SyntaxError) {
             StackExchange.helpers.showToast('Invalid JSON!', {type: 'danger', transient: true, transientTimeout: 2e3});
