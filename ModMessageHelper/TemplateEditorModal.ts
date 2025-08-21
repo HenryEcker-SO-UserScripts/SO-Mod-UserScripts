@@ -19,7 +19,7 @@ export function $messageTemplateEditorModal(): JQuery {
     const $aside = $(
         `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="false"
                 data-controller="s-modal" data-s-modal-target="modal">
-            <div class="s-modal--dialog" style="min-width:700px; width: max-content; max-width: 65vw;" role="document"
+            <div class="s-modal--dialog" style="min-width:825px; width: max-content; max-width: 1250px;" role="document"
                  data-controller="se-draggable">
                 <h1 class="s-modal--header c-move" data-se-draggable-target="handle">
                     Mod Message Template Editor
