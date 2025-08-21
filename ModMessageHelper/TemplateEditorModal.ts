@@ -18,60 +18,72 @@ export function $messageTemplateEditorModal(): JQuery {
 
     const $aside = $(
         `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="false"
-                data-controller="s-modal" data-s-modal-target="modal">
-            <div class="s-modal--dialog" style="min-width:825px; width: max-content; max-width: 1250px;" role="document"
+               data-controller="s-modal" data-s-modal-target="modal">
+            <div class="s-modal--dialog"
+                 style="min-width:825px; width: max-content; max-width: 1250px; max-height: 92vh; padding:1rem;" role="document"
                  data-controller="se-draggable">
                 <h1 class="s-modal--header c-move" data-se-draggable-target="handle">
                     Mod Message Template Editor
                 </h1>
                 <div class="s-modal--body" style="margin-bottom: 0;">
-                    <div class="d-grid pt16 g12" style="grid-template-columns: minmax(225px, max-content) minmax(550px, 1fr)">
-                        <div class="grid--item">
+        
+                    <div class="d-flex fd-row g12 fw-nowrap ai-center jc-space-between">
+                        <div class="d-flex fd-row fw-nowrap g6 ai-center jc-start fl-equal">
+                            <input id="${importTemplateInputField}" class="flex--item s-input wmx3"/>
+                            <button class="flex--item s-btn s-btn__outlined s-btn__muted ws-nowrap" type="button"
+                                    id="${importTemplateButtonId}" disabled>
+                                Import Template
+                            </button>
+                        </div>
+                        <div class="d-flex fd-row fw-nowrap g12 ai-center jc-end fl-equal">
+                            <button class="s-btn flex--item s-btn__filled" type="button" id="${newTemplateButtonId}">
+                                New Template
+                            </button>
+                            <button class="s-btn flex--item s-btn__filled" type="button" id="${saveButtonId}">
+                                Save Template
+                            </button>
+                            <button class="s-btn flex--item s-btn__filled" type="button" id="${exportTemplatesButtonId}">
+                                Export Template(s)
+                            </button>
+                            <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button"
+                                    id="${deleteTemplateButtonId}" disabled>
+                                Delete Template
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-grid pt8 g12" style="grid-template-columns: minmax(225px, max-content) minmax(550px, 1fr);">
+                        <div class="grid--item px8" style="max-height: 65vh; overflow-y:scroll;">
                             <h2 class="fs-subheading fw-bold">Available Templates</h2>
                             <div id="${templateListContainerId}" class="ws-pre-wrap ff-mono fs-body1"></div>
-                            <div class="d-flex fd-row fw-nowrap g6 ai-center jc-space-between fl-equal">                                
-                                <input id="${importTemplateInputField}" class="flex--item s-input"/>
-                                <button class="flex--item s-btn s-btn__outlined s-btn__muted ws-nowrap" type="button" id="${importTemplateButtonId}" disabled>
-                                    Import Template
-                                </button>
-                            </div>
                         </div>
-                        <div class="grid--item">
-                           <form id="${templateFormId}" class="d-flex fd-column g12 mb8">
+                        <div class="grid--item" style="max-height: 65vh; overflow-y:scroll;">
+                            <form id="${templateFormId}" class="d-flex fd-column g12 mb8 h100 overflow-y-auto">
                                 <div class="d-flex gy4 fd-column">
                                     <label class="s-label" for="${templateFormTemplateNameInputFieldId}">Template Name</label>
-                                    <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text" placeholder="Be descriptive as this is what appears in user history." name="TemplateName">
+                                    <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
+                                           placeholder="Be descriptive as this is what appears in user history."
+                                           name="TemplateName">
                                 </div>
                                 <div class="d-flex fd-column gy4">
-                                    <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">Template Body</label>
-                                    <textarea id="${templateFormTemplateBodyInputFieldId}" 
-                                              class="flex--item s-textarea hs3 overflow-y-auto"
+                                    <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">
+                                        Template Body
+                                    </label>
+                                    <textarea id="${templateFormTemplateBodyInputFieldId}"
+                                              class="flex--item s-textarea hmn3"
+                                              style="resize: vertical; field-sizing: content;"
                                               placeholder="This will appear as the body of the template. Do not include header, suspension, or footer information. This happens automatically."></textarea>
                                 </div>
                             </form>
-                            <div class="d-flex fd-row g12 fw-nowrap ai-center jc-space-between">
-                                <button class="s-btn flex--item s-btn__filled" type="button" id="${newTemplateButtonId}">
-                                    New Template
-                                </button>
-                                <button class="s-btn flex--item s-btn__filled" type="button" id="${saveButtonId}">
-                                    Save Template
-                                </button>
-                                <button class="s-btn flex--item s-btn__filled" type="button" id="${exportTemplatesButtonId}">
-                                    Export Template(s)
-                                </button>
-                                <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" id="${deleteTemplateButtonId}" disabled>
-                                    Delete Template
-                                </button>
-                            </div>
                         </div>
                     </div>
+                    <div class="d-flex gx8 s-modal--footer ai-center"></div>
+                    <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close"
+                            data-action="s-modal#hide">
+                        <svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
+                            <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
+                        </svg>
+                    </button>
                 </div>
-                <div class="d-flex gx8 s-modal--footer ai-center"></div>
-                <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close" data-action="s-modal#hide">
-                    <svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
-                        <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
-                    </svg>
-                </button>
             </div>
         </aside>`
     );
