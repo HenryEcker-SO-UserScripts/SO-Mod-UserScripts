@@ -1,3 +1,4 @@
+import {arrayMoveMutable} from 'array-move';
 import {$boolean, $enum, $number, $object, $opt, $string} from 'lizod';
 import {SystemReasonIdList, type UserDefinedMessageTemplate} from './ModMessageTypes';
 
@@ -40,7 +41,7 @@ class TemplateManager {
         this.templates = GM_getValue<UserDefinedMessageTemplate[]>(this.GM_Store_Key, []);
     }
 
-    private save() {
+    save() {
         // Update GM Store
         GM_setValue(this.GM_Store_Key, this.templates);
     }
@@ -57,6 +58,11 @@ class TemplateManager {
         return this.templates.filter(x => {
             return x.TemplateName.localeCompare(reasonId) === 0;
         });
+    }
+
+    move(fromIndex: number, toIndex: number) {
+        arrayMoveMutable(this.templates, fromIndex, toIndex);
+        this.save();
     }
 
     async insertOrUpdate(newTemplate: UserDefinedMessageTemplate): Promise<void> {

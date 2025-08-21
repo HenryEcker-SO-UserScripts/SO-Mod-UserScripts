@@ -25,21 +25,6 @@ export function $messageTemplateEditorModal(): JQuery {
                     Mod Message Template Editor
                 </h1>
                 <div class="s-modal--body" style="margin-bottom: 0;">
-                    <div class="d-flex fd-row g12 fw-nowrap ai-center">
-                        <button class="s-btn flex--item s-btn__filled" type="button" id="${saveButtonId}">
-                            Save Templates
-                        </button>
-                        <button class="s-btn flex--item s-btn__filled" type="button" id="${newTemplateButtonId}">
-                            New Template
-                        </button>
-                        <button class="s-btn flex--item s-btn__filled" type="button" id="${exportTemplatesButtonId}">
-                            Export Template(s)
-                        </button>
-                        <span class="flex--item fl-grow1"></span>
-                        <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" id="${deleteTemplateButtonId}" disabled>
-                            Delete Template
-                        </button>
-                    </div>
                     <div class="d-grid pt16 g12" style="grid-template-columns: minmax(225px, max-content) minmax(550px, 1fr)">
                         <div class="grid--item">
                             <h2 class="fs-subheading fw-bold">Available Templates</h2>
@@ -52,7 +37,7 @@ export function $messageTemplateEditorModal(): JQuery {
                             </div>
                         </div>
                         <div class="grid--item">
-                           <form id="${templateFormId}" class="d-flex fd-column g12">
+                           <form id="${templateFormId}" class="d-flex fd-column g12 mb8">
                                 <div class="d-flex gy4 fd-column">
                                     <label class="s-label" for="${templateFormTemplateNameInputFieldId}">Template Name</label>
                                     <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text" placeholder="Be descriptive as this is what appears in user history." name="TemplateName">
@@ -64,6 +49,20 @@ export function $messageTemplateEditorModal(): JQuery {
                                               placeholder="This will appear as the body of the template. Do not include header, suspension, or footer information. This happens automatically."></textarea>
                                 </div>
                             </form>
+                            <div class="d-flex fd-row g12 fw-nowrap ai-center jc-space-between">
+                                <button class="s-btn flex--item s-btn__filled" type="button" id="${newTemplateButtonId}">
+                                    New Template
+                                </button>
+                                <button class="s-btn flex--item s-btn__filled" type="button" id="${saveButtonId}">
+                                    Save Template
+                                </button>
+                                <button class="s-btn flex--item s-btn__filled" type="button" id="${exportTemplatesButtonId}">
+                                    Export Template(s)
+                                </button>
+                                <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button" id="${deleteTemplateButtonId}" disabled>
+                                    Delete Template
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -88,7 +87,7 @@ export function $messageTemplateEditorModal(): JQuery {
         set active(newIndex: number) {
             this.selected = newIndex;
             // Clear out any existing styles
-            $(`#${templateListContainerId} li[data-original-index]`, $aside)
+            $(`#${templateListContainerId} li`, $aside)
                 .removeClass(activeListStyleClass);
 
             // Bail here if selected index is invalid
@@ -99,7 +98,7 @@ export function $messageTemplateEditorModal(): JQuery {
             // Lookup from template manager and fill in form fields
             populateFormFromTemplate(templateManager.lookupByIndex(this.selected));
             // Give Active Styling to selected index
-            $(`#${templateListContainerId} li[data-original-index=${this.selected}]`, $aside)
+            $(`#${templateListContainerId} li:eq(${this.selected})`, $aside)
                 .addClass(activeListStyleClass);
             // Enable Delete Button
             $(`#${deleteTemplateButtonId}`, $aside).prop('disabled', false);
@@ -144,7 +143,9 @@ export function $messageTemplateEditorModal(): JQuery {
         const $templateList = $('<ol>');
         for (const [index, userDefinedTemplate] of templateManager.customMessageTemplates.entries()) {
             const $elem = $(`<li class="mb4" draggable="true">${userDefinedTemplate.TemplateName}</li>`);
-            $elem.attr('data-original-index', index);
+            if (index === SelectedTemplateManager.active) {
+                $elem.addClass(activeListStyleClass);
+            }
             $elem.on('click', (e: JQuery.ClickEvent) => {
                 e.preventDefault();
                 SelectedTemplateManager.active = index;
@@ -158,16 +159,14 @@ export function $messageTemplateEditorModal(): JQuery {
                 e.preventDefault();
             });
             $elem.on('drop', (e: JQuery.DropEvent) => {
-                const $srcElem = $templateList.find(`li[data-original-index=${e.originalEvent.dataTransfer.getData('text/plain')}]`);
                 const $target = $(e.target);
-                const currentSrcIndex = $('li', $templateList).index($srcElem);
                 const currentTargetIndex = $('li', $templateList).index($target);
-
-                if (currentTargetIndex > currentSrcIndex) {
-                    $srcElem.insertAfter($target);
-                } else {
-                    $srcElem.insertBefore($target);
-                }
+                // Move from src to target
+                templateManager.move(Number(e.originalEvent.dataTransfer.getData('text/plain')), currentTargetIndex);
+                // Update active number to be target index
+                SelectedTemplateManager.active = currentTargetIndex;
+                // Repopulate List
+                populateTemplateList();
             });
             $templateList.append($elem);
         }
