@@ -1,11 +1,9 @@
 import {parentName, parentUrl} from './ModMessageConstants';
 import {type BooleanString, SystemReasonIdList, type UserDefinedMessageTemplate} from './ModMessageTypes';
 import templateManager from './TemplateManager';
+import {InfoSvgHtmlString} from './Icons';
 
 export const modalId = 'usr-mmt-editor-modal';
-
-
-const infoSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconInfoSm" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1a6 6 0 1 1 0 12A6 6 0 0 1 7 1m1 10V6H6v5zm0-6V3H6v2z"></path></svg>';
 
 export function $messageTemplateEditorModal(): JQuery {
     // IDs
@@ -353,7 +351,6 @@ export function $messageTemplateEditorModal(): JQuery {
     function buildForm() {
         const $mountPoint = ElementManager.$rightGridColContainer;
         $mountPoint.empty();
-        // TODO: Add Info for Suspension Footer about when this is used. Namely when {suspensionDurationDays} is used
         const $form = $(
             `<form id="${templateFormId}" class="d-flex fd-column g12 my8">
                 <div class="d-flex gy4 fd-column">
@@ -373,7 +370,7 @@ export function $messageTemplateEditorModal(): JQuery {
                                 data-controller="s-popover"
                                 data-action="s-popover#toggle"
                                 data-s-popover-placement="auto"
-                                data-s-popover-toggle-class="is-selected">${infoSvgHtmlString}</button>
+                                data-s-popover-toggle-class="is-selected">${InfoSvgHtmlString}</button>
                         <div class="s-popover"
                                id="${templateFormTemplateBodyInputFieldId}-popover"
                                role="menu">
@@ -405,9 +402,28 @@ export function $messageTemplateEditorModal(): JQuery {
                               placeholder="This will appear as the body of the template.\nDo not include header, suspension, or footer information.\nThis is pulled automatically."></textarea>
                 </div>
                 <div class="d-flex gy4 fd-column">
-                    <label class="flex--item s-label" for="${templateFormAnalogousSystemReasonId}">
-                        Analogous System Reason Id
-                    </label>
+                    <div class="d-flex fd-row fw-nowrap g6 ai-center my2">
+                        <label class="flex--item s-label" for="${templateFormAnalogousSystemReasonId}">
+                            Analogous System Reason Id
+                        </label>
+                        <button class="flex--item s-btn s-btn__muted p4" 
+                                    role="button"
+                                    type="button"
+                                    aria-controls="${templateFormAnalogousSystemReasonId}-popover"
+                                    aria-expanded="false"
+                                    data-controller="s-popover"
+                                    data-action="s-popover#toggle"
+                                    data-s-popover-placement="auto"
+                                    data-s-popover-toggle-class="is-selected">${InfoSvgHtmlString}</button>
+                        <div class="s-popover"
+                               id="${templateFormAnalogousSystemReasonId}-popover"
+                               role="menu">
+                            <div class="s-popover--arrow"></div>
+                            <div class="s-popover--content">
+                                <p>This is used to determine which suspension banner shows on the user profile.</p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex--item s-select">
                         <select id="${templateFormAnalogousSystemReasonId}"></select>
                     </div>
@@ -425,9 +441,26 @@ export function $messageTemplateEditorModal(): JQuery {
                     <label class="s-label" for="${templateFormStackOverflowOnly}">Stack Overflow Only</label>
                     <input class="s-toggle-switch" id="${templateFormStackOverflowOnly}" type="checkbox" name="StackOverflowOnly">
                 </div>
-                <div class="d-flex ai-center g8">
+                <div class="d-flex fd-row fw-nowrap g8 ai-center my2">
                     <label class="s-label" for="${templateFormIncludeSuspensionFooter}">Include Suspension Footer</label>
                     <input class="s-toggle-switch" id="${templateFormIncludeSuspensionFooter}" type="checkbox" checked name="IncludeSuspensionFooter">
+                    <button class="flex--item s-btn s-btn__muted p4" 
+                                role="button"
+                                type="button"
+                                aria-controls="${templateFormIncludeSuspensionFooter}-popover"
+                                aria-expanded="false"
+                                data-controller="s-popover"
+                                data-action="s-popover#toggle"
+                                data-s-popover-placement="auto"
+                                data-s-popover-toggle-class="is-selected">${InfoSvgHtmlString}</button>
+                    <div class="s-popover"
+                           id="${templateFormIncludeSuspensionFooter}-popover"
+                           role="menu">
+                        <div class="s-popover--arrow"></div>
+                        <div class="s-popover--content">
+                            <p>This option is useful in any templates that use {suspensionDurationDays} within the body</p>
+                        </div>
+                    </div>
                 </div>
             </form>`
         );
