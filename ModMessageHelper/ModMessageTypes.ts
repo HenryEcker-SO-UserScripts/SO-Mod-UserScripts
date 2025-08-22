@@ -20,7 +20,7 @@ export interface TemplateRequestResponse {
     MessageTemplate: ModMessageTemplate;
 }
 
-export const SystemReasonIdList: string[] = ui.$templateSelector.find('option').map((_, n) => `'${$(n).val()}'`).toArray().slice(1);
+export const SystemReasonIdList: string[] = ui.$templateSelector.find('option').map((_, n) => $(n).val()).toArray().slice(1);
 
 export type UserDefinedMessageTemplate =
     Partial<ModMessageTemplate>
