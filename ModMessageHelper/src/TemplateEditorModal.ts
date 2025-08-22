@@ -33,6 +33,8 @@ export function $messageTemplateEditorModal(): JQuery {
         return `${modalId}-export-list-member-${n}`;
     }
 
+    const modalCloseButtonId = `${modalId}-close-button`;
+
     // CSS Classes
     const exportSelectedCheckbox = `${modalId}-export-checkbox-selector`;
     const activeListStyleClass = 'fc-theme-secondary';
@@ -89,7 +91,7 @@ export function $messageTemplateEditorModal(): JQuery {
                     </div>
                     <div class="d-flex gx8 s-modal--footer ai-center"></div>
                     <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close"
-                            data-action="s-modal#hide">
+                            id="${modalCloseButtonId}">
                         <svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
                             <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
                         </svg>
@@ -175,6 +177,9 @@ export function $messageTemplateEditorModal(): JQuery {
         get $deleteTemplateButton(): JQuery<HTMLButtonElement> {
             return $(`#${deleteTemplateButtonId}`, $aside);
         },
+        get $modalCloseButton(): JQuery<HTMLButtonElement> {
+            return $(`#${modalCloseButtonId}`, $aside);
+        },
         // Containers
         get $templateListContainer(): JQuery<HTMLDivElement> {
             return $(`#${templateListContainerId}`, $aside);
@@ -229,6 +234,13 @@ export function $messageTemplateEditorModal(): JQuery {
         });
     }
 
+    async function dirtyNavigationConfirmModal(): Promise<boolean> {
+        if (ElementManager.templateEditorFormIsDirty()) {
+            return showNavigateAwayConfirmModal();
+        }
+        return true;
+    }
+
     function buildTemplateSelectorList() {
         const $mountPoint = ElementManager.$templateListContainer;
         $mountPoint.empty();
@@ -244,11 +256,8 @@ export function $messageTemplateEditorModal(): JQuery {
                     // Do nothing if clicking the already active index
                     return;
                 }
-                if (ElementManager.templateEditorFormIsDirty()) {
-                    const shouldNavigate = await showNavigateAwayConfirmModal();
-                    if (!shouldNavigate) {
-                        return;
-                    }
+                if (!await dirtyNavigationConfirmModal()) {
+                    return;
                 }
                 SelectedTemplateManager.active = index;
                 ElementManager.setTemplateEditorFormNewMode('false');
@@ -509,11 +518,8 @@ export function $messageTemplateEditorModal(): JQuery {
     // Wire up new template button
     ElementManager.$newTemplateButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
-        if (ElementManager.templateEditorFormIsDirty()) {
-            const shouldNavigate = await showNavigateAwayConfirmModal();
-            if (!shouldNavigate) {
-                return;
-            }
+        if (!await dirtyNavigationConfirmModal()) {
+            return;
         }
         // Empty by using the default values
         populateFormFromTemplate({
@@ -604,6 +610,18 @@ export function $messageTemplateEditorModal(): JQuery {
         buildTemplateSelectorList();
         // Previous no longer exists
         SelectedTemplateManager.reset();
+    });
+
+    ElementManager.$modalCloseButton.on('click', async (ev: JQuery.ClickEvent) => {
+        ev.preventDefault();
+        if (!await dirtyNavigationConfirmModal()) {
+            return false;
+        }
+        // Clear out selection to clear away dirty form
+        SelectedTemplateManager.active = -1;
+        // Hide Modal
+        Stacks.hideModal(document.getElementById(modalId));
+        return true;
     });
 
 
