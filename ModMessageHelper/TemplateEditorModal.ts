@@ -290,10 +290,11 @@ export function $messageTemplateEditorModal(): JQuery {
     buildImportTemplateEntryAndBtn();
 
     buildTemplateSelectorList();
-    // After populating Template List for the first time select the first
+    buildForm();
+
+    // After populating Template List and Building the Form for the first time select the first
     SelectedTemplateManager.reset();
 
-    buildForm();
 
 
     const $newTemplateButton = $(`#${newTemplateButtonId}`, $aside);
