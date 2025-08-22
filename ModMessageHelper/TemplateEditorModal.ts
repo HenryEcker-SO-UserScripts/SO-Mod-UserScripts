@@ -218,7 +218,7 @@ export function $messageTemplateEditorModal(): JQuery {
     };
 
     function buildImportTemplateEntryAndBtn() {
-        ElementManager.$importTemplateButton.on('input', (e: JQuery.ChangeEvent) => {
+        ElementManager.$importTemplateInputField.on('input', (e: JQuery.ChangeEvent) => {
             ElementManager.$importTemplateButton.prop('disabled', e.target.value.trim().length === 0);
         });
 
