@@ -21,6 +21,7 @@ export function $messageTemplateEditorModal(): JQuery {
 
     const templateFormId = `${modalId}-template-form`;
     const templateFormTemplateNameInputFieldId = `${modalId}-template-form-name-field`;
+    const templateFormAnalogousSystemReasonId = `${modalId}-template-form-analogous-system-reason-id-select`;
     const templateFormDefaultSuspendDays = `${modalId}-template-form-default-suspend-days-field`;
     const templateFormTemplateBodyInputFieldId = `${modalId}-template-form-body-field`;
     const templateFormStackOverflowOnly = `${modalId}-template-form-stackoverflow-only-checkbox`;
@@ -373,6 +374,14 @@ export function $messageTemplateEditorModal(): JQuery {
                     <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
                            placeholder="Be descriptive as this is what appears in user history."
                            name="TemplateName">
+                </div>
+                <div class="d-flex gy4 fd-column">
+                    <label class="flex--item s-label" for="${templateFormAnalogousSystemReasonId}">
+                        Analogous System Reason Id
+                    </label>
+                    <div class="flex--item s-select">
+                        <select id="${templateFormAnalogousSystemReasonId}"></select>
+                    </div>
                 </div>
                 <div class="d-flex gy4 fd-column">
                     <label class="s-label" for="${templateFormDefaultSuspendDays}">Default Suspend Days (0 for no suspension)</label>

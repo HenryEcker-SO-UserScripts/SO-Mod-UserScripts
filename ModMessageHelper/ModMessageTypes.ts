@@ -1,3 +1,5 @@
+import ui from './ModMessageForm';
+
 export interface ModMessageTemplate {
     ModMessageReason: number;
     IsCommunityTeamMessage: boolean;
@@ -18,52 +20,14 @@ export interface TemplateRequestResponse {
     MessageTemplate: ModMessageTemplate;
 }
 
-// To create run the following code with no UserScripts running
-// console.log($('#select-template-menu option').map((_, n) => `'${$(n).val()}'`).toArray().slice(1).join('|\n'))
-export type SystemReasonId = 'LowQualityQuestions' |
-    'QuestionRepetition' |
-    'SockPuppetVoting' |
-    'TargetedVotes' |
-    'AbusiveToOthers' |
-    'RevengeDownvoting' |
-    'SelfDestructionOfUsefulContent' |
-    'SignaturesOrTaglines' |
-    'ExcessiveSelfPromotion' |
-    'ExcessiveDiscussionInComments' |
-    'Plagiarism' |
-    'RollbackWar' |
-    'InappropriateUsername' |
-    'BanEvasionMultipleAccounts' |
-    'InaccurateAIContent' |
-    'SpamRecidivism' |
-    'OtherViolation';
-
-export const SystemReasonIdList: SystemReasonId[] = [
-    'LowQualityQuestions',
-    'QuestionRepetition',
-    'SockPuppetVoting',
-    'TargetedVotes',
-    'AbusiveToOthers',
-    'RevengeDownvoting',
-    'SelfDestructionOfUsefulContent',
-    'SignaturesOrTaglines',
-    'ExcessiveSelfPromotion',
-    'ExcessiveDiscussionInComments',
-    'Plagiarism',
-    'RollbackWar',
-    'InappropriateUsername',
-    'BanEvasionMultipleAccounts',
-    'InaccurateAIContent',
-    'SpamRecidivism',
-    'OtherViolation'
-];
+export const SystemReasonIdList: string[] = ui.$templateSelector.find('option').map((_, n) => `'${$(n).val()}'`).toArray().slice(1);
 
 export type UserDefinedMessageTemplate =
     Partial<ModMessageTemplate>
     & Pick<ModMessageTemplate, 'TemplateName' | 'TemplateBody'>
     & {
     StackOverflowOnly?: boolean;
-    AnalogousSystemReasonId: SystemReasonId; // This is attached to the suspendReason hidden field and is used to look up the suspension banner text
+    AnalogousSystemReasonId: string; // This is attached to the suspendReason hidden field and is used to look up the suspension banner text
 };
 
 export type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
