@@ -2,9 +2,13 @@ import {arrayMoveMutable} from 'array-move';
 import {$boolean, $enum, $number, $object, $opt, $string} from 'lizod';
 import {SystemReasonIdList, type UserDefinedMessageTemplate} from './ModMessageTypes';
 
-const validateTemplate = $object({
-    TemplateName: $string,
-    TemplateBody: $string,
+function $nonEmptyString(input: unknown): input is string {
+    return typeof input === 'string' && input.trim().length > 0;
+}
+
+const templateValidator = $object({
+    TemplateName: $nonEmptyString,
+    TemplateBody: $nonEmptyString,
     AnalogousSystemReasonId: $enum(SystemReasonIdList),
     DefaultSuspendDays: $opt($number),
     StackOverflowOnly: $opt($boolean),
@@ -14,10 +18,25 @@ const validateTemplate = $object({
     Footer: $opt($string),
 });
 
-function validateTemplateArray(maybeTemplateArray: unknown[]): maybeTemplateArray is UserDefinedMessageTemplate[] {
+function validateTemplate(maybeTemplate: unknown, validationErrorMessage: string): maybeTemplate is UserDefinedMessageTemplate {
+    const ctx: { errors: ((string | symbol | number)[])[]; } = {errors: []};
+    const result = templateValidator(maybeTemplate, ctx);
+    if (ctx.errors.length > 0) {
+        console.error('Validation Error', ctx);
+        StackExchange.helpers.showToast(validationErrorMessage, {
+            type: 'danger',
+            transient: true,
+            transientTimeout: 4e3
+        });
+        return false;
+    }
+    return result;
+}
+
+function validateTemplateArray(maybeTemplateArray: unknown[], validationErrorMessage: string): maybeTemplateArray is UserDefinedMessageTemplate[] {
     if (maybeTemplateArray.every(t => {
         const ctx: { errors: ((string | symbol | number)[])[]; } = {errors: []};
-        const result = validateTemplate(t, ctx);
+        const result = templateValidator(t, ctx);
         if (ctx.errors.length > 0) {
             console.error('Validation Error', ctx);
         }
@@ -25,7 +44,7 @@ function validateTemplateArray(maybeTemplateArray: unknown[]): maybeTemplateArra
     })) {
         return true;
     }
-    StackExchange.helpers.showToast('Unable to parse template import. See console error for more details', {
+    StackExchange.helpers.showToast(validationErrorMessage, {
         type: 'danger',
         transient: true,
         transientTimeout: 4e3
@@ -65,31 +84,67 @@ class TemplateManager {
         this.save();
     }
 
-    async insertOrUpdate(newTemplate: UserDefinedMessageTemplate): Promise<void> {
+    private async unsafeSaveTemplate(maybeTemplate: unknown, isNewTemplate: boolean, shouldSave: boolean): Promise<boolean> {
+        if (!validateTemplate(maybeTemplate, 'Unable to parse template. See console for errors.')) {
+            return false;
+        }
+        if (isNewTemplate) {
+            if (this.hasName(maybeTemplate.TemplateName)) {
+                StackExchange.helpers.showToast('A template with this name already exists! Template names must be unique.', {
+                    type: 'danger',
+                    transient: true,
+                    transientTimeout: 4e3
+                });
+                return false;
+            }
+        }
+        return this.insertOrUpdate(maybeTemplate, false, shouldSave);
+    }
+
+    async saveNewTemplate(maybeTemplate: unknown): Promise<boolean> {
+        return this.unsafeSaveTemplate(maybeTemplate, true, true);
+    }
+
+    async saveExistingTemplate(maybeTemplate: unknown): Promise<boolean> {
+        return this.unsafeSaveTemplate(maybeTemplate, false, true);
+    }
+
+    private async insertOrUpdate(newTemplate: UserDefinedMessageTemplate, shouldPromptDuplicates: boolean, shouldSave: boolean): Promise<boolean> {
         const existingTemplateIndex = this.templates.findIndex(t => t.TemplateName === newTemplate.TemplateName);
         // If is a new template
         if (existingTemplateIndex === -1) {
             this.templates.push(newTemplate);
-            return;
+            return true;
         }
-        // Template already exists
-        const shouldReplace = await StackExchange.helpers.showConfirmModal({
-            title: 'Duplicate Template Found',
-            bodyHtml: `<div><p>The template "${newTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
-            buttonLabel: 'Overwrite'
-        });
+        if (shouldPromptDuplicates) {
+            // Template already exists
+            const shouldReplace = await StackExchange.helpers.showConfirmModal({
+                title: 'Duplicate Template Found',
+                bodyHtml: `<div><p>The template "${newTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
+                buttonLabel: 'Overwrite'
+            });
 
-        // Confirm Dialog Failed
-        if (!shouldReplace) {
-            return;
+            // Confirm Dialog Failed
+            if (!shouldReplace) {
+                return false;
+            }
         }
 
         // Overwrite Template with new Template Values
         this.templates[existingTemplateIndex] = newTemplate;
+
+        if (shouldSave) {
+            this.save();
+        }
+        return true;
     }
 
     has(index: number): boolean {
         return this.templates?.[index] !== undefined;
+    }
+
+    hasName(templateName: string): boolean {
+        return this.templates.some(t => t.TemplateName === templateName);
     }
 
     async delete(index: number): Promise<void> {
@@ -117,12 +172,12 @@ class TemplateManager {
             }
             // Validate All Array Elements to ensure they are all valid Templates
             // If any part of the import is invalid, fail
-            if (!validateTemplateArray(maybeTemplateArray)) {
+            if (!validateTemplateArray(maybeTemplateArray, 'Unable to parse template import. See console error for more details')) {
                 return false;
             }
             // Import by insert or updating
             for (const newTemplate of maybeTemplateArray) {
-                await this.insertOrUpdate(newTemplate);
+                void await this.insertOrUpdate(newTemplate, true, false);
             }
 
             this.save();
