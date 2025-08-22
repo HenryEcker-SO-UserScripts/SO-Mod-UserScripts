@@ -372,29 +372,12 @@ export function $messageTemplateEditorModal(): JQuery {
         $mountPoint.empty();
         // TODO: Add Info for Suspension Footer about when this is used. Namely when {suspensionDurationDays} is used
         const $form = $(
-            `<form id="${templateFormId}" class="d-flex fd-column g12 mb8">
+            `<form id="${templateFormId}" class="d-flex fd-column g12 my8">
                 <div class="d-flex gy4 fd-column">
                     <label class="s-label" for="${templateFormTemplateNameInputFieldId}">Template Name</label>
                     <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
                            placeholder="Be descriptive as this is what appears in user history."
                            name="TemplateName">
-                </div>
-                <div class="d-flex gy4 fd-column">
-                    <label class="flex--item s-label" for="${templateFormAnalogousSystemReasonId}">
-                        Analogous System Reason Id
-                    </label>
-                    <div class="flex--item s-select">
-                        <select id="${templateFormAnalogousSystemReasonId}"></select>
-                    </div>
-                </div>
-                <div class="d-flex gy4 fd-column">
-                    <label class="s-label" for="${templateFormDefaultSuspendDays}">Default Suspend Days (0 for no suspension)</label>
-                    <input class="s-input" 
-                           id="${templateFormDefaultSuspendDays}" 
-                           type="number"
-                           min="0"
-                           max="365"
-                           name="DefaultSuspendDays">
                 </div>
                 <div class="d-flex fd-column gy4">
                     <div class="d-flex fd-row fw-nowrap g6 ai-center my2">
@@ -437,6 +420,23 @@ export function $messageTemplateEditorModal(): JQuery {
                               class="flex--item s-textarea hmn3 wmx5"
                               style="resize: vertical;field-sizing: content;"
                               placeholder="This will appear as the body of the template.\nDo not include header, suspension, or footer information.\nThis is pulled automatically."></textarea>
+                </div>
+                <div class="d-flex gy4 fd-column">
+                    <label class="flex--item s-label" for="${templateFormAnalogousSystemReasonId}">
+                        Analogous System Reason Id
+                    </label>
+                    <div class="flex--item s-select">
+                        <select id="${templateFormAnalogousSystemReasonId}"></select>
+                    </div>
+                </div>
+                <div class="d-flex gy4 fd-column">
+                    <label class="s-label" for="${templateFormDefaultSuspendDays}">Default Suspend Days (0 for no suspension)</label>
+                    <input class="s-input" 
+                           id="${templateFormDefaultSuspendDays}" 
+                           type="number"
+                           min="0"
+                           max="365"
+                           name="DefaultSuspendDays">
                 </div>
                 <div class="d-flex ai-center g8">
                     <label class="s-label" for="${templateFormStackOverflowOnly}">Stack Overflow Only</label>
