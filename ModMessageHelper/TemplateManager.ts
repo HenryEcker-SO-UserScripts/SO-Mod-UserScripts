@@ -65,6 +65,10 @@ class TemplateManager {
         GM_setValue(this.GM_Store_Key, this.templates);
     }
 
+    get count() {
+        return this.templates.length;
+    }
+
     get customMessageTemplates() {
         return this.templates;
     }
@@ -84,11 +88,11 @@ class TemplateManager {
         this.save();
     }
 
-    private async unsafeSaveTemplate(maybeTemplate: unknown, isNewTemplate: boolean, shouldSave: boolean): Promise<boolean> {
+    private async unsafeSaveTemplate(maybeTemplate: unknown, index: number | undefined, shouldSave: boolean): Promise<boolean> {
         if (!validateTemplate(maybeTemplate, 'Unable to parse template. See console for errors.')) {
             return false;
         }
-        if (isNewTemplate) {
+        if (index === undefined) {
             if (this.hasName(maybeTemplate.TemplateName)) {
                 StackExchange.helpers.showToast('A template with this name already exists! Template names must be unique.', {
                     type: 'danger',
@@ -97,41 +101,49 @@ class TemplateManager {
                 });
                 return false;
             }
+        } else if (!this.has(index)) {
+            StackExchange.helpers.showToast('This template index does not exist so it cannot be updated!', {
+                type: 'danger',
+                transient: true,
+                transientTimeout: 4e3
+            });
+            return false;
         }
-        return this.insertOrUpdate(maybeTemplate, false, shouldSave);
+
+        return this.insertOrUpdate(maybeTemplate, index, false, shouldSave);
     }
 
     async saveNewTemplate(maybeTemplate: unknown): Promise<boolean> {
-        return this.unsafeSaveTemplate(maybeTemplate, true, true);
+        return this.unsafeSaveTemplate(maybeTemplate, undefined, true);
     }
 
-    async saveExistingTemplate(maybeTemplate: unknown): Promise<boolean> {
-        return this.unsafeSaveTemplate(maybeTemplate, false, true);
+    async saveExistingTemplate(maybeTemplate: unknown, index: number): Promise<boolean> {
+        return this.unsafeSaveTemplate(maybeTemplate, index, true);
     }
 
-    private async insertOrUpdate(newTemplate: UserDefinedMessageTemplate, shouldPromptDuplicates: boolean, shouldSave: boolean): Promise<boolean> {
-        const existingTemplateIndex = this.templates.findIndex(t => t.TemplateName === newTemplate.TemplateName);
+    private async insertOrUpdate(newTemplate: UserDefinedMessageTemplate, index: number | undefined, shouldPromptDuplicates: boolean, shouldSave: boolean): Promise<boolean> {
+        const existingTemplateIndex = index ?? this.templates.findIndex(t => t.TemplateName === newTemplate.TemplateName);
         // If is a new template
         if (existingTemplateIndex === -1) {
             this.templates.push(newTemplate);
-            return true;
-        }
-        if (shouldPromptDuplicates) {
-            // Template already exists
-            const shouldReplace = await StackExchange.helpers.showConfirmModal({
-                title: 'Duplicate Template Found',
-                bodyHtml: `<div><p>The template "${newTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
-                buttonLabel: 'Overwrite'
-            });
+        } else {
+            if (shouldPromptDuplicates) {
+                // Template already exists
+                const shouldReplace = await StackExchange.helpers.showConfirmModal({
+                    title: 'Duplicate Template Found',
+                    bodyHtml: `<div><p>The template "${newTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
+                    buttonLabel: 'Overwrite'
+                });
 
-            // Confirm Dialog Failed
-            if (!shouldReplace) {
-                return false;
+                // Confirm Dialog Failed
+                if (!shouldReplace) {
+                    return false;
+                }
             }
-        }
 
-        // Overwrite Template with new Template Values
-        this.templates[existingTemplateIndex] = newTemplate;
+            // Overwrite Template with new Template Values
+            this.templates[existingTemplateIndex] = newTemplate;
+        }
 
         if (shouldSave) {
             this.save();
@@ -177,7 +189,7 @@ class TemplateManager {
             }
             // Import by insert or updating
             for (const newTemplate of maybeTemplateArray) {
-                void await this.insertOrUpdate(newTemplate, true, false);
+                void await this.insertOrUpdate(newTemplate, undefined, true, false);
             }
 
             this.save();

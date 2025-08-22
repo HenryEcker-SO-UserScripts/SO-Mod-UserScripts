@@ -1,6 +1,6 @@
+import {parentName, parentUrl} from './ModMessageConstants';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import templateManager from './TemplateManager';
-import {parentUrl, parentName} from './ModMessageConstants';
 
 export const modalId = 'usr-mmt-editor-modal';
 
@@ -40,6 +40,8 @@ export function $messageTemplateEditorModal(): JQuery {
     const exportButtonLabel = 'Export Template(s)';
 
     // Properties
+    const formTemplateNewModeProp = 'data-new-template';
+    const formIsDirtyProp = 'data-form-is-dirty';
     const exportButtonDataProp = 'data-export-mode';
 
     const $aside = $(
@@ -104,7 +106,9 @@ export function $messageTemplateEditorModal(): JQuery {
         set active(newIndex: number) {
             this.selected = newIndex;
             // Clear out any existing styles
-            $(`#${templateListContainerId} li`, $aside)
+            ElementManager
+                .$templateListContainer
+                .find('li')
                 .removeClass(activeListStyleClass);
 
             // Bail here if selected index is invalid
@@ -115,28 +119,100 @@ export function $messageTemplateEditorModal(): JQuery {
             // Lookup from template manager and fill in form fields
             populateFormFromTemplate(templateManager.lookupByIndex(this.selected));
             // Give Active Styling to selected index
-            $(`#${templateListContainerId} li:eq(${this.selected})`, $aside)
+            ElementManager
+                .$templateListContainer
+                .find(`li:eq(${this.selected})`)
                 .addClass(activeListStyleClass);
             // Enable Delete Button
-            $(`#${deleteTemplateButtonId}`, $aside).prop('disabled', false);
+            ElementManager.$deleteTemplateButton.prop('disabled', false);
         },
         reset() {
             this.active = 0;
         }
     };
 
-    function buildImportTemplateEntryAndBtn() {
-        const $importTemplateButton = $(`#${importTemplateButtonId}`, $aside);
-        const $importTemplateInputField = $(`#${importTemplateInputField}`, $aside);
+    const ElementManager = {
+        // Forms
+        get $templateEditorForm() {
+            return $(`#${templateFormId}`, $aside);
+        },
+        templateEditorFormIsDirty(): boolean {
+            return this.$templateEditorForm.attr(formIsDirtyProp) === 'true';
+        },
+        setTemplateEditorFormIsDirty(mode: 'true' | 'false') {
+            this.$templateEditorForm.attr(formIsDirtyProp, mode);
+            this.$saveButton.prop('disabled', mode === 'false');
+        },
+        isTemplateEditorFormInNewMode(): boolean {
+            return this.$templateEditorForm.attr(formTemplateNewModeProp) === 'true';
+        },
+        setTemplateEditorFormNewMode(mode: 'true' | 'false') {
+            this.$templateEditorForm.attr(formTemplateNewModeProp, mode);
+            this.$deleteTemplateButton.prop('disabled', mode === 'true');
+            if (mode === 'true') {
+                SelectedTemplateManager.active = -1;
+            }
+        },
+        // Form Fields
+        get $importTemplateInputField(): JQuery<HTMLInputElement> {
+            return $(`#${importTemplateInputField}`, $aside);
+        },
+        get $exportOutputTextArea(): JQuery<HTMLTextAreaElement> {
+            return $(`#${exportOutputTextarea}`, $aside);
+        },
+        get $templateFormTemplateNameInputField(): JQuery<HTMLInputElement> {
+            return $(`#${templateFormTemplateNameInputFieldId}`, $aside);
+        },
+        get $templateFormDefaultSuspendDays(): JQuery<HTMLInputElement> {
+            return $(`#${templateFormDefaultSuspendDays}`, $aside);
+        },
+        get $templateFormTemplateBodyInputField(): JQuery<HTMLInputElement> {
+            return $(`#${templateFormTemplateBodyInputFieldId}`, $aside);
+        },
+        get $templateFormStackOverflowOnly(): JQuery<HTMLInputElement> {
+            return $(`#${templateFormStackOverflowOnly}`, $aside);
+        },
+        get $templateFormIncludeSuspensionFooter(): JQuery<HTMLInputElement> {
+            return $(`#${templateFormIncludeSuspensionFooter}`, $aside);
+        },
+        // Buttons
+        get $importTemplateButton(): JQuery<HTMLButtonElement> {
+            return $(`#${importTemplateButtonId}`, $aside);
+        },
+        get $newTemplateButton(): JQuery<HTMLButtonElement> {
+            return $(`#${newTemplateButtonId}`, $aside);
+        },
+        get $saveButton() {
+            return $(`#${saveButtonId}`, $aside);
+        },
+        get $exportButton() {
+            return $(`#${exportTemplatesButtonId}`, $aside);
+        },
+        get $deleteTemplateButton(): JQuery<HTMLButtonElement> {
+            return $(`#${deleteTemplateButtonId}`, $aside);
+        },
+        // Containers
+        get $templateListContainer(): JQuery<HTMLDivElement> {
+            return $(`#${templateListContainerId}`, $aside);
+        },
+        get $rightGridColContainer(): JQuery<HTMLDivElement> {
+            return $(`#${rightGridColContainer}`, $aside);
+        },
+        // CSS Class Selectors
+        get $allSelectedExportCheckboxes(): JQuery<HTMLInputElement> {
+            return $(`.${exportSelectedCheckbox}`);
+        }
+    };
 
-        $importTemplateInputField.on('input', (e: JQuery.ChangeEvent) => {
-            $importTemplateButton.prop('disabled', e.target.value.trim().length === 0);
+    function buildImportTemplateEntryAndBtn() {
+        ElementManager.$importTemplateButton.on('input', (e: JQuery.ChangeEvent) => {
+            ElementManager.$importTemplateButton.prop('disabled', e.target.value.trim().length === 0);
         });
 
-        $importTemplateButton.on('click', (ev) => {
+        ElementManager.$importTemplateButton.on('click', (ev) => {
             ev.preventDefault();
 
-            void templateManager.importFromJSONString($importTemplateInputField.val().toString())
+            void templateManager.importFromJSONString(ElementManager.$importTemplateInputField.val().toString())
                 .then(success => {
                     if (success) {
                         // Update Templates if import is successful
@@ -145,17 +221,25 @@ export function $messageTemplateEditorModal(): JQuery {
                 })
                 .finally(() => {
                     // Empty the import field
-                    $importTemplateInputField.val('');
+                    ElementManager.$importTemplateInputField.val('');
                     // Disable the button since the field was emptied
-                    $importTemplateButton.prop('disabled', true);
+                    ElementManager.$importTemplateButton.prop('disabled', true);
                     // Update Selection
                     SelectedTemplateManager.reset();
                 });
         });
     }
 
+    async function showNavigateAwayConfirmModal(): Promise<boolean> {
+        return StackExchange.helpers.showConfirmModal({
+            title: 'Pending Changes',
+            bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>',
+            buttonLabel: 'Discard Changes'
+        });
+    }
+
     function buildTemplateSelectorList() {
-        const $mountPoint = $(`#${templateListContainerId}`, $aside);
+        const $mountPoint = ElementManager.$templateListContainer;
         $mountPoint.empty();
         const $templateList = $('<ol>');
         for (const [index, userDefinedTemplate] of templateManager.customMessageTemplates.entries()) {
@@ -163,9 +247,20 @@ export function $messageTemplateEditorModal(): JQuery {
             if (index === SelectedTemplateManager.active) {
                 $elem.addClass(activeListStyleClass);
             }
-            $elem.on('click', (e: JQuery.ClickEvent) => {
+            $elem.on('click', async (e: JQuery.ClickEvent) => {
                 e.preventDefault();
+                if (SelectedTemplateManager.active === index) {
+                    // Do nothing if clicking the already active index
+                    return;
+                }
+                if (ElementManager.templateEditorFormIsDirty()) {
+                    const shouldNavigate = await showNavigateAwayConfirmModal();
+                    if (!shouldNavigate) {
+                        return;
+                    }
+                }
                 SelectedTemplateManager.active = index;
+                ElementManager.setTemplateEditorFormNewMode('false');
             });
             $elem.on('dragstart', (e: JQuery.DragStartEvent) => {
                 e.originalEvent.dataTransfer.effectAllowed = 'move';
@@ -175,7 +270,18 @@ export function $messageTemplateEditorModal(): JQuery {
             $elem.on('dragover', (e: JQuery.DragOverEvent) => {
                 e.preventDefault();
             });
-            $elem.on('drop', (e: JQuery.DropEvent) => {
+            $elem.on('drop', async (e: JQuery.DropEvent) => {
+                if (ElementManager.templateEditorFormIsDirty()) {
+                    const shouldNavigate = await StackExchange.helpers.showConfirmModal({
+                        title: 'Pending Changes',
+                        bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Reordering will discard these changes.</p><p>Are you sure you want to reorder these items?</p></div>',
+                        buttonLabel: 'Discard Changes'
+                    });
+                    if (!shouldNavigate) {
+                        return;
+                    }
+                }
+
                 const $target = $(e.target);
                 const currentTargetIndex = $('li', $templateList).index($target);
                 // Move from src to target
@@ -191,7 +297,7 @@ export function $messageTemplateEditorModal(): JQuery {
     }
 
     function buildExportTemplateList() {
-        const $mountPoint = $(`#${templateListContainerId}`, $aside);
+        const $mountPoint = ElementManager.$templateListContainer;
         $mountPoint.empty();
         const $templateList = $('<div>');
         for (const [index, userDefinedTemplate] of templateManager.customMessageTemplates.entries()) {
@@ -234,15 +340,17 @@ export function $messageTemplateEditorModal(): JQuery {
     }
 
     function populateFormFromTemplate(template: UserDefinedMessageTemplate) {
-        $(`#${templateFormTemplateNameInputFieldId}`, $aside).val(template.TemplateName);
-        $(`#${templateFormDefaultSuspendDays}`, $aside).val(template.DefaultSuspendDays ?? 0);
-        $(`#${templateFormTemplateBodyInputFieldId}`, $aside).val(template.TemplateBody);
-        $(`#${templateFormStackOverflowOnly}`, $aside).prop('checked', template.StackOverflowOnly ?? false);
-        $(`#${templateFormIncludeSuspensionFooter}`, $aside).prop('checked', template.IncludeSuspensionFooter ?? true);
+        ElementManager.$templateFormTemplateNameInputField.val(template.TemplateName);
+        ElementManager.$templateFormDefaultSuspendDays.val(template.DefaultSuspendDays ?? 0);
+        ElementManager.$templateFormTemplateBodyInputField.val(template.TemplateBody);
+        ElementManager.$templateFormStackOverflowOnly.prop('checked', template.StackOverflowOnly ?? false);
+        ElementManager.$templateFormIncludeSuspensionFooter.prop('checked', template.IncludeSuspensionFooter ?? true);
+        // Form is not dirty after being populated
+        ElementManager.setTemplateEditorFormIsDirty('false');
     }
 
     function buildForm() {
-        const $mountPoint = $(`#${rightGridColContainer}`, $aside);
+        const $mountPoint = ElementManager.$rightGridColContainer;
         $mountPoint.empty();
         /*
         TODO:
@@ -319,12 +427,11 @@ export function $messageTemplateEditorModal(): JQuery {
         );
 
 
-        function handleSubmitForm(ev: JQuery.SubmitEvent) {
+        async function handleSubmitForm(ev: JQuery.SubmitEvent) {
             ev.preventDefault();
         }
 
-        const $defaultSuspendDaysInput = $(`#${templateFormDefaultSuspendDays}`, $form);
-        $defaultSuspendDaysInput.on('input', (ev) => {
+        ElementManager.$templateFormDefaultSuspendDays.on('input', (ev) => {
             const $target = $(ev.target);
             const value = Number($target.val());
             const inputMin = Number($target.attr('min'));
@@ -334,17 +441,21 @@ export function $messageTemplateEditorModal(): JQuery {
         });
 
         $form.on('submit', handleSubmitForm);
+        $form.on('input', () => {
+            // Any change to the form should make it dirty
+            ElementManager.setTemplateEditorFormIsDirty('true');
+        });
         $mountPoint.append($form);
     }
 
     function populateExportTemplateTextarea() {
-        const templateIndexes: number[] = $(`.${exportSelectedCheckbox}`).map((_, n) => $(n).data('template-index')).toArray();
+        const templateIndexes: number[] = ElementManager.$allSelectedExportCheckboxes.map((_, n) => $(n).data('template-index')).toArray();
         const jsonString = templateManager.exportToJsonString(templateIndexes);
-        $(`#${exportOutputTextarea}`, $aside).val(jsonString);
+        ElementManager.$exportOutputTextArea.val(jsonString);
     }
 
     function buildExportTextarea() {
-        const $mountPoint = $(`#${rightGridColContainer}`, $aside);
+        const $mountPoint = ElementManager.$rightGridColContainer;
         $mountPoint.empty();
         $mountPoint.append($(
             `<div class="wmx5">
@@ -372,14 +483,81 @@ export function $messageTemplateEditorModal(): JQuery {
 
     buildTemplateEditor();
 
+    ElementManager.$newTemplateButton.on('click', async (ev: JQuery.ClickEvent) => {
+        ev.preventDefault();
+        if (ElementManager.templateEditorFormIsDirty()) {
+            const shouldNavigate = await showNavigateAwayConfirmModal();
+            if (!shouldNavigate) {
+                return;
+            }
+        }
+        // Empty by using the default values
+        populateFormFromTemplate({
+            TemplateName: '',
+            TemplateBody: '',
+            AnalogousSystemReasonId: 'LowQualityQuestions'
+        });
+        ElementManager.setTemplateEditorFormNewMode('true');
+    });
 
-    const $newTemplateButton = $(`#${newTemplateButtonId}`, $aside);
-    const $saveButton = $(`#${saveButtonId}`, $aside);
-    const $exportButton = $(`#${exportTemplatesButtonId}`, $aside);
-    const $deleteTemplateButton = $(`#${deleteTemplateButtonId}`, $aside);
+    ElementManager.$saveButton.on('click', async (ev: JQuery.ClickEvent) => {
+        ev.preventDefault();
+        // TODO: Build an object from form fields
+        const templateFromFormData: UserDefinedMessageTemplate = {
+            TemplateName: ElementManager.$templateFormTemplateNameInputField.val(),
+            TemplateBody: ElementManager.$templateFormTemplateBodyInputField.val(),
+            AnalogousSystemReasonId: 'LowQualityQuestions'
+        };
+        const defaultSuspendDays = Number(ElementManager.$templateFormDefaultSuspendDays.val());
+        if (defaultSuspendDays > 0) {
+            templateFromFormData['DefaultSuspendDays'] = defaultSuspendDays;
+        }
+        const isStackOverflowOnly = ElementManager.$templateFormStackOverflowOnly.prop('checked');
+        if (isStackOverflowOnly) {
+            templateFromFormData['StackOverflowOnly'] = isStackOverflowOnly;
+        }
+        const shouldIncludeSuspensionFooter = ElementManager.$templateFormIncludeSuspensionFooter.prop('checked');
+        if (!shouldIncludeSuspensionFooter) {
+            templateFromFormData['IncludeSuspensionFooter'] = shouldIncludeSuspensionFooter;
+        }
+        // TODO: Do validations about field requirements and provide feedback
+
+        if (templateFromFormData.TemplateName.trim().length === 0) {
+            // TODO: Make this have UI feedback
+            console.error('Must have a template name');
+            return false;
+        }
+
+        if (templateFromFormData.TemplateBody.trim().length === 0) {
+            // TODO: Make this have UI feedback
+            console.error('Must have template body');
+            return false;
+        }
+
+        // Try to save or update
+        let success: boolean;
+        if (ElementManager.isTemplateEditorFormInNewMode()) {
+            success = await templateManager.saveNewTemplate(templateFromFormData);
+        } else {
+            success = await templateManager.saveExistingTemplate(templateFromFormData, SelectedTemplateManager.active);
+        }
+        if (success) {
+            StackExchange.helpers.showToast('Template Saved Successfully!', {
+                type: 'success',
+                transient: true,
+                transientTimeout: 2e3
+            });
+
+            // Rebuild the UI with new values
+            const selection = ElementManager.isTemplateEditorFormInNewMode() ? templateManager.count - 1 : SelectedTemplateManager.active;
+            buildTemplateEditor();
+            SelectedTemplateManager.active = selection;
+        }
+        return true;
+    });
 
     // Wire Up Export Button
-    $exportButton.on('click', (ev: JQuery.ClickEvent) => {
+    ElementManager.$exportButton.on('click', (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
         const $target = $(ev.target);
         const toExportMode = $target.attr(exportButtonDataProp) === 'true';
@@ -390,15 +568,15 @@ export function $messageTemplateEditorModal(): JQuery {
             buildTemplateEditor();
             $target.text(exportButtonLabel);
         }
-        $newTemplateButton.prop('disabled', toExportMode);
-        $saveButton.prop('disabled', toExportMode);
-        $deleteTemplateButton.prop('disabled', toExportMode);
+        ElementManager.$newTemplateButton.prop('disabled', toExportMode);
+        ElementManager.$saveButton.prop('disabled', toExportMode);
+        ElementManager.$deleteTemplateButton.prop('disabled', toExportMode);
 
         $target.attr(exportButtonDataProp, (!toExportMode).toString());
     });
 
     // Wire up delete button
-    $deleteTemplateButton.on('click', async (ev: JQuery.ClickEvent) => {
+    ElementManager.$deleteTemplateButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
         await templateManager.delete(SelectedTemplateManager.active);
         // Repopulate List
