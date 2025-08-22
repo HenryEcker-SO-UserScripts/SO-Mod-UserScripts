@@ -374,7 +374,7 @@ export function $messageTemplateEditorModal(): JQuery {
                 <div class="d-flex fd-column gy4">
                     <div class="d-flex fd-row fw-nowrap g6 ai-center my2">
                         <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">Template Body</label>
-                        <button class="flex--item s-btn s-btn__muted p4 is-selected" 
+                        <button class="flex--item s-btn s-btn__muted p4" 
                                 role="button"
                                 type="button"
                                 aria-controls="${templateFormTemplateBodyInputFieldId}-popover"
