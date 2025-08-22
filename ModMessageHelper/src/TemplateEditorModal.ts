@@ -99,39 +99,6 @@ export function $messageTemplateEditorModal(): JQuery {
         </aside>`
     );
 
-    const SelectedTemplateManager = {
-        selected: -1,
-        get active() {
-            return this.selected;
-        },
-        set active(newIndex: number) {
-            this.selected = newIndex;
-            // Clear out any existing styles
-            ElementManager
-                .$templateListContainer
-                .find('li')
-                .removeClass(activeListStyleClass);
-
-            // Bail here if selected index is invalid
-            if (!templateManager.has(this.selected)) {
-                this.selected = -1;
-                return;
-            }
-            // Lookup from template manager and fill in form fields
-            populateFormFromTemplate(templateManager.lookupByIndex(this.selected));
-            // Give Active Styling to selected index
-            ElementManager
-                .$templateListContainer
-                .find(`li:eq(${this.selected})`)
-                .addClass(activeListStyleClass);
-            // Enable Delete Button
-            ElementManager.$deleteTemplateButton.prop('disabled', false);
-        },
-        reset() {
-            this.active = 0;
-        }
-    };
-
     const ElementManager = {
         // Forms
         get $templateEditorForm() {
@@ -221,31 +188,38 @@ export function $messageTemplateEditorModal(): JQuery {
         }
     };
 
-    function buildImportTemplateEntryAndBtn() {
-        ElementManager.$importTemplateInputField.on('input', (e: JQuery.ChangeEvent) => {
-            ElementManager.$importTemplateButton.prop('disabled', e.target.value.trim().length === 0);
-        });
+    const SelectedTemplateManager = {
+        selected: -1,
+        get active() {
+            return this.selected;
+        },
+        set active(newIndex: number) {
+            this.selected = newIndex;
+            // Clear out any existing styles
+            ElementManager
+                .$templateListContainer
+                .find('li')
+                .removeClass(activeListStyleClass);
 
-        ElementManager.$importTemplateButton.on('click', (ev) => {
-            ev.preventDefault();
-
-            void templateManager.importFromJSONString(ElementManager.$importTemplateInputField.val().toString())
-                .then(success => {
-                    if (success) {
-                        // Update Templates if import is successful
-                        buildTemplateSelectorList();
-                    }
-                })
-                .finally(() => {
-                    // Empty the import field
-                    ElementManager.$importTemplateInputField.val('');
-                    // Disable the button since the field was emptied
-                    ElementManager.$importTemplateButton.prop('disabled', true);
-                    // Update Selection
-                    SelectedTemplateManager.reset();
-                });
-        });
-    }
+            // Bail here if selected index is invalid
+            if (!templateManager.has(this.selected)) {
+                this.selected = -1;
+                return;
+            }
+            // Lookup from template manager and fill in form fields
+            populateFormFromTemplate(templateManager.lookupByIndex(this.selected));
+            // Give Active Styling to selected index
+            ElementManager
+                .$templateListContainer
+                .find(`li:eq(${this.selected})`)
+                .addClass(activeListStyleClass);
+            // Enable Delete Button
+            ElementManager.$deleteTemplateButton.prop('disabled', false);
+        },
+        reset() {
+            this.active = 0;
+        }
+    };
 
     async function showNavigateAwayConfirmModal(): Promise<boolean> {
         return StackExchange.helpers.showConfirmModal({
@@ -491,8 +465,6 @@ export function $messageTemplateEditorModal(): JQuery {
         ));
     }
 
-    buildImportTemplateEntryAndBtn();
-
     function buildTemplateExporter() {
         buildExportTemplateList();
         buildExportTextarea();
@@ -509,6 +481,32 @@ export function $messageTemplateEditorModal(): JQuery {
 
     buildTemplateEditor();
 
+    // Wire Up Import Fields
+    ElementManager.$importTemplateInputField.on('input', (e: JQuery.ChangeEvent) => {
+        ElementManager.$importTemplateButton.prop('disabled', e.target.value.trim().length === 0);
+    });
+
+    ElementManager.$importTemplateButton.on('click', (ev) => {
+        ev.preventDefault();
+
+        void templateManager.importFromJSONString(ElementManager.$importTemplateInputField.val().toString())
+            .then(success => {
+                if (success) {
+                    // Update Templates if import is successful
+                    buildTemplateSelectorList();
+                }
+            })
+            .finally(() => {
+                // Empty the import field
+                ElementManager.$importTemplateInputField.val('');
+                // Disable the button since the field was emptied
+                ElementManager.$importTemplateButton.prop('disabled', true);
+                // Update Selection
+                SelectedTemplateManager.reset();
+            });
+    });
+
+    // Wire up new template button
     ElementManager.$newTemplateButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
         if (ElementManager.templateEditorFormIsDirty()) {
@@ -521,11 +519,12 @@ export function $messageTemplateEditorModal(): JQuery {
         populateFormFromTemplate({
             TemplateName: '',
             TemplateBody: '',
-            AnalogousSystemReasonId: 'LowQualityQuestions'
+            AnalogousSystemReasonId: undefined,
         });
         ElementManager.setTemplateEditorFormNewMode('true');
     });
 
+    // wire up save button
     ElementManager.$saveButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
         const templateFromFormData: UserDefinedMessageTemplate = {

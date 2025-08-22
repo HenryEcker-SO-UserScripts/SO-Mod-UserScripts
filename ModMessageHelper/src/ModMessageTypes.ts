@@ -27,7 +27,7 @@ export type UserDefinedMessageTemplate =
     & Pick<ModMessageTemplate, 'TemplateName' | 'TemplateBody'>
     & {
     StackOverflowOnly?: boolean;
-    AnalogousSystemReasonId: string; // This is attached to the suspendReason hidden field and is used to look up the suspension banner text
+    AnalogousSystemReasonId: string | undefined; // This is attached to the suspendReason hidden field and is used to look up the suspension banner text
 };
 
 export type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
