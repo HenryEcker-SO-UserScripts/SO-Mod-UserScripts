@@ -531,7 +531,7 @@ export function $messageTemplateEditorModal(): JQuery {
         const templateFromFormData: UserDefinedMessageTemplate = {
             TemplateName: ElementManager.$templateFormTemplateNameInputField.val(),
             TemplateBody: ElementManager.$templateFormTemplateBodyInputField.val(),
-            AnalogousSystemReasonId: 'LowQualityQuestions'
+            AnalogousSystemReasonId: ElementManager.$templateFormAnalogousSystemReasonSelect.val() as string
         };
         const defaultSuspendDays = Number(ElementManager.$templateFormDefaultSuspendDays.val());
         if (defaultSuspendDays > 0) {
