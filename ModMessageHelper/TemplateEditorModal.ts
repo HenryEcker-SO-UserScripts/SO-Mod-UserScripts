@@ -1,5 +1,5 @@
 import {parentName, parentUrl} from './ModMessageConstants';
-import type {BooleanString, UserDefinedMessageTemplate} from './ModMessageTypes';
+import {type BooleanString, SystemReasonIdList, type UserDefinedMessageTemplate} from './ModMessageTypes';
 import templateManager from './TemplateManager';
 
 export const modalId = 'usr-mmt-editor-modal';
@@ -164,6 +164,9 @@ export function $messageTemplateEditorModal(): JQuery {
         get $templateFormTemplateNameInputField(): JQuery<HTMLInputElement> {
             return $(`#${templateFormTemplateNameInputFieldId}`, $aside);
         },
+        get $templateFormAnalogousSystemReasonSelect(): JQuery<HTMLSelectElement> {
+            return $(`#${templateFormAnalogousSystemReasonId}`, $aside);
+        },
         get $templateFormDefaultSuspendDays(): JQuery<HTMLInputElement> {
             return $(`#${templateFormDefaultSuspendDays}`, $aside);
         },
@@ -196,6 +199,7 @@ export function $messageTemplateEditorModal(): JQuery {
             this.$exportButton.attr(exportButtonDataProp, mode);
 
             const shouldDisable = mode === 'true';
+            this.$importTemplateInputField.prop('disabled', shouldDisable);
             this.$newTemplateButton.prop('disabled', shouldDisable);
             // Changing modes should always leave save button disabled
             this.$saveButton.prop('disabled', true);
@@ -354,6 +358,7 @@ export function $messageTemplateEditorModal(): JQuery {
 
     function populateFormFromTemplate(template: UserDefinedMessageTemplate) {
         ElementManager.$templateFormTemplateNameInputField.val(template.TemplateName);
+        ElementManager.$templateFormAnalogousSystemReasonSelect.val(template.AnalogousSystemReasonId ?? 'OtherViolation');
         ElementManager.$templateFormDefaultSuspendDays.val(template.DefaultSuspendDays ?? 0);
         ElementManager.$templateFormTemplateBodyInputField.val(template.TemplateBody);
         ElementManager.$templateFormStackOverflowOnly.prop('checked', template.StackOverflowOnly ?? false);
@@ -365,7 +370,6 @@ export function $messageTemplateEditorModal(): JQuery {
     function buildForm() {
         const $mountPoint = ElementManager.$rightGridColContainer;
         $mountPoint.empty();
-        // TODO: Add AnalogousSuspendReason Select ComboBox
         // TODO: Add Info for Suspension Footer about when this is used. Namely when {suspensionDurationDays} is used
         const $form = $(
             `<form id="${templateFormId}" class="d-flex fd-column g12 mb8">
@@ -445,10 +449,20 @@ export function $messageTemplateEditorModal(): JQuery {
             </form>`
         );
 
-
         async function handleSubmitForm(ev: JQuery.SubmitEvent) {
             ev.preventDefault();
         }
+
+        $form.on('submit', handleSubmitForm);
+        $form.on('input', () => {
+            // Any change to the form should make it dirty
+            ElementManager.setTemplateEditorFormIsDirty('true');
+        });
+        $mountPoint.append($form);
+
+        // Add Form Functionality after mounted
+        ElementManager.$templateFormAnalogousSystemReasonSelect
+            .append(...SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
 
         ElementManager.$templateFormDefaultSuspendDays.on('input', (ev) => {
             const $target = $(ev.target);
@@ -458,13 +472,6 @@ export function $messageTemplateEditorModal(): JQuery {
 
             $target.val(Math.max(inputMin, Math.min(value, inputMax)));
         });
-
-        $form.on('submit', handleSubmitForm);
-        $form.on('input', () => {
-            // Any change to the form should make it dirty
-            ElementManager.setTemplateEditorFormIsDirty('true');
-        });
-        $mountPoint.append($form);
     }
 
     function populateExportTemplateTextarea() {
