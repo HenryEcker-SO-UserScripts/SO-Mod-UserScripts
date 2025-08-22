@@ -106,6 +106,7 @@
     "AnalogousSystemReasonId": "OtherViolation",
     "TemplateName": "voluntary suspension",
     "TemplateBody": "We have temporarily suspended your account for {suspensionDurationDays} days upon request.\n\nSince this suspension is fully voluntary, you are welcome to reply to this message and request that the suspension be lifted early. Otherwise it will automatically expire in {suspensionDurationDays} days, upon which time your full reputation and privileges will be restored.\n\nWe wish you a pleasant vacation from the site, and we look forward to your return!",
+    "DefaultSuspendDays": 7,
     "IncludeSuspensionFooter": false,
     "Footer": ""
   }
