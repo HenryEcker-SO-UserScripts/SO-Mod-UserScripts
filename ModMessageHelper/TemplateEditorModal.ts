@@ -352,10 +352,8 @@ export function $messageTemplateEditorModal(): JQuery {
     function buildForm() {
         const $mountPoint = ElementManager.$rightGridColContainer;
         $mountPoint.empty();
-        /*
-        TODO:
-         Add AnalogousSuspendReason Select ComboBox
-         */
+        // TODO: Add AnalogousSuspendReason Select ComboBox
+        // TODO: Add Info for Suspension Footer about when this is used. Namely when {suspensionDurationDays} is used
         const $form = $(
             `<form id="${templateFormId}" class="d-flex fd-column g12 mb8">
                 <div class="d-flex gy4 fd-column">
@@ -502,7 +500,6 @@ export function $messageTemplateEditorModal(): JQuery {
 
     ElementManager.$saveButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
-        // TODO: Build an object from form fields
         const templateFromFormData: UserDefinedMessageTemplate = {
             TemplateName: ElementManager.$templateFormTemplateNameInputField.val(),
             TemplateBody: ElementManager.$templateFormTemplateBodyInputField.val(),
@@ -520,6 +517,7 @@ export function $messageTemplateEditorModal(): JQuery {
         if (!shouldIncludeSuspensionFooter) {
             templateFromFormData['IncludeSuspensionFooter'] = shouldIncludeSuspensionFooter;
         }
+
         // TODO: Do validations about field requirements and provide feedback
 
         if (templateFromFormData.TemplateName.trim().length === 0) {
