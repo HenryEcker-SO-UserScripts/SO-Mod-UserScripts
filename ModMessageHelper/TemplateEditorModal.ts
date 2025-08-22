@@ -1,7 +1,11 @@
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import templateManager from './TemplateManager';
+import {parentUrl, parentName} from './ModMessageConstants';
 
 export const modalId = 'usr-mmt-editor-modal';
+
+
+const infoSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconInfoSm" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1a6 6 0 1 1 0 12A6 6 0 0 1 7 1m1 10V6H6v5zm0-6V3H6v2z"></path></svg>';
 
 export function $messageTemplateEditorModal(): JQuery {
     // IDs
@@ -253,7 +257,7 @@ export function $messageTemplateEditorModal(): JQuery {
                            name="TemplateName">
                 </div>
                 <div class="d-flex gy4 fd-column">
-                    <label class="s-label" for="${templateFormDefaultSuspendDays}">Default Suspend Days</label>
+                    <label class="s-label" for="${templateFormDefaultSuspendDays}">Default Suspend Days (0 for no suspension)</label>
                     <input class="s-input" 
                            id="${templateFormDefaultSuspendDays}" 
                            type="number"
@@ -262,12 +266,44 @@ export function $messageTemplateEditorModal(): JQuery {
                            name="DefaultSuspendDays">
                 </div>
                 <div class="d-flex fd-column gy4">
-                    <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">Template Body</label>
+                    <div class="d-flex fd-row fw-nowrap g6 ai-center my2">
+                        <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">Template Body</label>
+                        <button class="flex--item s-btn s-btn__muted p4 is-selected" role="button"
+                                aria-controls="${templateFormTemplateBodyInputFieldId}-popover"
+                                aria-expanded="false"
+                                data-controller="s-popover"
+                                data-action="s-popover#toggle"
+                                data-s-popover-placement="auto"
+                                data-s-popover-toggle-class="is-selected">${infoSvgHtmlString}</button>
+                        <div class="s-popover"
+                               id="${templateFormTemplateBodyInputFieldId}-popover"
+                               role="menu">
+                            <div class="s-popover--arrow"></div>
+                            <div class="s-popover--content">
+                                <span>The following replacement strings are supported by this UserScript:</span>
+                                <dl class="my6 ml6">
+                                    <dt class="fw-bold">{parentUrl}</dt>
+                                    <dd>${parentUrl}</dd>
+                                    <dt class="fw-bold mt8">{parentName}</dt>
+                                    <dd>${parentName}</dd>
+                                </dl>
+                                <span>These will be replaced before being inserted into the editor.</span>
+                                <hr/>
+                                <span>The following replacement strings are supported by the base UI:</span>
+                                <dl class="my6 ml6">
+                                    <dt class="fw-bold">{todo}</dt><dd>Prevents the messaage from being submitted.</dd>
+                                    <dt class="fw-bold mt8">{suspensionDurationDays}</dt><dd>The number of days of the suspension.</dd>
+                                    <dt class="fw-bold mt8">{optionalSuspensionAutoMessage}</dt><dd>This is the standard message about suspensions also called 'Suspension Footer'.</dd>
+                                </dl>
+                                <span>These will only be replaced when submitting the mod message.</span>
+                            </div>
+                        </div>
+                    </div>
                     <textarea id="${templateFormTemplateBodyInputFieldId}"
                               name="TemplateBody"
                               class="flex--item s-textarea hmn3 wmx5"
                               style="resize: vertical;field-sizing: content;"
-                              placeholder="This will appear as the body of the template. Do not include header, suspension, or footer information. This happens automatically."></textarea>
+                              placeholder="This will appear as the body of the template.\nDo not include header, suspension, or footer information.\nThis is pulled automatically."></textarea>
                 </div>
                 <div class="d-flex ai-center g8">
                     <label class="s-label" for="${templateFormStackOverflowOnly}">Stack Overflow Only</label>
@@ -341,7 +377,6 @@ export function $messageTemplateEditorModal(): JQuery {
     const $deleteTemplateButton = $(`#${deleteTemplateButtonId}`, $aside);
 
     // Wire Up Export Button
-
     $exportButton.on('click', (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
         const $target = $(ev.target);

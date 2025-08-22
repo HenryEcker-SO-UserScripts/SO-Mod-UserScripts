@@ -2,15 +2,13 @@ import ui from './ModMessageForm';
 import type {AjaxSuccess, TemplateRequestResponse} from './ModMessageTypes';
 import {$messageTemplateEditorModal, modalId} from './TemplateEditorModal';
 import templateManager from './TemplateManager';
+import {parentUrl, parentName} from './ModMessageConstants';
 
 
 StackExchange.ready(function () {
     if (!StackExchange?.options?.user?.isModerator) {
         return;
     }
-
-    const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
-    const parentName = StackExchange.options?.site?.name;
 
     function attachTemplateNameInputField() {
         const customTemplateDivHiddenClass = 'd-none';
