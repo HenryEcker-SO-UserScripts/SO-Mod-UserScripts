@@ -61,7 +61,7 @@ export function $messageTemplateEditorModal(): JQuery {
                             <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${newTemplateButtonId}">
                                 New Template
                             </button>
-                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${saveButtonId}">
+                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${saveButtonId}" disabled>
                                 Save Template
                             </button>
                             <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="true">
