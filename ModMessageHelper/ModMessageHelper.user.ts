@@ -1,8 +1,8 @@
-import ui from './ModMessageForm';
-import type {AjaxSuccess, TemplateRequestResponse} from './ModMessageTypes';
-import {$messageTemplateEditorModal, modalId} from './TemplateEditorModal';
-import templateManager from './TemplateManager';
-import {parentUrl, parentName} from './ModMessageConstants';
+import ui from './src/ModMessageForm';
+import type {AjaxSuccess, TemplateRequestResponse} from './src/ModMessageTypes';
+import {$messageTemplateEditorModal, modalId} from './src/TemplateEditorModal';
+import templateManager from './src/TemplateManager';
+import {parentUrl, parentName} from './src/ModMessageConstants';
 
 
 function attachTemplateNameInputField() {
