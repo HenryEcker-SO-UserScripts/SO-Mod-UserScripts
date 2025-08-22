@@ -1,5 +1,5 @@
 import {parentName, parentUrl} from './ModMessageConstants';
-import {type UserDefinedMessageTemplate} from './ModMessageTypes';
+import type {BooleanString, UserDefinedMessageTemplate} from './ModMessageTypes';
 import templateManager from './TemplateManager';
 
 export const modalId = 'usr-mmt-editor-modal';
@@ -70,7 +70,7 @@ export function $messageTemplateEditorModal(): JQuery {
                             <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${saveButtonId}" disabled>
                                 Save Template
                             </button>
-                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="true">
+                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="false">
                                 ${exportButtonLabel}
                             </button>
                             <button class="s-btn flex--item s-btn__filled s-btn__danger ws-nowrap" type="button"
@@ -139,14 +139,14 @@ export function $messageTemplateEditorModal(): JQuery {
         templateEditorFormIsDirty(): boolean {
             return this.$templateEditorForm.attr(formIsDirtyProp) === 'true';
         },
-        setTemplateEditorFormIsDirty(mode: 'true' | 'false') {
+        setTemplateEditorFormIsDirty(mode: BooleanString) {
             this.$templateEditorForm.attr(formIsDirtyProp, mode);
             this.$saveButton.prop('disabled', mode === 'false');
         },
         isTemplateEditorFormInNewMode(): boolean {
             return this.$templateEditorForm.attr(formTemplateNewModeProp) === 'true';
         },
-        setTemplateEditorFormNewMode(mode: 'true' | 'false') {
+        setTemplateEditorFormNewMode(mode: BooleanString) {
             this.$templateEditorForm.attr(formTemplateNewModeProp, mode);
             this.$deleteTemplateButton.prop('disabled', mode === 'true');
             if (mode === 'true') {
@@ -187,6 +187,18 @@ export function $messageTemplateEditorModal(): JQuery {
         },
         get $exportButton() {
             return $(`#${exportTemplatesButtonId}`, $aside);
+        },
+        isExportMode(): boolean {
+            return this.$exportButton.attr(exportButtonDataProp) === 'true';
+        },
+        setExportMode(mode: BooleanString) {
+            this.$exportButton.attr(exportButtonDataProp, mode);
+
+            const shouldDisable = mode === 'true';
+            this.$newTemplateButton.prop('disabled', shouldDisable);
+            // Changing modes should always leave save button disabled
+            this.$saveButton.prop('disabled', true);
+            this.$deleteTemplateButton.prop('disabled', shouldDisable);
         },
         get $deleteTemplateButton(): JQuery<HTMLButtonElement> {
             return $(`#${deleteTemplateButtonId}`, $aside);
@@ -558,19 +570,15 @@ export function $messageTemplateEditorModal(): JQuery {
     ElementManager.$exportButton.on('click', (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
         const $target = $(ev.target);
-        const toExportMode = $target.attr(exportButtonDataProp) === 'true';
-        if (toExportMode) {
-            buildTemplateExporter();
-            $target.text('Leave Export');
-        } else {
+        const isExportMode = ElementManager.isExportMode();
+        if (isExportMode) {
             buildTemplateEditor();
             $target.text(exportButtonLabel);
+        } else {
+            buildTemplateExporter();
+            $target.text('Leave Export');
         }
-        ElementManager.$newTemplateButton.prop('disabled', toExportMode);
-        ElementManager.$saveButton.prop('disabled', toExportMode);
-        ElementManager.$deleteTemplateButton.prop('disabled', toExportMode);
-
-        $target.attr(exportButtonDataProp, (!toExportMode).toString());
+        ElementManager.setExportMode(isExportMode ? 'false' : 'true');
     });
 
     // Wire up delete button

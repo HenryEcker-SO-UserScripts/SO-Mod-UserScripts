@@ -67,3 +67,6 @@ export type UserDefinedMessageTemplate =
 };
 
 export type AjaxSuccess = (data: TemplateRequestResponse, status: string, jqXHR: JQuery.jqXHR) => void;
+
+
+export type BooleanString = 'true' | 'false';
