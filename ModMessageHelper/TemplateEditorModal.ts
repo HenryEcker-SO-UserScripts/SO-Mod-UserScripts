@@ -17,7 +17,10 @@ export function $messageTemplateEditorModal(): JQuery {
 
     const templateFormId = `${modalId}-template-form`;
     const templateFormTemplateNameInputFieldId = `${modalId}-template-form-name-field`;
+    const templateFormDefaultSuspendDays = `${modalId}-template-form-default-suspend-days-field`;
     const templateFormTemplateBodyInputFieldId = `${modalId}-template-form-body-field`;
+    const templateFormStackOverflowOnly = `${modalId}-template-form-stackoverflow-only-checkbox`;
+    const templateFormIncludeSuspensionFooter = `${modalId}-template-form-include-suspension-footer-checkbox`;
 
     const exportOutputTextarea = `${modalId}-template-export-output-text`;
 
@@ -55,16 +58,16 @@ export function $messageTemplateEditorModal(): JQuery {
                             </button>
                         </div>
                         <div class="d-flex fd-row fw-nowrap g12 ai-center jc-end fl-equal">
-                            <button class="s-btn flex--item s-btn__filled" type="button" id="${newTemplateButtonId}">
+                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${newTemplateButtonId}">
                                 New Template
                             </button>
-                            <button class="s-btn flex--item s-btn__filled" type="button" id="${saveButtonId}">
+                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${saveButtonId}">
                                 Save Template
                             </button>
-                            <button class="s-btn flex--item s-btn__filled" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="true">
+                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="true">
                                 ${exportButtonLabel}
                             </button>
-                            <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button"
+                            <button class="s-btn flex--item s-btn__filled s-btn__danger ws-nowrap" type="button"
                                     id="${deleteTemplateButtonId}" disabled>
                                 Delete Template
                             </button>
@@ -228,7 +231,10 @@ export function $messageTemplateEditorModal(): JQuery {
 
     function populateFormFromTemplate(template: UserDefinedMessageTemplate) {
         $(`#${templateFormTemplateNameInputFieldId}`, $aside).val(template.TemplateName);
+        $(`#${templateFormDefaultSuspendDays}`, $aside).val(template.DefaultSuspendDays ?? 0);
         $(`#${templateFormTemplateBodyInputFieldId}`, $aside).val(template.TemplateBody);
+        $(`#${templateFormStackOverflowOnly}`, $aside).prop('checked', template.StackOverflowOnly ?? false);
+        $(`#${templateFormIncludeSuspensionFooter}`, $aside).prop('checked', template.IncludeSuspensionFooter ?? true);
     }
 
     function buildForm() {
@@ -237,26 +243,39 @@ export function $messageTemplateEditorModal(): JQuery {
         /*
         TODO:
          Add AnalogousSuspendReason Select ComboBox
-         Add StackOverflowOnly Checkbox
-         Add DefaultSuspendDays Number entry field
-         Add IncludeSuspensionFooter Checkbox
          */
         const $form = $(
-            `<form id="${templateFormId}" class="d-flex fd-column g12 mb8 h100 overflow-y-auto">
+            `<form id="${templateFormId}" class="d-flex fd-column g12 mb8">
                 <div class="d-flex gy4 fd-column">
                     <label class="s-label" for="${templateFormTemplateNameInputFieldId}">Template Name</label>
                     <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
                            placeholder="Be descriptive as this is what appears in user history."
                            name="TemplateName">
                 </div>
+                <div class="d-flex gy4 fd-column">
+                    <label class="s-label" for="${templateFormDefaultSuspendDays}">Default Suspend Days</label>
+                    <input class="s-input" 
+                           id="${templateFormDefaultSuspendDays}" 
+                           type="number"
+                           min="0"
+                           max="365"
+                           name="DefaultSuspendDays">
+                </div>
                 <div class="d-flex fd-column gy4">
-                    <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">
-                        Template Body
-                    </label>
+                    <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">Template Body</label>
                     <textarea id="${templateFormTemplateBodyInputFieldId}"
+                              name="TemplateBody"
                               class="flex--item s-textarea hmn3 wmx5"
-                              style="resize: vertical;"
+                              style="resize: vertical;field-sizing: content;"
                               placeholder="This will appear as the body of the template. Do not include header, suspension, or footer information. This happens automatically."></textarea>
+                </div>
+                <div class="d-flex ai-center g8">
+                    <label class="s-label" for="${templateFormStackOverflowOnly}">Stack Overflow Only</label>
+                    <input class="s-toggle-switch" id="${templateFormStackOverflowOnly}" type="checkbox" name="StackOverflowOnly">
+                </div>
+                <div class="d-flex ai-center g8">
+                    <label class="s-label" for="${templateFormIncludeSuspensionFooter}">Include Suspension Footer</label>
+                    <input class="s-toggle-switch" id="${templateFormIncludeSuspensionFooter}" type="checkbox" checked name="IncludeSuspensionFooter">
                 </div>
             </form>`
         );
@@ -265,6 +284,16 @@ export function $messageTemplateEditorModal(): JQuery {
         function handleSubmitForm(ev: JQuery.SubmitEvent) {
             ev.preventDefault();
         }
+
+        const $defaultSuspendDaysInput = $(`#${templateFormDefaultSuspendDays}`, $form);
+        $defaultSuspendDaysInput.on('input', (ev) => {
+            const $target = $(ev.target);
+            const value = Number($target.val());
+            const inputMin = Number($target.attr('min'));
+            const inputMax = Number($target.attr('max'));
+
+            $target.val(Math.max(inputMin, Math.min(value, inputMax)));
+        });
 
         $form.on('submit', handleSubmitForm);
         $mountPoint.append($form);
