@@ -132,6 +132,11 @@ class TemplateManager {
         }
         return false;
     }
+
+    exportToJsonString(indexes: number[]): string {
+        const result = this.templates.filter((_, i) => indexes.includes(i));
+        return JSON.stringify(result, null, 2);
+    }
 }
 
 

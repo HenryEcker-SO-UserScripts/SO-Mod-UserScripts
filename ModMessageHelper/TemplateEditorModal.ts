@@ -4,6 +4,7 @@ import templateManager from './TemplateManager';
 export const modalId = 'usr-mmt-editor-modal';
 
 export function $messageTemplateEditorModal(): JQuery {
+    // IDs
     const saveButtonId = `${modalId}-btn-save`;
     const newTemplateButtonId = `${modalId}-btn-new`;
     const importTemplateButtonId = `${modalId}-btn-import`;
@@ -12,9 +13,27 @@ export function $messageTemplateEditorModal(): JQuery {
     const deleteTemplateButtonId = `${modalId}-btn-delete`;
     const templateListContainerId = `${modalId}-template-list-container`;
 
+    const rightGridColContainer = `${modalId}-right-grid`;
+
     const templateFormId = `${modalId}-template-form`;
     const templateFormTemplateNameInputFieldId = `${modalId}-template-form-name-field`;
     const templateFormTemplateBodyInputFieldId = `${modalId}-template-form-body-field`;
+
+    const exportOutputTextarea = `${modalId}-template-export-output-text`;
+
+    function listMemberId(n: number) {
+        return `${modalId}-export-list-member-${n}`;
+    }
+
+    // CSS Classes
+    const exportSelectedCheckbox = `${modalId}-export-checkbox-selector`;
+    const activeListStyleClass = 'fc-theme-secondary';
+
+    // Labels
+    const exportButtonLabel = 'Export Template(s)';
+
+    // Properties
+    const exportButtonDataProp = 'data-export-mode';
 
     const $aside = $(
         `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="false"
@@ -42,8 +61,8 @@ export function $messageTemplateEditorModal(): JQuery {
                             <button class="s-btn flex--item s-btn__filled" type="button" id="${saveButtonId}">
                                 Save Template
                             </button>
-                            <button class="s-btn flex--item s-btn__filled" type="button" id="${exportTemplatesButtonId}">
-                                Export Template(s)
+                            <button class="s-btn flex--item s-btn__filled" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="true">
+                                ${exportButtonLabel}
                             </button>
                             <button class="s-btn flex--item s-btn__filled s-btn__danger" type="button"
                                     id="${deleteTemplateButtonId}" disabled>
@@ -52,29 +71,11 @@ export function $messageTemplateEditorModal(): JQuery {
                         </div>
                     </div>
                     <div class="d-grid pt8 g12" style="grid-template-columns: minmax(225px, max-content) minmax(550px, 1fr);">
-                        <div class="grid--item px8" style="max-height: 65vh; overflow-y:scroll;">
+                        <div class="grid--item px6" style="max-height: 65vh; overflow-y:scroll;">
                             <h2 class="fs-subheading fw-bold">Available Templates</h2>
                             <div id="${templateListContainerId}" class="ws-pre-wrap ff-mono fs-body1"></div>
                         </div>
-                        <div class="grid--item" style="max-height: 65vh; overflow-y:scroll;">
-                            <form id="${templateFormId}" class="d-flex fd-column g12 mb8 h100 overflow-y-auto">
-                                <div class="d-flex gy4 fd-column">
-                                    <label class="s-label" for="${templateFormTemplateNameInputFieldId}">Template Name</label>
-                                    <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
-                                           placeholder="Be descriptive as this is what appears in user history."
-                                           name="TemplateName">
-                                </div>
-                                <div class="d-flex fd-column gy4">
-                                    <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">
-                                        Template Body
-                                    </label>
-                                    <textarea id="${templateFormTemplateBodyInputFieldId}"
-                                              class="flex--item s-textarea hmn3"
-                                              style="resize: vertical; field-sizing: content;"
-                                              placeholder="This will appear as the body of the template. Do not include header, suspension, or footer information. This happens automatically."></textarea>
-                                </div>
-                            </form>
-                        </div>
+                        <div class="grid--item px6" style="max-height: 65vh; overflow-y:scroll;" id="${rightGridColContainer}"></div>
                     </div>
                     <div class="d-flex gx8 s-modal--footer ai-center"></div>
                     <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close"
@@ -87,9 +88,6 @@ export function $messageTemplateEditorModal(): JQuery {
             </div>
         </aside>`
     );
-
-
-    const activeListStyleClass = 'fc-theme-secondary';
 
     const SelectedTemplateManager = {
         selected: -1,
@@ -135,7 +133,7 @@ export function $messageTemplateEditorModal(): JQuery {
                 .then(success => {
                     if (success) {
                         // Update Templates if import is successful
-                        populateTemplateList();
+                        buildTemplateSelectorList();
                     }
                 })
                 .finally(() => {
@@ -149,7 +147,7 @@ export function $messageTemplateEditorModal(): JQuery {
         });
     }
 
-    function populateTemplateList() {
+    function buildTemplateSelectorList() {
         const $mountPoint = $(`#${templateListContainerId}`, $aside);
         $mountPoint.empty();
         const $templateList = $('<ol>');
@@ -178,40 +176,163 @@ export function $messageTemplateEditorModal(): JQuery {
                 // Update active number to be target index
                 SelectedTemplateManager.active = currentTargetIndex;
                 // Repopulate List
-                populateTemplateList();
+                buildTemplateSelectorList();
             });
             $templateList.append($elem);
         }
         $mountPoint.append($templateList);
     }
 
+    function buildExportTemplateList() {
+        const $mountPoint = $(`#${templateListContainerId}`, $aside);
+        $mountPoint.empty();
+        const $templateList = $('<div>');
+        for (const [index, userDefinedTemplate] of templateManager.customMessageTemplates.entries()) {
+            const $elem = $('<div class="s-check-control mb4"></div>');
+            const $label = $(`<label class="s-label" for="${listMemberId(index)}">${userDefinedTemplate.TemplateName}</label>`);
+            const $input = $(`<input class="s-checkbox" type="checkbox" id="${listMemberId(index)}" data-template-index="${index}"/>`);
+            $input.on('change', (ev: JQuery.ChangeEvent) => {
+                if (ev.target.checked) {
+                    $(ev.target).addClass(exportSelectedCheckbox);
+                } else {
+                    $(ev.target).removeClass(exportSelectedCheckbox);
+                }
+                populateExportTemplateTextarea();
+            });
+            $elem.append($label).append($input);
+            $templateList.append($elem);
+        }
+        $mountPoint.append($templateList);
+
+        function buttonHandler(checked: boolean) {
+            function evHandler(ev: JQuery.ClickEvent) {
+                ev.preventDefault();
+                $('input.s-checkbox', $templateList).prop('checked', checked).trigger('change');
+            }
+
+            return evHandler;
+        }
+
+        const $selectAllBtn = $('<button class="s-btn s-btn__outlined">Select All </button>');
+        $selectAllBtn.on('click', buttonHandler(true));
+
+        const $deselectAllBtn = $('<button class="s-btn s-btn__danger s-btn__outlined">Clear All </button>');
+        $deselectAllBtn.on('click', buttonHandler(false));
+
+        $mountPoint.append(
+            $('<div class="mt12 d-flex fd-row fw-nowrap g6 jc-space-between"></div>')
+                .append($selectAllBtn)
+                .append($deselectAllBtn)
+        );
+    }
 
     function populateFormFromTemplate(template: UserDefinedMessageTemplate) {
         $(`#${templateFormTemplateNameInputFieldId}`, $aside).val(template.TemplateName);
         $(`#${templateFormTemplateBodyInputFieldId}`, $aside).val(template.TemplateBody);
     }
 
-    function handleSubmitForm(ev: JQuery.SubmitEvent) {
-        ev.preventDefault();
+    function buildForm() {
+        const $mountPoint = $(`#${rightGridColContainer}`, $aside);
+        $mountPoint.empty();
+        /*
+        TODO:
+         Add AnalogousSuspendReason Select ComboBox
+         Add StackOverflowOnly Checkbox
+         Add DefaultSuspendDays Number entry field
+         Add IncludeSuspensionFooter Checkbox
+         */
+        const $form = $(
+            `<form id="${templateFormId}" class="d-flex fd-column g12 mb8 h100 overflow-y-auto">
+                <div class="d-flex gy4 fd-column">
+                    <label class="s-label" for="${templateFormTemplateNameInputFieldId}">Template Name</label>
+                    <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
+                           placeholder="Be descriptive as this is what appears in user history."
+                           name="TemplateName">
+                </div>
+                <div class="d-flex fd-column gy4">
+                    <label class="flex--item s-label" for="${templateFormTemplateBodyInputFieldId}">
+                        Template Body
+                    </label>
+                    <textarea id="${templateFormTemplateBodyInputFieldId}"
+                              class="flex--item s-textarea hmn3 wmx5"
+                              style="resize: vertical;"
+                              placeholder="This will appear as the body of the template. Do not include header, suspension, or footer information. This happens automatically."></textarea>
+                </div>
+            </form>`
+        );
+
+
+        function handleSubmitForm(ev: JQuery.SubmitEvent) {
+            ev.preventDefault();
+        }
+
+        $form.on('submit', handleSubmitForm);
+        $mountPoint.append($form);
     }
 
-    $(`#${templateFormId}`, $aside).on('submit', handleSubmitForm);
+    function populateExportTemplateTextarea() {
+        const templateIndexes: number[] = $(`.${exportSelectedCheckbox}`).map((_, n) => $(n).data('template-index')).toArray();
+        const jsonString = templateManager.exportToJsonString(templateIndexes);
+        $(`#${exportOutputTextarea}`, $aside).val(jsonString);
+    }
+
+    function buildExportTextarea() {
+        const $mountPoint = $(`#${rightGridColContainer}`, $aside);
+        $mountPoint.empty();
+        $mountPoint.append($(
+            `<div class="wmx5">
+                <h2 class="fs-subheading">Copy this text to share/save the export. Paste this into the input field next to the 'Import Template' button to import.</h2>
+                <textarea id="${exportOutputTextarea}" class="flex--item s-textarea hmn3 hmx5" style="resize: vertical;">[]</textarea>
+            </div>`
+        ));
+    }
 
     buildImportTemplateEntryAndBtn();
 
-
-    populateTemplateList();
+    buildTemplateSelectorList();
     // After populating Template List for the first time select the first
     SelectedTemplateManager.reset();
 
+    buildForm();
+
+
+    const $newTemplateButton = $(`#${newTemplateButtonId}`, $aside);
+    const $saveButton = $(`#${saveButtonId}`, $aside);
+    const $exportButton = $(`#${exportTemplatesButtonId}`, $aside);
+    const $deleteTemplateButton = $(`#${deleteTemplateButtonId}`, $aside);
+
+    // Wire Up Export Button
+
+    $exportButton.on('click', (ev: JQuery.ClickEvent) => {
+        ev.preventDefault();
+        const $target = $(ev.target);
+        const toExportMode = $target.attr(exportButtonDataProp) === 'true';
+        if (toExportMode) {
+            buildExportTemplateList();
+            buildExportTextarea();
+            $target.text('Leave Export');
+        } else {
+            buildTemplateSelectorList();
+            buildForm();
+            $target.text(exportButtonLabel);
+        }
+        $newTemplateButton.prop('disabled', toExportMode);
+        $saveButton.prop('disabled', toExportMode);
+        $deleteTemplateButton.prop('disabled', toExportMode);
+
+        $target.attr(exportButtonDataProp, (!toExportMode).toString());
+    });
+
     // Wire up delete button
-    $(`#${deleteTemplateButtonId}`, $aside).on('click', async (ev: JQuery.ClickEvent) => {
+    $deleteTemplateButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
         await templateManager.delete(SelectedTemplateManager.active);
         // Repopulate List
-        populateTemplateList();
+        buildTemplateSelectorList();
         // Previous no longer exists
         SelectedTemplateManager.reset();
     });
+
+
     return $aside;
 }
