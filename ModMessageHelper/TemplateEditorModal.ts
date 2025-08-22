@@ -318,12 +318,21 @@ export function $messageTemplateEditorModal(): JQuery {
 
     buildImportTemplateEntryAndBtn();
 
-    buildTemplateSelectorList();
-    buildForm();
+    function buildTemplateExporter() {
+        buildExportTemplateList();
+        buildExportTextarea();
+    }
 
-    // After populating Template List and Building the Form for the first time select the first
-    SelectedTemplateManager.reset();
 
+    function buildTemplateEditor() {
+        buildTemplateSelectorList();
+        buildForm();
+
+        // After populating Template List and Building the Form for the first time select the first
+        SelectedTemplateManager.reset();
+    }
+
+    buildTemplateEditor();
 
 
     const $newTemplateButton = $(`#${newTemplateButtonId}`, $aside);
@@ -338,12 +347,10 @@ export function $messageTemplateEditorModal(): JQuery {
         const $target = $(ev.target);
         const toExportMode = $target.attr(exportButtonDataProp) === 'true';
         if (toExportMode) {
-            buildExportTemplateList();
-            buildExportTextarea();
+            buildTemplateExporter();
             $target.text('Leave Export');
         } else {
-            buildTemplateSelectorList();
-            buildForm();
+            buildTemplateEditor();
             $target.text(exportButtonLabel);
         }
         $newTemplateButton.prop('disabled', toExportMode);
