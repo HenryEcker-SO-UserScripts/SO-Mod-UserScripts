@@ -83,6 +83,10 @@ class TemplateManager {
         });
     }
 
+    private getIndexFromName(name: string) {
+        return this.templates.findIndex(t => t.TemplateName === name);
+    }
+
     move(fromIndex: number, toIndex: number) {
         arrayMoveMutable(this.templates, fromIndex, toIndex);
         this.save();
@@ -92,16 +96,18 @@ class TemplateManager {
         if (!validateTemplate(maybeTemplate, 'Unable to parse template. See console for errors.')) {
             return false;
         }
-        if (index === undefined) {
-            if (this.hasName(maybeTemplate.TemplateName)) {
-                StackExchange.helpers.showToast('A template with this name already exists! Template names must be unique.', {
-                    type: 'danger',
-                    transient: true,
-                    transientTimeout: 4e3
-                });
-                return false;
-            }
-        } else if (!this.has(index)) {
+        const isNewWithDuplicateName = index === undefined && this.hasName(maybeTemplate.TemplateName);
+        const isUpdateMakesDuplicateName = index !== undefined && index !== this.getIndexFromName(maybeTemplate.TemplateName);
+        if (isNewWithDuplicateName || isUpdateMakesDuplicateName) {
+            StackExchange.helpers.showToast('A template with this name already exists! Template names must be unique.', {
+                type: 'danger',
+                transient: true,
+                transientTimeout: 4e3
+            });
+            return false;
+        }
+        // Update on non-existent index
+        if (index !== undefined && !this.has(index)) {
             StackExchange.helpers.showToast('This template index does not exist so it cannot be updated!', {
                 type: 'danger',
                 transient: true,
@@ -122,7 +128,7 @@ class TemplateManager {
     }
 
     private async insertOrUpdate(newTemplate: UserDefinedMessageTemplate, index: number | undefined, shouldPromptDuplicates: boolean, shouldSave: boolean): Promise<boolean> {
-        const existingTemplateIndex = index ?? this.templates.findIndex(t => t.TemplateName === newTemplate.TemplateName);
+        const existingTemplateIndex = index ?? this.getIndexFromName(newTemplate.TemplateName);
         // If is a new template
         if (existingTemplateIndex === -1) {
             this.templates.push(newTemplate);
