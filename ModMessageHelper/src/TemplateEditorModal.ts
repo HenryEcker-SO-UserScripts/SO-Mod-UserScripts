@@ -35,6 +35,7 @@ export function $messageTemplateEditorModal(): JQuery {
 
     // CSS Classes
     const exportSelectedCheckbox = `${modalId}-export-checkbox-selector`;
+    const formValidationMessage = `${modalId}-form-validation-message`;
     const activeListStyleClass = 'fc-theme-secondary';
 
     // Labels
@@ -188,6 +189,22 @@ export function $messageTemplateEditorModal(): JQuery {
         // CSS Class Selectors
         get $allSelectedExportCheckboxes(): JQuery<HTMLInputElement> {
             return $(`.${exportSelectedCheckbox}`);
+        },
+        get $allValidationMessages(): JQuery {
+            return $(`.${formValidationMessage}`);
+        },
+        setNearestValidationMessage($input: JQuery<HTMLInputElement>, validationClass: 'has-warning' | 'has-error' | 'has-success', validationText: string) {
+            $input.siblings(`.${formValidationMessage}`).removeClass('d-none').text(validationText);
+            $input.parent().addClass(validationClass);
+        },
+        clearValidationMessages() {
+            this.$allValidationMessages.addClass('d-none');
+
+            this.$allValidationMessages
+                .parent()
+                .removeClass('has-warning')
+                .removeClass('has-error')
+                .removeClass('has-success');
         }
     };
 
@@ -355,6 +372,7 @@ export function $messageTemplateEditorModal(): JQuery {
             `<form id="${templateFormId}" class="d-flex fd-column g12 my8">
                 <div class="d-flex gy4 fd-column">
                     <label class="s-label" for="${templateFormTemplateNameInputFieldId}">Template Name</label>
+                    <p class="d-none flex--item s-input-message mb0 ${formValidationMessage}"></p>
                     <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
                            placeholder="Be descriptive as this is what appears in user history."
                            name="TemplateName">
@@ -395,6 +413,7 @@ export function $messageTemplateEditorModal(): JQuery {
                             </div>
                         </div>
                     </div>
+                    <p class="d-none flex--item s-input-message mb0 ${formValidationMessage}"></p>
                     <textarea id="${templateFormTemplateBodyInputFieldId}"
                               name="TemplateBody"
                               class="flex--item s-textarea hmn3 wmx5"
@@ -473,6 +492,9 @@ export function $messageTemplateEditorModal(): JQuery {
         $form.on('input', () => {
             // Any change to the form should make it dirty
             ElementManager.setTemplateEditorFormIsDirty('true');
+            // Hide any validation messages
+            ElementManager.$allValidationMessages.addClass('d-none');
+            ElementManager.clearValidationMessages();
         });
         $mountPoint.append($form);
 
@@ -584,17 +606,28 @@ export function $messageTemplateEditorModal(): JQuery {
             templateFromFormData['IncludeSuspensionFooter'] = shouldIncludeSuspensionFooter;
         }
 
-        // TODO: Do validations about field requirements and provide feedback
+
+        let isValid = true;
 
         if (templateFromFormData.TemplateName.trim().length === 0) {
-            // TODO: Make this have UI feedback
-            console.error('Must have a template name');
-            return false;
+            ElementManager.setNearestValidationMessage(
+                ElementManager.$templateFormTemplateNameInputField,
+                'has-error',
+                'Template name must not be blank!'
+            );
+            isValid = false;
         }
 
         if (templateFromFormData.TemplateBody.trim().length === 0) {
-            // TODO: Make this have UI feedback
-            console.error('Must have template body');
+            ElementManager.setNearestValidationMessage(
+                ElementManager.$templateFormTemplateBodyInputField,
+                'has-error',
+                'Template body must not be blank!'
+            );
+            isValid = false;
+        }
+
+        if (!isValid) {
             return false;
         }
 
