@@ -2,7 +2,7 @@ import ui from './src/ModMessageForm';
 import type {AjaxSuccess, TemplateRequestResponse} from './src/ModMessageTypes';
 import {$messageTemplateEditorModal, modalId} from './src/TemplateEditorModal';
 import templateManager from './src/TemplateManager';
-import {parentUrl, parentName} from './src/ModMessageConstants';
+import {parentName, parentUrl} from './src/ModMessageConstants';
 
 
 function attachTemplateNameInputField() {
@@ -182,16 +182,14 @@ function setupProxyForNonDefaults() {
 function addModMessageTemplateEditorModal() {
     const modal = document.getElementById(modalId);
     if (!modal) {
-
         $('body').append($messageTemplateEditorModal());
-
-        setTimeout(() => {
-            const modal = document.getElementById(modalId);
-            Stacks.showModal(modal);
-        }, 0);
-    } else {
-        Stacks.showModal(modal);
     }
+
+    setTimeout(() => {
+        const modal = document.getElementById(modalId);
+        Stacks.showModal(modal);
+        $(document.body).css('overflow', 'hidden');
+    }, 0);
 }
 
 attachTemplateNameInputField();
