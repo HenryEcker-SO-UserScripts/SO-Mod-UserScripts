@@ -1,123 +1,88 @@
-class ModMessageForm {
-    readonly blankTemplateOptionValue = '0';
-    readonly SystemReasonIdList: string[];
-    private readonly SystemReasonIdSet: Set<string>;
-
-    constructor() {
-        this.SystemReasonIdList = this.$templateSelector.find('option').map((_, n) => $(n).val()).toArray().slice(1);
-        this.SystemReasonIdSet = new Set(this.SystemReasonIdList);
-    }
-
+export default {
+    BlankTemplateOptionValue: '0',
     get $form(): JQuery<HTMLFormElement> {
         return $('#js-msg-form');
-    }
-
+    },
     get $messageContents(): JQuery<HTMLDivElement> {
         return $('#js-message-contents');
-    }
-
+    },
     get $aboutUserId(): JQuery<HTMLInputElement> {
         return $('.js-about-user-id[name="userId"]');
-    }
-
+    },
     get aboutUserId(): number {
         return Number(this.$aboutUserId.val());
-    }
-
+    },
     get $templateSelector(): JQuery<HTMLSelectElement> {
         return $('#select-template-menu');
-    }
-
+    },
+    get $systemReasonOptions(): JQuery {
+        // Get all options excluding value blankTemplateOptionValue which is "Please select a template...")
+        return this.$templateSelector.find(`option[value!="${this.BlankTemplateOptionValue}"]:not([data-is-custom])`);
+    },
     get reasonId(): string {
         return <string>this.$templateSelector.val();
-    }
-
+    },
     set reasonId(newOptionValue: string) {
         this.$templateSelector.val(newOptionValue);
-    }
-
+    },
     get $suspendReasonInput(): JQuery<HTMLInputElement> {
         return $('#usr-js-suspend-reason');
-    }
-
+    },
     get suspendReason(): string {
         return <string>this.$suspendReasonInput.val();
-    }
-
+    },
     set suspendReason(newSuspendReason: string) {
         this.$suspendReasonInput.val(newSuspendReason);
-    }
-
+    },
     get displayedSelectedTemplate(): string {
         return this.$templateSelector.find('option:selected').text();
-    }
-
+    },
     get $customTemplateNameInput(): JQuery<HTMLInputElement> {
         // This html id is defined in attachTemplateNameInputField
         return $('#usr-template-name-input');
-    }
-
+    },
     get customTemplateName(): string {
         return <string>this.$customTemplateNameInput.val();
-    }
-
+    },
     set customTemplateName(newTemplateName: string) {
         this.$customTemplateNameInput.val(newTemplateName);
-    }
-
+    },
     get $suspensionOptions(): JQuery<HTMLFieldSetElement> {
         return $('#suspension-options');
-    }
-
+    },
     get $suspensionDays(): JQuery<HTMLInputElement> {
         return $('.js-suspension-days[name="suspendDays"]');
-    }
-
+    },
     get suspendDays(): number {
         return Number(this.$suspensionDays.val());
-    }
-
+    },
     get $editor(): JQuery<HTMLTextAreaElement> {
         return $('#wmd-input');
-    }
-
+    },
     get editorText(): string {
         return <string>this.$editor.val();
-    }
-
+    },
     set editorText(newText: string) {
         this.$editor.val(newText);
-    }
-
+    },
     refreshEditor() {
         // Refresh previews
         // @ts-expect-error MarkdownEditor is not in StackExchange Type
         StackExchange.MarkdownEditor.refreshAllPreviews();
-    }
-
+    },
     get $autoSuspendMessageField(): JQuery<HTMLInputElement> {
         return $('#js-auto-suspend-message');
-    }
-
+    },
     get autoSuspendMessageTemplateText(): string {
         return <string>this.$autoSuspendMessageField.val();
-    }
-
+    },
     set autoSuspendMessageTemplateText(newValue: string) {
         this.$autoSuspendMessageField.val(newValue);
-    }
-
-    isSystemTemplate(reasonId?: string): boolean {
-        return this.SystemReasonIdSet.has(reasonId ?? this.reasonId);
-    }
-
+    },
     hasTemplateSelected(): boolean {
-        return this.reasonId !== this.blankTemplateOptionValue;
-    }
-
+        return this.reasonId !== this.BlankTemplateOptionValue;
+    },
     hasCustomTemplateName(): boolean {
         return this.displayedSelectedTemplate !== this.customTemplateName;
     }
-}
-
-export default new ModMessageForm();
+};

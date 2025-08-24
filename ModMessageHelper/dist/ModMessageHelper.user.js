@@ -45,97 +45,90 @@
     const GearSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconGear" width="18" height="18" viewBox="0 0 18 18"><path d="m14.53 6.3.28.67C17 7.77 17 7.86 17 8.12V9.8c0 .26 0 .35-2.18 1.22l-.27.66c.98 2.11.91 2.18.73 2.37l-1.3 1.29h-.15q-.3 0-2.14-.8l-.66.27C10.23 17 10.13 17 9.88 17H8.2c-.26 0-.35 0-1.21-2.18l-.67-.27c-1.81.84-2.03.84-2.1.84h-.14l-.12-.1-1.19-1.2c-.18-.18-.24-.25.7-2.4l-.28-.65C1 10.24 1 10.14 1 9.88V8.2c0-.27 0-.35 2.18-1.21l.27-.66c-.98-2.12-.91-2.19-.72-2.39l1.28-1.28h.16q.3.01 2.14.8l.66-.27C7.77 1 7.87 1 8.12 1H9.8c.26 0 .34 0 1.2 2.18l.67.28c1.82-.84 2.03-.84 2.1-.84h.14l.12.1 1.2 1.19c.18.18.24.25-.7 2.4m-8.4 3.9a3.1 3.1 0 1 0 5.73-2.4 3.1 3.1 0 0 0-5.72 2.4"></path></svg>';
     const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
     const parentName = StackExchange.options?.site?.name;
-    class ModMessageForm {
-      blankTemplateOptionValue = "0";
-      SystemReasonIdList;
-      SystemReasonIdSet;
-      constructor() {
-        this.SystemReasonIdList = this.$templateSelector.find("option").map((_, n) => $(n).val()).toArray().slice(1);
-        this.SystemReasonIdSet = new Set(this.SystemReasonIdList);
-      }
+    const ui = {
+      BlankTemplateOptionValue: "0",
       get $form() {
         return $("#js-msg-form");
-      }
+      },
       get $messageContents() {
         return $("#js-message-contents");
-      }
+      },
       get $aboutUserId() {
         return $('.js-about-user-id[name="userId"]');
-      }
+      },
       get aboutUserId() {
         return Number(this.$aboutUserId.val());
-      }
+      },
       get $templateSelector() {
         return $("#select-template-menu");
-      }
+      },
+      get $systemReasonOptions() {
+        return this.$templateSelector.find(`option[value!="${this.BlankTemplateOptionValue}"]:not([data-is-custom])`);
+      },
       get reasonId() {
         return this.$templateSelector.val();
-      }
+      },
       set reasonId(newOptionValue) {
         this.$templateSelector.val(newOptionValue);
-      }
+      },
       get $suspendReasonInput() {
         return $("#usr-js-suspend-reason");
-      }
+      },
       get suspendReason() {
         return this.$suspendReasonInput.val();
-      }
+      },
       set suspendReason(newSuspendReason) {
         this.$suspendReasonInput.val(newSuspendReason);
-      }
+      },
       get displayedSelectedTemplate() {
         return this.$templateSelector.find("option:selected").text();
-      }
+      },
       get $customTemplateNameInput() {
         return $("#usr-template-name-input");
-      }
+      },
       get customTemplateName() {
         return this.$customTemplateNameInput.val();
-      }
+      },
       set customTemplateName(newTemplateName) {
         this.$customTemplateNameInput.val(newTemplateName);
-      }
+      },
       get $suspensionOptions() {
         return $("#suspension-options");
-      }
+      },
       get $suspensionDays() {
         return $('.js-suspension-days[name="suspendDays"]');
-      }
+      },
       get suspendDays() {
         return Number(this.$suspensionDays.val());
-      }
+      },
       get $editor() {
         return $("#wmd-input");
-      }
+      },
       get editorText() {
         return this.$editor.val();
-      }
+      },
       set editorText(newText) {
         this.$editor.val(newText);
-      }
+      },
       refreshEditor() {
         StackExchange.MarkdownEditor.refreshAllPreviews();
-      }
+      },
       get $autoSuspendMessageField() {
         return $("#js-auto-suspend-message");
-      }
+      },
       get autoSuspendMessageTemplateText() {
         return this.$autoSuspendMessageField.val();
-      }
+      },
       set autoSuspendMessageTemplateText(newValue) {
         this.$autoSuspendMessageField.val(newValue);
-      }
-      isSystemTemplate(reasonId) {
-        return this.SystemReasonIdSet.has(reasonId ?? this.reasonId);
-      }
+      },
       hasTemplateSelected() {
-        return this.reasonId !== this.blankTemplateOptionValue;
-      }
+        return this.reasonId !== this.BlankTemplateOptionValue;
+      },
       hasCustomTemplateName() {
         return this.displayedSelectedTemplate !== this.customTemplateName;
       }
-    }
-    const ui = new ModMessageForm();
+    };
     function arrayMoveMutable(array, fromIndex, toIndex) {
       const startIndex = fromIndex < 0 ? array.length + fromIndex : fromIndex;
       if (startIndex >= 0 && startIndex < array.length) {
@@ -188,13 +181,15 @@
       };
       return fn;
     };
+    const SystemReasonIdList = ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray();
+    const SystemReasonIdSet = new Set(SystemReasonIdList);
     function $nonEmptyString(input) {
       return $string(input) && input.trim().length > 0;
     }
     const templateValidator = $object({
       TemplateName: $nonEmptyString,
       TemplateBody: $nonEmptyString,
-      AnalogousSystemReasonId: $enum(ui.SystemReasonIdList),
+      AnalogousSystemReasonId: $enum(SystemReasonIdList),
       DefaultSuspendDays: $opt($number),
       StackOverflowOnly: $opt($boolean),
       IncludeSuspensionFooter: $opt($boolean),
@@ -229,20 +224,26 @@
     class TemplateManager {
       templates;
       GM_Store_Key = "ModMessageTemplates";
-      hasPendingChanges;
+      _hasPendingChanges;
       constructor() {
         this.templates = GM_getValue(this.GM_Store_Key, []);
-        this.hasPendingChanges = false;
+        this._hasPendingChanges = false;
+      }
+      isSystemTemplate(reasonId) {
+        return SystemReasonIdSet.has(reasonId);
       }
       save() {
         GM_setValue(this.GM_Store_Key, this.templates);
-        this.hasPendingChanges = true;
+        this._hasPendingChanges = true;
       }
       get count() {
         return this.templates.length;
       }
       get customMessageTemplates() {
         return this.templates;
+      }
+      hasPendingChanges() {
+        return this._hasPendingChanges;
       }
       lookupByIndex(index) {
         return this.templates[index];
@@ -260,7 +261,7 @@
         this.save();
       }
       testAgainstExistingSystemReasonIds(templateName) {
-        if (ui.isSystemTemplate(templateName)) {
+        if (this.isSystemTemplate(templateName)) {
           showStandardDangerToast("Template names cannot match any existing system reason ids");
           return false;
         }
@@ -817,7 +818,7 @@
           ElementManager.clearValidationMessages();
         });
         $mountPoint.append($form);
-        ElementManager.$templateFormAnalogousSystemReasonSelect.append(...ui.SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
+        ElementManager.$templateFormAnalogousSystemReasonSelect.append(...SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
         ElementManager.$templateFormDefaultSuspendDays.on("input", (ev) => {
           const $target = $(ev.target);
           const value = Number($target.val());
@@ -965,7 +966,7 @@
         if (!await dirtyNavigationConfirmModal()) {
           return;
         }
-        if (templateManager.hasPendingChanges) {
+        if (templateManager.hasPendingChanges()) {
           const reloadNow = await showStandardConfirmModal({
             title: "Message options changed",
             bodyHtml: "<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking 'Cancel' will still close the modal, but the page will not reload.</sub></div>",
@@ -980,7 +981,7 @@
         Stacks.hideModal(document.getElementById(modalId));
       });
       $aside.on("s-modal:hide", (ev) => {
-        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges) {
+        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges()) {
           ev.preventDefault();
         }
       });
@@ -1014,7 +1015,7 @@
       ui.$form.append('<input type="hidden" name="suspendReason" id="usr-js-suspend-reason"/>');
     }
     function createReasonOption(newOptionValue, newOptionText) {
-      return $(`<option value="${newOptionValue}">${newOptionValue}</option>`);
+      return $(`<option value="${newOptionValue}" data-is-custom="true">${newOptionValue}</option>`);
     }
     function addReasonsToSelect() {
       const isStackOverflow = parentUrl === "https://stackoverflow.com";
@@ -1028,7 +1029,7 @@
       if (reasonsToAdd.length === 0) {
         return;
       }
-      ui.$templateSelector.find(`option[value!="${ui.blankTemplateOptionValue}"]`).wrapAll('<optgroup label="Stock Templates"></optgroup>');
+      ui.$systemReasonOptions.wrapAll('<optgroup label="Stock Templates"></optgroup>');
       ui.$templateSelector.append(
         $('<optgroup label="Custom Templates"></optgroup>').append(...reasonsToAdd.map((reasonId) => createReasonOption(reasonId)))
       );
@@ -1060,7 +1061,7 @@
             return;
           }
           const reasonId = url.searchParams.get("reasonId");
-          if (ui.isSystemTemplate(reasonId)) {
+          if (templateManager.isSystemTemplate(reasonId)) {
             ui.suspendReason = reasonId;
             settings.success = new Proxy(settings.success, {
               apply: (target, thisArg, args) => {

@@ -4,6 +4,11 @@ import {showStandardConfirmModal, showStandardDangerToast} from './StandardToast
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import ui from './ModMessageForm';
 
+
+export const SystemReasonIdList = ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray() as string[];
+const SystemReasonIdSet = new Set(SystemReasonIdList);
+
+
 function $nonEmptyString(input: unknown): input is string {
     return $string(input) && input.trim().length > 0;
 }
@@ -11,7 +16,7 @@ function $nonEmptyString(input: unknown): input is string {
 const templateValidator = $object({
     TemplateName: $nonEmptyString,
     TemplateBody: $nonEmptyString,
-    AnalogousSystemReasonId: $enum(ui.SystemReasonIdList),
+    AnalogousSystemReasonId: $enum(SystemReasonIdList),
     DefaultSuspendDays: $opt($number),
     StackOverflowOnly: $opt($boolean),
     IncludeSuspensionFooter: $opt($boolean),
@@ -56,6 +61,10 @@ class TemplateManager {
         this._hasPendingChanges = false;
     }
 
+    isSystemTemplate(reasonId: string): boolean {
+        return SystemReasonIdSet.has(reasonId);
+    }
+
     save() {
         // Update GM Store
         GM_setValue(this.GM_Store_Key, this.templates);
@@ -95,7 +104,7 @@ class TemplateManager {
     }
 
     private testAgainstExistingSystemReasonIds(templateName: string) {
-        if (ui.isSystemTemplate(templateName)) {
+        if (this.isSystemTemplate(templateName)) {
             showStandardDangerToast('Template names cannot match any existing system reason ids');
             return false;
         }

@@ -52,7 +52,7 @@ function attachSuspendReasonHiddenField() {
 }
 
 function createReasonOption(newOptionValue: string, newOptionText?: string): JQuery<HTMLOptionElement> {
-    return $(`<option value="${newOptionValue}">${newOptionText ?? newOptionValue}</option>`);
+    return $(`<option value="${newOptionValue}" data-is-custom="true">${newOptionText ?? newOptionValue}</option>`);
 }
 
 function addReasonsToSelect() {
@@ -74,8 +74,8 @@ function addReasonsToSelect() {
         return; // Don't make any changes if there are no custom templates
     }
 
-    // Move default templates into an optgroup (excluding value blankTemplateOptionValue which is "Please select a template..."
-    ui.$templateSelector.find(`option[value!="${ui.blankTemplateOptionValue}"]`).wrapAll('<optgroup label="Stock Templates"></optgroup>');
+    // Move default templates into an optgroup
+    ui.$systemReasonOptions.wrapAll('<optgroup label="Stock Templates"></optgroup>');
 
     // Create new optgroup with custom templates
     ui.$templateSelector.append(
@@ -123,7 +123,7 @@ function setupProxyForNonDefaults() {
             const reasonId = url.searchParams.get('reasonId');
 
             // If this is one of the system templates
-            if (ui.isSystemTemplate(reasonId)) {
+            if (templateManager.isSystemTemplate(reasonId)) {
 
                 // Set suspendReason to reasonId; this makes sure the correct suspend reason is chosen
                 // if starting with a stock template then later changing the template name text field

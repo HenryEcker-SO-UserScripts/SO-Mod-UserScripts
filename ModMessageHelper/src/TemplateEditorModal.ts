@@ -1,9 +1,8 @@
 import {showStandardConfirmModal} from './StandardToastAndModalHelpers';
 import {InfoSvgHtmlString} from './Icons';
 import {parentName, parentUrl} from './ModMessageConstants';
-import ui from './ModMessageForm';
 import {type BooleanString, type UserDefinedMessageTemplate} from './ModMessageTypes';
-import templateManager from './TemplateManager';
+import templateManager, {SystemReasonIdList} from './TemplateManager';
 
 export const modalId = 'usr-mmt-editor-modal';
 
@@ -505,7 +504,7 @@ export function $messageTemplateEditorModal(): JQuery {
 
         // Add Form Functionality after mounted
         ElementManager.$templateFormAnalogousSystemReasonSelect
-            .append(...ui.SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
+            .append(...SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
 
         ElementManager.$templateFormDefaultSuspendDays.on('input', (ev) => {
             const $target = $(ev.target);
