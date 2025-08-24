@@ -1,10 +1,8 @@
-import {showStandardConfirmModal} from './StandardToastAndModalHelpers';
 import {InfoSvgHtmlString} from './Icons';
-import {parentName, parentUrl} from './ModMessageConstants';
+import {modalId, parentName, parentUrl, SystemReasonIdList} from './ModMessageConstants';
 import {type BooleanString, type UserDefinedMessageTemplate} from './ModMessageTypes';
-import templateManager, {SystemReasonIdList} from './TemplateManager';
-
-export const modalId = 'usr-mmt-editor-modal';
+import {showStandardConfirmModal} from './StandardToastAndModalHelpers';
+import templateManager from './TemplateManager';
 
 export function $messageTemplateEditorModal(): JQuery {
     // IDs

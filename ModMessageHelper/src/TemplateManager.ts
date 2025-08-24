@@ -1,12 +1,8 @@
 import {arrayMoveMutable} from 'array-move';
 import {$boolean, $enum, $number, $object, $opt, $string} from 'lizod';
-import {showStandardConfirmModal, showStandardDangerToast} from './StandardToastAndModalHelpers';
+import {SystemReasonIdList, SystemReasonIdSet} from './ModMessageConstants';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
-import ui from './ModMessageForm';
-
-
-export const SystemReasonIdList = ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray() as string[];
-const SystemReasonIdSet = new Set(SystemReasonIdList);
+import {showStandardConfirmModal, showStandardDangerToast} from './StandardToastAndModalHelpers';
 
 
 function $nonEmptyString(input: unknown): input is string {

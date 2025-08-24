@@ -43,8 +43,6 @@
     }
     const InfoSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconInfoSm" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1a6 6 0 1 1 0 12A6 6 0 0 1 7 1m1 10V6H6v5zm0-6V3H6v2z"></path></svg>';
     const GearSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconGear" width="18" height="18" viewBox="0 0 18 18"><path d="m14.53 6.3.28.67C17 7.77 17 7.86 17 8.12V9.8c0 .26 0 .35-2.18 1.22l-.27.66c.98 2.11.91 2.18.73 2.37l-1.3 1.29h-.15q-.3 0-2.14-.8l-.66.27C10.23 17 10.13 17 9.88 17H8.2c-.26 0-.35 0-1.21-2.18l-.67-.27c-1.81.84-2.03.84-2.1.84h-.14l-.12-.1-1.19-1.2c-.18-.18-.24-.25.7-2.4l-.28-.65C1 10.24 1 10.14 1 9.88V8.2c0-.27 0-.35 2.18-1.21l.27-.66c-.98-2.12-.91-2.19-.72-2.39l1.28-1.28h.16q.3.01 2.14.8l.66-.27C7.77 1 7.87 1 8.12 1H9.8c.26 0 .34 0 1.2 2.18l.67.28c1.82-.84 2.03-.84 2.1-.84h.14l.12.1 1.2 1.19c.18.18.24.25-.7 2.4m-8.4 3.9a3.1 3.1 0 1 0 5.73-2.4 3.1 3.1 0 0 0-5.72 2.4"></path></svg>';
-    const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
-    const parentName = StackExchange.options?.site?.name;
     const ui = {
       BlankTemplateOptionValue: "0",
       get $form() {
@@ -129,6 +127,11 @@
         return this.displayedSelectedTemplate !== this.customTemplateName;
       }
     };
+    const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
+    const parentName = StackExchange.options?.site?.name;
+    const modalId = "usr-mmt-editor-modal";
+    const SystemReasonIdList = ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray();
+    const SystemReasonIdSet = new Set(SystemReasonIdList);
     function arrayMoveMutable(array, fromIndex, toIndex) {
       const startIndex = fromIndex < 0 ? array.length + fromIndex : fromIndex;
       if (startIndex >= 0 && startIndex < array.length) {
@@ -181,8 +184,6 @@
       };
       return fn;
     };
-    const SystemReasonIdList = ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray();
-    const SystemReasonIdSet = new Set(SystemReasonIdList);
     function $nonEmptyString(input) {
       return $string(input) && input.trim().length > 0;
     }
@@ -376,7 +377,6 @@
       }
     }
     const templateManager = new TemplateManager();
-    const modalId = "usr-mmt-editor-modal";
     function $messageTemplateEditorModal() {
       const saveButtonId = `${modalId}-btn-save`;
       const newTemplateButtonId = `${modalId}-btn-new`;

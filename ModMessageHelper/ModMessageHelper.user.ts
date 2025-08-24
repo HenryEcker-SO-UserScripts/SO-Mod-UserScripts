@@ -1,9 +1,9 @@
 import {showStandardDangerToast} from './src/StandardToastAndModalHelpers';
 import {GearSvgHtmlString} from './src/Icons';
-import {parentName, parentUrl} from './src/ModMessageConstants';
+import {modalId, parentName, parentUrl} from './src/ModMessageConstants';
 import ui from './src/ModMessageForm';
 import type {AjaxSuccess, TemplateRequestResponse} from './src/ModMessageTypes';
-import {$messageTemplateEditorModal, modalId} from './src/TemplateEditorModal';
+import {$messageTemplateEditorModal} from './src/TemplateEditorModal';
 import templateManager from './src/TemplateManager';
 
 
