@@ -4,7 +4,7 @@ import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import ui from './ModMessageForm';
 
 function $nonEmptyString(input: unknown): input is string {
-    return typeof input === 'string' && input.trim().length > 0;
+    return $string(input) && input.trim().length > 0;
 }
 
 const templateValidator = $object({
