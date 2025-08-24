@@ -94,6 +94,17 @@ class TemplateManager {
         arrayMoveMutable(this.templates, fromIndex, toIndex);
         this.save();
     }
+    private testAgainstExistingSystemReasonIds(templateName:string){
+        if (SystemReasonIdList.includes(templateName)) {
+            StackExchange.helpers.showToast('Template names cannot match any existing system reason ids', {
+                type: 'danger',
+                transient: true,
+                transientTimeout: 4e3
+            });
+            return false;
+        }
+        return true;
+    }
 
     private async insertNewTemplate(newTemplate: UserDefinedMessageTemplate, shouldSave: boolean): Promise<boolean> {
         if (this.hasName(newTemplate.TemplateName)) {
@@ -102,6 +113,9 @@ class TemplateManager {
                 transient: true,
                 transientTimeout: 4e3
             });
+            return false;
+        }
+        if (!this.testAgainstExistingSystemReasonIds(newTemplate.TemplateName)) {
             return false;
         }
 
@@ -120,6 +134,9 @@ class TemplateManager {
                 transient: true,
                 transientTimeout: 4e3
             });
+            return false;
+        }
+        if (!this.testAgainstExistingSystemReasonIds(existingTemplate.TemplateName)) {
             return false;
         }
         if (shouldPromptDuplicates) {
@@ -148,7 +165,6 @@ class TemplateManager {
 
         // Overwrite Template with new Template Values
         this.templates[index] = existingTemplate;
-
 
         if (shouldSave) {
             this.save();
