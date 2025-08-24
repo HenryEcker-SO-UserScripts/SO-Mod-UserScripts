@@ -705,9 +705,12 @@ export function $messageTemplateEditorModal(): JQuery {
         SelectedTemplateManager.active = 0;
         // Hide Modal
         Stacks.hideModal(document.getElementById(modalId));
+        return true;
+    });
+
+    $aside.on('s-modal:hidden', () => {
         // Allow background scrolling again
         $(document.body).css('overflow', 'unset');
-        return true;
     });
 
     return $aside;

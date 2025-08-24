@@ -180,7 +180,11 @@ function setupProxyForNonDefaults() {
 }
 
 function attachModMessageEditorModal(){
-    $('body').append($messageTemplateEditorModal());
+    const $modal = $messageTemplateEditorModal();
+    $('body').append($modal);
+    $modal.on('s-modal:shown', () => {
+        $(document.body).css('overflow', 'hidden');
+    });
 }
 
 function attachSettingsButton() {
@@ -189,7 +193,6 @@ function attachSettingsButton() {
         ev.preventDefault();
         const modal = document.getElementById(modalId);
         Stacks.showModal(modal);
-        $(document.body).css('overflow', 'hidden');
     });
     ui.$form.before($settingsButton);
 }

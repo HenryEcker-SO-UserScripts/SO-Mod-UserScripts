@@ -32,9 +32,11 @@
     const parentName = StackExchange.options?.site?.name;
     class ModMessageForm {
       blankTemplateOptionValue = "0";
-      systemTemplateReasonIds;
+      SystemReasonIdList;
+      SystemReasonIdSet;
       constructor() {
-        this.systemTemplateReasonIds = /* @__PURE__ */ new Set([...this.$templateSelector.find("option").map((_, n) => $(n).val())]);
+        this.SystemReasonIdList = this.$templateSelector.find("option").map((_, n) => $(n).val()).toArray().slice(1);
+        this.SystemReasonIdSet = new Set(this.SystemReasonIdList);
       }
       get $form() {
         return $("#js-msg-form");
@@ -109,7 +111,7 @@
         this.$autoSuspendMessageField.val(newValue);
       }
       isSystemTemplate(reasonId) {
-        return this.systemTemplateReasonIds.has(reasonId ?? this.reasonId);
+        return this.SystemReasonIdSet.has(reasonId ?? this.reasonId);
       }
       hasTemplateSelected() {
         return this.reasonId !== this.blankTemplateOptionValue;
@@ -119,7 +121,6 @@
       }
     }
     const ui = new ModMessageForm();
-    const SystemReasonIdList = ui.$templateSelector.find("option").map((_, n) => $(n).val()).toArray().slice(1);
     function arrayMoveMutable(array, fromIndex, toIndex) {
       const startIndex = fromIndex < 0 ? array.length + fromIndex : fromIndex;
       if (startIndex >= 0 && startIndex < array.length) {
@@ -178,7 +179,7 @@
     const templateValidator = $object({
       TemplateName: $nonEmptyString,
       TemplateBody: $nonEmptyString,
-      AnalogousSystemReasonId: $enum(SystemReasonIdList),
+      AnalogousSystemReasonId: $enum(ui.SystemReasonIdList),
       DefaultSuspendDays: $opt($number),
       StackOverflowOnly: $opt($boolean),
       IncludeSuspensionFooter: $opt($boolean),
@@ -252,7 +253,7 @@
         this.save();
       }
       testAgainstExistingSystemReasonIds(templateName) {
-        if (SystemReasonIdList.includes(templateName)) {
+        if (ui.isSystemTemplate(templateName)) {
           StackExchange.helpers.showToast("Template names cannot match any existing system reason ids", {
             type: "danger",
             transient: true,
@@ -823,7 +824,7 @@
           ElementManager.clearValidationMessages();
         });
         $mountPoint.append($form);
-        ElementManager.$templateFormAnalogousSystemReasonSelect.append(...SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
+        ElementManager.$templateFormAnalogousSystemReasonSelect.append(...ui.SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
         ElementManager.$templateFormDefaultSuspendDays.on("input", (ev) => {
           const $target = $(ev.target);
           const value = Number($target.val());
@@ -981,8 +982,10 @@
         }
         SelectedTemplateManager.active = 0;
         Stacks.hideModal(document.getElementById(modalId));
-        $(document.body).css("overflow", "unset");
         return true;
+      });
+      $aside.on("s-modal:hidden", () => {
+        $(document.body).css("overflow", "unset");
       });
       return $aside;
     }
@@ -1099,7 +1102,11 @@
       });
     }
     function attachModMessageEditorModal() {
-      $("body").append($messageTemplateEditorModal());
+      const $modal = $messageTemplateEditorModal();
+      $("body").append($modal);
+      $modal.on("s-modal:shown", () => {
+        $(document.body).css("overflow", "hidden");
+      });
     }
     function attachSettingsButton() {
       const $settingsButton = $(`<button type="button" class="s-btn s-btn__outlined s-btn__muted ws-nowrap mb6"><div class="d-flex fd-row fw-nowrap ai-center g4"><span>Message Template Editor</span> ${GearSvgHtmlString}</div></button>`);
@@ -1107,7 +1114,6 @@
         ev.preventDefault();
         const modal = document.getElementById(modalId);
         Stacks.showModal(modal);
-        $(document.body).css("overflow", "hidden");
       });
       ui.$form.before($settingsButton);
     }
