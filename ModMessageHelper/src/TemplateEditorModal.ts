@@ -258,7 +258,7 @@ export function $messageTemplateEditorModal(): JQuery {
         const $mountPoint = ElementManager.$templateListContainer;
         $mountPoint.empty();
         const $templateList = $('<ol>');
-        if(templateManager.count === 0){
+        if (templateManager.count === 0) {
             $mountPoint.append('<p>There are no existing templates available.<p></p>For an initial starting set of templates, return to GitHub to copy and paste the contents of templates.json into the Import Template input above.</p>');
         }
         for (const [index, userDefinedTemplate] of templateManager.customMessageTemplates.entries()) {
@@ -287,6 +287,10 @@ export function $messageTemplateEditorModal(): JQuery {
                 e.preventDefault();
             });
             $elem.on('drop', async (e: JQuery.DropEvent) => {
+                const $target = $(e.target);
+                const currentTargetIndex = $('li', $templateList).index($target);
+                const srcIndex = Number(e.originalEvent.dataTransfer.getData('text/plain'));
+
                 if (ElementManager.templateEditorFormIsDirty()) {
                     const shouldNavigate = await StackExchange.helpers.showConfirmModal({
                         title: 'Pending Changes',
@@ -298,10 +302,7 @@ export function $messageTemplateEditorModal(): JQuery {
                     }
                 }
 
-                const $target = $(e.target);
-                const currentTargetIndex = $('li', $templateList).index($target);
-                // Move from src to target
-                templateManager.move(Number(e.originalEvent.dataTransfer.getData('text/plain')), currentTargetIndex);
+                templateManager.move(srcIndex, currentTargetIndex);
                 // Update active number to be target index
                 SelectedTemplateManager.active = currentTargetIndex;
                 // Repopulate List
