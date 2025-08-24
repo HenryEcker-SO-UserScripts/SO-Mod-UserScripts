@@ -700,7 +700,7 @@ export function $messageTemplateEditorModal(): JQuery {
             }
         }
         // Clear out selection to clear away dirty form
-        SelectedTemplateManager.active = -1;
+        SelectedTemplateManager.active = 0;
         // Hide Modal
         Stacks.hideModal(document.getElementById(modalId));
         // Allow background scrolling again
