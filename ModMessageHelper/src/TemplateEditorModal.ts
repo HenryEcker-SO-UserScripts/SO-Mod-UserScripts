@@ -56,25 +56,26 @@ export function $messageTemplateEditorModal(): JQuery {
                     Mod Message Template Editor
                 </h1>
                 <div class="s-modal--body" style="margin-bottom: 0;">
-        
-                    <div class="d-flex fd-row g12 fw-nowrap ai-center jc-space-between">
-                        <div class="d-flex fd-row fw-nowrap g6 ai-center jc-start fl-equal">
-                            <input id="${importTemplateInputField}" class="flex--item s-input wmx3"/>
-                            <button class="flex--item s-btn s-btn__outlined s-btn__muted ws-nowrap" type="button"
-                                    id="${importTemplateButtonId}" disabled>
-                                Import Template
-                            </button>
-                        </div>
-                        <div class="d-flex fd-row fw-nowrap g12 ai-center jc-end fl-equal">
-                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${newTemplateButtonId}">
+                    <div style="display:grid;grid-template-columns:repeat(2, max-content) 1fr;gap:20px;">
+                        <div class="d-flex fd-row fw-nowrap g12 ai-center">
+                            <button class="s-btn flex--item s-btn__outlined ws-nowrap" type="button" id="${newTemplateButtonId}">
                                 New Template
                             </button>
                             <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${saveButtonId}" disabled>
                                 Save Template
                             </button>
-                            <button class="s-btn flex--item s-btn__filled ws-nowrap" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="false">
+                        </div>
+                        <div class="d-flex fd-row fw-nowrap g6 ai-center">
+                            <input id="${importTemplateInputField}" class="flex--item s-input wmn2 wmx3"/>
+                            <button class="flex--item s-btn s-btn__outlined s-btn__muted ws-nowrap" type="button"
+                                    id="${importTemplateButtonId}" disabled>
+                                Import Template
+                            </button>
+                            <button class="s-btn flex--item s-btn__outlined s-btn__muted ws-nowrap" type="button" id="${exportTemplatesButtonId}" ${exportButtonDataProp}="false">
                                 ${exportButtonLabel}
                             </button>
+                        </div>
+                        <div class="d-flex fd-row fw-nowrap g12 ai-center jc-end">
                             <button class="s-btn flex--item s-btn__filled s-btn__danger ws-nowrap" type="button"
                                     id="${deleteTemplateButtonId}" disabled>
                                 Delete Template
