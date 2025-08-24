@@ -257,6 +257,9 @@ export function $messageTemplateEditorModal(): JQuery {
         const $mountPoint = ElementManager.$templateListContainer;
         $mountPoint.empty();
         const $templateList = $('<ol>');
+        if(templateManager.count === 0){
+            $mountPoint.append('<p>There are no existing templates available.<p></p>For an initial starting set of templates, return to GitHub to copy and paste the contents of templates.json into the Import Template input above.</p>');
+        }
         for (const [index, userDefinedTemplate] of templateManager.customMessageTemplates.entries()) {
             const $elem = $(`<li class="mb4" draggable="true">${userDefinedTemplate.TemplateName}</li>`);
             if (index === SelectedTemplateManager.active) {
@@ -414,7 +417,7 @@ export function $messageTemplateEditorModal(): JQuery {
                     <p class="d-none flex--item s-input-message mb0 ${formValidationMessage}"></p>
                     <textarea id="${templateFormTemplateBodyInputFieldId}"
                               name="TemplateBody"
-                              class="flex--item s-textarea hmn3 wmx5"
+                              class="flex--item s-textarea hmn3 w100"
                               style="resize: vertical;field-sizing: content;"
                               placeholder="This will appear as the body of the template.\nDo not include header, suspension, or footer information.\nThis is pulled automatically."></textarea>
                 </div>
