@@ -179,25 +179,17 @@ function setupProxyForNonDefaults() {
     });
 }
 
-// TODO: This should be run only on settings button click
-function openModMessageTemplateEditorModal() {
-    const modal = document.getElementById(modalId);
-    if (!modal) {
-        $('body').append($messageTemplateEditorModal());
-    }
-
-    setTimeout(() => {
-        const modal = document.getElementById(modalId);
-        Stacks.showModal(modal);
-        $(document.body).css('overflow', 'hidden');
-    }, 0);
+function attachModMessageEditorModal(){
+    $('body').append($messageTemplateEditorModal());
 }
 
 function attachSettingsButton() {
     const $settingsButton = $(`<button type="button" class="s-btn s-btn__outlined s-btn__muted ws-nowrap mb6"><div class="d-flex fd-row fw-nowrap ai-center g4"><span>Message Template Editor</span> ${GearSvgHtmlString}</div></button>`);
     $settingsButton.on('click', (ev) => {
         ev.preventDefault();
-        openModMessageTemplateEditorModal();
+        const modal = document.getElementById(modalId);
+        Stacks.showModal(modal);
+        $(document.body).css('overflow', 'hidden');
     });
     ui.$form.before($settingsButton);
 }
@@ -208,4 +200,5 @@ addReasonsToSelect();
 checkForURLSearchParams();
 setupProxyForNonDefaults();
 fixAutoSuspendMessagePluralisation();
+attachModMessageEditorModal();
 attachSettingsButton();

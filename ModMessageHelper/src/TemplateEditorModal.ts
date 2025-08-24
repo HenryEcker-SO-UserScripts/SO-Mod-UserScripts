@@ -47,7 +47,7 @@ export function $messageTemplateEditorModal(): JQuery {
     const exportButtonDataProp = 'data-export-mode';
 
     const $aside = $(
-        `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="false"
+        `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="true"
                data-controller="s-modal" data-s-modal-target="modal">
             <div class="s-modal--dialog"
                  style="min-width:825px; width: max-content; max-width: 1250px; max-height: 92vh; padding:1rem;" role="document"
@@ -372,7 +372,8 @@ export function $messageTemplateEditorModal(): JQuery {
                     <p class="d-none flex--item s-input-message mb0 ${formValidationMessage}"></p>
                     <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
                            placeholder="Be descriptive as this is what appears in user history."
-                           name="TemplateName">
+                           name="TemplateName"
+                           data-s-modal-target="initialFocus">
                 </div>
                 <div class="d-flex fd-column gy4">
                     <div class="d-flex fd-row fw-nowrap g6 ai-center my2">
@@ -685,9 +686,6 @@ export function $messageTemplateEditorModal(): JQuery {
 
     ElementManager.$modalCloseButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
-        if (!await dirtyNavigationConfirmModal()) {
-            return false;
-        }
         if (templateManager.hasPendingChanges) {
             const reloadNow = await StackExchange.helpers.showConfirmModal({
                 title: 'Message options changed',
@@ -707,7 +705,6 @@ export function $messageTemplateEditorModal(): JQuery {
         $(document.body).css('overflow', 'unset');
         return true;
     });
-
 
     return $aside;
 }
