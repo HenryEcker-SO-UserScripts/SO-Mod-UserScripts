@@ -1,8 +1,9 @@
+import {GearSvgHtmlString} from './src/Icons';
+import {parentName, parentUrl} from './src/ModMessageConstants';
 import ui from './src/ModMessageForm';
 import type {AjaxSuccess, TemplateRequestResponse} from './src/ModMessageTypes';
 import {$messageTemplateEditorModal, modalId} from './src/TemplateEditorModal';
 import templateManager from './src/TemplateManager';
-import {parentName, parentUrl} from './src/ModMessageConstants';
 
 
 function attachTemplateNameInputField() {
@@ -179,7 +180,7 @@ function setupProxyForNonDefaults() {
 }
 
 // TODO: This should be run only on settings button click
-function addModMessageTemplateEditorModal() {
+function openModMessageTemplateEditorModal() {
     const modal = document.getElementById(modalId);
     if (!modal) {
         $('body').append($messageTemplateEditorModal());
@@ -192,10 +193,19 @@ function addModMessageTemplateEditorModal() {
     }, 0);
 }
 
+function attachSettingsButton() {
+    const $settingsButton = $(`<button type="button" class="s-btn s-btn__outlined s-btn__muted ws-nowrap mb6"><div class="d-flex fd-row fw-nowrap ai-center g4"><span>Message Template Editor</span> ${GearSvgHtmlString}</div></button>`);
+    $settingsButton.on('click', (ev) => {
+        ev.preventDefault();
+        openModMessageTemplateEditorModal();
+    });
+    ui.$form.before($settingsButton);
+}
+
 attachTemplateNameInputField();
 attachSuspendReasonHiddenField();
 addReasonsToSelect();
 checkForURLSearchParams();
 setupProxyForNonDefaults();
 fixAutoSuspendMessagePluralisation();
-addModMessageTemplateEditorModal();
+attachSettingsButton();
