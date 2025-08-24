@@ -55,14 +55,17 @@ function validateTemplateArray(maybeTemplateArray: unknown[], validationErrorMes
 class TemplateManager {
     private readonly templates: UserDefinedMessageTemplate[];
     private readonly GM_Store_Key = 'ModMessageTemplates';
+    hasPendingChanges: boolean;
 
     constructor() {
         this.templates = GM_getValue<UserDefinedMessageTemplate[]>(this.GM_Store_Key, []);
+        this.hasPendingChanges = false;
     }
 
     save() {
         // Update GM Store
         GM_setValue(this.GM_Store_Key, this.templates);
+        this.hasPendingChanges = true;
     }
 
     get count() {
