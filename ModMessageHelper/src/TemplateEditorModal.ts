@@ -1,3 +1,4 @@
+import {showStandardConfirmModal} from './StandardToastAndModalHelpers';
 import {InfoSvgHtmlString} from './Icons';
 import {parentName, parentUrl} from './ModMessageConstants';
 import ui from './ModMessageForm';
@@ -246,11 +247,10 @@ export function $messageTemplateEditorModal(): JQuery {
 
     async function dirtyNavigationConfirmModal(): Promise<boolean> {
         if (ElementManager.templateEditorFormIsDirty()) {
-            return StackExchange.helpers.showConfirmModal({
+            return showStandardConfirmModal({
                 title: 'Pending Changes',
                 bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>',
-                buttonLabel: 'Discard Changes',
-                closeOthers: false
+                buttonLabel: 'Discard Changes'
             });
         }
         return true;
@@ -294,11 +294,10 @@ export function $messageTemplateEditorModal(): JQuery {
                 const srcIndex = Number(e.originalEvent.dataTransfer.getData('text/plain'));
 
                 if (ElementManager.templateEditorFormIsDirty()) {
-                    const shouldNavigate = await StackExchange.helpers.showConfirmModal({
+                    const shouldNavigate = await showStandardConfirmModal({
                         title: 'Pending Changes',
                         bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Reordering will discard these changes.</p><p>Are you sure you want to reorder these items?</p></div>',
-                        buttonLabel: 'Discard Changes',
-                        closeOthers: false
+                        buttonLabel: 'Discard Changes'
                     });
                     if (!shouldNavigate) {
                         return;
@@ -698,11 +697,10 @@ export function $messageTemplateEditorModal(): JQuery {
             return;
         }
         if (templateManager.hasPendingChanges) {
-            const reloadNow = await StackExchange.helpers.showConfirmModal({
+            const reloadNow = await showStandardConfirmModal({
                 title: 'Message options changed',
                 bodyHtml: '<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking \'Cancel\' will still close the modal, but the page will not reload.</sub></div>',
-                buttonLabel: 'Reload',
-                closeOthers: false
+                buttonLabel: 'Reload'
             });
             if (reloadNow) {
                 window.location.reload();

@@ -1,5 +1,6 @@
 import {arrayMoveMutable} from 'array-move';
 import {$boolean, $enum, $number, $object, $opt, $string} from 'lizod';
+import {showStandardConfirmModal, showStandardDangerToast} from './StandardToastAndModalHelpers';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import ui from './ModMessageForm';
 
@@ -24,11 +25,7 @@ function validateTemplate(maybeTemplate: unknown, validationErrorMessage: string
     const result = templateValidator(maybeTemplate, ctx);
     if (ctx.errors.length > 0) {
         console.error('Validation Error', ctx);
-        StackExchange.helpers.showToast(validationErrorMessage, {
-            type: 'danger',
-            transient: true,
-            transientTimeout: 4e3
-        });
+        showStandardDangerToast(validationErrorMessage);
         return false;
     }
     return result;
@@ -45,11 +42,7 @@ function validateTemplateArray(maybeTemplateArray: unknown[], validationErrorMes
     })) {
         return true;
     }
-    StackExchange.helpers.showToast(validationErrorMessage, {
-        type: 'danger',
-        transient: true,
-        transientTimeout: 4e3
-    });
+    showStandardDangerToast(validationErrorMessage);
     return false;
 }
 
@@ -98,11 +91,7 @@ class TemplateManager {
 
     private testAgainstExistingSystemReasonIds(templateName: string) {
         if (ui.isSystemTemplate(templateName)) {
-            StackExchange.helpers.showToast('Template names cannot match any existing system reason ids', {
-                type: 'danger',
-                transient: true,
-                transientTimeout: 4e3
-            });
+            showStandardDangerToast('Template names cannot match any existing system reason ids');
             return false;
         }
         return true;
@@ -110,11 +99,7 @@ class TemplateManager {
 
     private async insertNewTemplate(newTemplate: UserDefinedMessageTemplate, shouldSave: boolean): Promise<boolean> {
         if (this.hasName(newTemplate.TemplateName)) {
-            StackExchange.helpers.showToast('A template with this name already exists! Template names must be unique.', {
-                type: 'danger',
-                transient: true,
-                transientTimeout: 4e3
-            });
+            showStandardDangerToast('A template with this name already exists! Template names must be unique.');
             return false;
         }
         if (!this.testAgainstExistingSystemReasonIds(newTemplate.TemplateName)) {
@@ -131,11 +116,7 @@ class TemplateManager {
 
     private async updateExistingTemplate(existingTemplate: UserDefinedMessageTemplate, index: number, shouldPromptDuplicates: boolean, shouldSave: boolean): Promise<boolean> {
         if (!this.has(index)) {
-            StackExchange.helpers.showToast('This template index does not exist so it cannot be updated!', {
-                type: 'danger',
-                transient: true,
-                transientTimeout: 4e3
-            });
+            showStandardDangerToast('This template index does not exist so it cannot be updated!');
             return false;
         }
         if (!this.testAgainstExistingSystemReasonIds(existingTemplate.TemplateName)) {
@@ -143,11 +124,10 @@ class TemplateManager {
         }
         if (shouldPromptDuplicates) {
             // Template already exists
-            const shouldReplace = await StackExchange.helpers.showConfirmModal({
+            const shouldReplace = await showStandardConfirmModal({
                 title: 'Duplicate Template Found',
                 bodyHtml: `<div><p>The template "${existingTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
-                buttonLabel: 'Overwrite',
-                closeOthers: false
+                buttonLabel: 'Overwrite'
             });
 
             // Confirm Dialog Failed
@@ -158,11 +138,7 @@ class TemplateManager {
 
         const foundIndex = this.getIndexFromName(existingTemplate.TemplateName);
         if (foundIndex !== -1 && index !== foundIndex) {
-            StackExchange.helpers.showToast('A different template with this name already exists! Template names must be unique.', {
-                type: 'danger',
-                transient: true,
-                transientTimeout: 4e3
-            });
+            showStandardDangerToast('A different template with this name already exists! Template names must be unique.');
             return false;
         }
 
@@ -212,11 +188,10 @@ class TemplateManager {
         if (!this.has(index)) {
             return;
         }
-        const shouldDelete = await StackExchange.helpers.showConfirmModal({
+        const shouldDelete = await showStandardConfirmModal({
             title: 'Template Deletion',
             bodyHtml: `<div><p>This will delete the following template "${this.templates[index].TemplateName}"</p><p>Are you sure you want to permenantly delete this template?</p></div>`,
-            buttonLabel: 'Yes',
-            closeOthers: false
+            buttonLabel: 'Yes'
         });
         if (!shouldDelete) {
             return;
@@ -245,7 +220,7 @@ class TemplateManager {
             this.save();
             return true;
         } catch (SyntaxError) {
-            StackExchange.helpers.showToast('Invalid JSON!', {type: 'danger', transient: true, transientTimeout: 2e3});
+            showStandardDangerToast('Invalid JSON!', 2e3);
         }
         return false;
     }

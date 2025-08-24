@@ -1,3 +1,4 @@
+import {showStandardDangerToast} from './src/StandardToastAndModalHelpers';
 import {GearSvgHtmlString} from './src/Icons';
 import {parentName, parentUrl} from './src/ModMessageConstants';
 import ui from './src/ModMessageForm';
@@ -146,7 +147,9 @@ function setupProxyForNonDefaults() {
             const templateSearch = templateManager.lookupByReasonId(reasonId);
 
             if (templateSearch.length !== 1) {
-                StackExchange.helpers.showToast('UserScript Message - Template with that name not found!', {type: 'danger'});
+                // This is prefixed with 'UserScript Message' because it appears within the stock UI which can
+                // also produce error toast messages
+                showStandardDangerToast('UserScript Message - Template with that name not found!');
                 return;
             }
 

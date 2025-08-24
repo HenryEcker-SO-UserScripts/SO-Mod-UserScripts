@@ -26,6 +26,21 @@
     if (!StackExchange?.options?.user?.isModerator) {
         return;
     }
+    function showStandardDangerToast(message, transientTimeout) {
+      StackExchange.helpers.showToast(message, {
+        type: "danger",
+        transient: true,
+        transientTimeout: transientTimeout ?? 4e3
+      });
+    }
+    function showStandardConfirmModal({ title, bodyHtml, buttonLabel }) {
+      return StackExchange.helpers.showConfirmModal({
+        title,
+        bodyHtml,
+        buttonLabel,
+        closeOthers: false
+      });
+    }
     const InfoSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconInfoSm" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1a6 6 0 1 1 0 12A6 6 0 0 1 7 1m1 10V6H6v5zm0-6V3H6v2z"></path></svg>';
     const GearSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconGear" width="18" height="18" viewBox="0 0 18 18"><path d="m14.53 6.3.28.67C17 7.77 17 7.86 17 8.12V9.8c0 .26 0 .35-2.18 1.22l-.27.66c.98 2.11.91 2.18.73 2.37l-1.3 1.29h-.15q-.3 0-2.14-.8l-.66.27C10.23 17 10.13 17 9.88 17H8.2c-.26 0-.35 0-1.21-2.18l-.67-.27c-1.81.84-2.03.84-2.1.84h-.14l-.12-.1-1.19-1.2c-.18-.18-.24-.25.7-2.4l-.28-.65C1 10.24 1 10.14 1 9.88V8.2c0-.27 0-.35 2.18-1.21l.27-.66c-.98-2.12-.91-2.19-.72-2.39l1.28-1.28h.16q.3.01 2.14.8l.66-.27C7.77 1 7.87 1 8.12 1H9.8c.26 0 .34 0 1.2 2.18l.67.28c1.82-.84 2.03-.84 2.1-.84h.14l.12.1 1.2 1.19c.18.18.24.25-.7 2.4m-8.4 3.9a3.1 3.1 0 1 0 5.73-2.4 3.1 3.1 0 0 0-5.72 2.4"></path></svg>';
     const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
@@ -174,7 +189,7 @@
       return fn;
     };
     function $nonEmptyString(input) {
-      return typeof input === "string" && input.trim().length > 0;
+      return $string(input) && input.trim().length > 0;
     }
     const templateValidator = $object({
       TemplateName: $nonEmptyString,
@@ -192,11 +207,7 @@
       const result = templateValidator(maybeTemplate, ctx);
       if (ctx.errors.length > 0) {
         console.error("Validation Error", ctx);
-        StackExchange.helpers.showToast(validationErrorMessage, {
-          type: "danger",
-          transient: true,
-          transientTimeout: 4e3
-        });
+        showStandardDangerToast(validationErrorMessage);
         return false;
       }
       return result;
@@ -212,11 +223,7 @@
       })) {
         return true;
       }
-      StackExchange.helpers.showToast(validationErrorMessage, {
-        type: "danger",
-        transient: true,
-        transientTimeout: 4e3
-      });
+      showStandardDangerToast(validationErrorMessage);
       return false;
     }
     class TemplateManager {
@@ -254,22 +261,14 @@
       }
       testAgainstExistingSystemReasonIds(templateName) {
         if (ui.isSystemTemplate(templateName)) {
-          StackExchange.helpers.showToast("Template names cannot match any existing system reason ids", {
-            type: "danger",
-            transient: true,
-            transientTimeout: 4e3
-          });
+          showStandardDangerToast("Template names cannot match any existing system reason ids");
           return false;
         }
         return true;
       }
       async insertNewTemplate(newTemplate, shouldSave) {
         if (this.hasName(newTemplate.TemplateName)) {
-          StackExchange.helpers.showToast("A template with this name already exists! Template names must be unique.", {
-            type: "danger",
-            transient: true,
-            transientTimeout: 4e3
-          });
+          showStandardDangerToast("A template with this name already exists! Template names must be unique.");
           return false;
         }
         if (!this.testAgainstExistingSystemReasonIds(newTemplate.TemplateName)) {
@@ -283,22 +282,17 @@
       }
       async updateExistingTemplate(existingTemplate, index, shouldPromptDuplicates, shouldSave) {
         if (!this.has(index)) {
-          StackExchange.helpers.showToast("This template index does not exist so it cannot be updated!", {
-            type: "danger",
-            transient: true,
-            transientTimeout: 4e3
-          });
+          showStandardDangerToast("This template index does not exist so it cannot be updated!");
           return false;
         }
         if (!this.testAgainstExistingSystemReasonIds(existingTemplate.TemplateName)) {
           return false;
         }
         if (shouldPromptDuplicates) {
-          const shouldReplace = await StackExchange.helpers.showConfirmModal({
+          const shouldReplace = await showStandardConfirmModal({
             title: "Duplicate Template Found",
             bodyHtml: `<div><p>The template "${existingTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
-            buttonLabel: "Overwrite",
-            closeOthers: false
+            buttonLabel: "Overwrite"
           });
           if (!shouldReplace) {
             return false;
@@ -306,11 +300,7 @@
         }
         const foundIndex = this.getIndexFromName(existingTemplate.TemplateName);
         if (foundIndex !== -1 && index !== foundIndex) {
-          StackExchange.helpers.showToast("A different template with this name already exists! Template names must be unique.", {
-            type: "danger",
-            transient: true,
-            transientTimeout: 4e3
-          });
+          showStandardDangerToast("A different template with this name already exists! Template names must be unique.");
           return false;
         }
         this.templates[index] = existingTemplate;
@@ -349,11 +339,10 @@
         if (!this.has(index)) {
           return;
         }
-        const shouldDelete = await StackExchange.helpers.showConfirmModal({
+        const shouldDelete = await showStandardConfirmModal({
           title: "Template Deletion",
           bodyHtml: `<div><p>This will delete the following template "${this.templates[index].TemplateName}"</p><p>Are you sure you want to permenantly delete this template?</p></div>`,
-          buttonLabel: "Yes",
-          closeOthers: false
+          buttonLabel: "Yes"
         });
         if (!shouldDelete) {
           return;
@@ -376,7 +365,7 @@
           this.save();
           return true;
         } catch (SyntaxError) {
-          StackExchange.helpers.showToast("Invalid JSON!", { type: "danger", transient: true, transientTimeout: 2e3 });
+          showStandardDangerToast("Invalid JSON!", 2e3);
         }
         return false;
       }
@@ -592,11 +581,10 @@
       };
       async function dirtyNavigationConfirmModal() {
         if (ElementManager.templateEditorFormIsDirty()) {
-          return StackExchange.helpers.showConfirmModal({
+          return showStandardConfirmModal({
             title: "Pending Changes",
             bodyHtml: "<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>",
-            buttonLabel: "Discard Changes",
-            closeOthers: false
+            buttonLabel: "Discard Changes"
           });
         }
         return true;
@@ -637,11 +625,10 @@
             const currentTargetIndex = $("li", $templateList).index($target);
             const srcIndex = Number(e.originalEvent.dataTransfer.getData("text/plain"));
             if (ElementManager.templateEditorFormIsDirty()) {
-              const shouldNavigate = await StackExchange.helpers.showConfirmModal({
+              const shouldNavigate = await showStandardConfirmModal({
                 title: "Pending Changes",
                 bodyHtml: "<div><p>There are unsaved changes in the template!</p><p>Reordering will discard these changes.</p><p>Are you sure you want to reorder these items?</p></div>",
-                buttonLabel: "Discard Changes",
-                closeOthers: false
+                buttonLabel: "Discard Changes"
               });
               if (!shouldNavigate) {
                 return;
@@ -979,11 +966,10 @@
           return;
         }
         if (templateManager.hasPendingChanges) {
-          const reloadNow = await StackExchange.helpers.showConfirmModal({
+          const reloadNow = await showStandardConfirmModal({
             title: "Message options changed",
             bodyHtml: "<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking 'Cancel' will still close the modal, but the page will not reload.</sub></div>",
-            buttonLabel: "Reload",
-            closeOthers: false
+            buttonLabel: "Reload"
           });
           if (reloadNow) {
             window.location.reload();
@@ -1088,7 +1074,7 @@
           jqXHR.abort();
           const templateSearch = templateManager.lookupByReasonId(reasonId);
           if (templateSearch.length !== 1) {
-            StackExchange.helpers.showToast("UserScript Message - Template with that name not found!", { type: "danger" });
+            showStandardDangerToast("UserScript Message - Template with that name not found!");
             return;
           }
           const selectedTemplate = templateSearch[0];
