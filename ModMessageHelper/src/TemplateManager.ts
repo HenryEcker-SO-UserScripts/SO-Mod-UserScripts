@@ -49,17 +49,18 @@ function validateTemplateArray(maybeTemplateArray: unknown[], validationErrorMes
 class TemplateManager {
     private readonly templates: UserDefinedMessageTemplate[];
     private readonly GM_Store_Key = 'ModMessageTemplates';
-    hasPendingChanges: boolean;
+    private _hasPendingChanges: boolean;
 
     constructor() {
         this.templates = GM_getValue<UserDefinedMessageTemplate[]>(this.GM_Store_Key, []);
-        this.hasPendingChanges = false;
+        this._hasPendingChanges = false;
     }
 
     save() {
         // Update GM Store
         GM_setValue(this.GM_Store_Key, this.templates);
-        this.hasPendingChanges = true;
+        // We don't know if anything actually has changed, but still flag that *something* was saved
+        this._hasPendingChanges = true;
     }
 
     get count() {
@@ -68,6 +69,10 @@ class TemplateManager {
 
     get customMessageTemplates() {
         return this.templates;
+    }
+
+    hasPendingChanges() {
+        return this._hasPendingChanges;
     }
 
     lookupByIndex(index: number): UserDefinedMessageTemplate {

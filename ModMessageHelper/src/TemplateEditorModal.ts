@@ -696,7 +696,7 @@ export function $messageTemplateEditorModal(): JQuery {
         if (!await dirtyNavigationConfirmModal()) {
             return;
         }
-        if (templateManager.hasPendingChanges) {
+        if (templateManager.hasPendingChanges()) {
             const reloadNow = await showStandardConfirmModal({
                 title: 'Message options changed',
                 bodyHtml: '<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking \'Cancel\' will still close the modal, but the page will not reload.</sub></div>',
@@ -714,7 +714,7 @@ export function $messageTemplateEditorModal(): JQuery {
     });
 
     $aside.on('s-modal:hide', (ev) => {
-        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges) {
+        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges()) {
             ev.preventDefault();
         }
     });
