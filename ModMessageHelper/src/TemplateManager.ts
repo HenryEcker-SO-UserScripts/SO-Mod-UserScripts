@@ -97,7 +97,8 @@ class TemplateManager {
             return false;
         }
         const isNewWithDuplicateName = index === undefined && this.hasName(maybeTemplate.TemplateName);
-        const isUpdateMakesDuplicateName = index !== undefined && index !== this.getIndexFromName(maybeTemplate.TemplateName);
+        const foundIndex = this.getIndexFromName(maybeTemplate.TemplateName);
+        const isUpdateMakesDuplicateName = index !== undefined && foundIndex !== -1 && index !== foundIndex;
         if (isNewWithDuplicateName || isUpdateMakesDuplicateName) {
             StackExchange.helpers.showToast('A template with this name already exists! Template names must be unique.', {
                 type: 'danger',
