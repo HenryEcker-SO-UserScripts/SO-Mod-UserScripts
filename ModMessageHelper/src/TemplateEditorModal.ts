@@ -92,7 +92,8 @@ export function $messageTemplateEditorModal(): JQuery {
                     </div>
                     <div class="d-flex gx8 s-modal--footer ai-center"></div>
                     <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close"
-                            id="${modalCloseButtonId}">
+                            id="${modalCloseButtonId}"
+                            data-action="s-modal#hide">
                         <svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
                             <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
                         </svg>
@@ -248,7 +249,8 @@ export function $messageTemplateEditorModal(): JQuery {
             return StackExchange.helpers.showConfirmModal({
                 title: 'Pending Changes',
                 bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>',
-                buttonLabel: 'Discard Changes'
+                buttonLabel: 'Discard Changes',
+                closeOthers: false
             });
         }
         return true;
@@ -295,7 +297,8 @@ export function $messageTemplateEditorModal(): JQuery {
                     const shouldNavigate = await StackExchange.helpers.showConfirmModal({
                         title: 'Pending Changes',
                         bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Reordering will discard these changes.</p><p>Are you sure you want to reorder these items?</p></div>',
-                        buttonLabel: 'Discard Changes'
+                        buttonLabel: 'Discard Changes',
+                        closeOthers: false
                     });
                     if (!shouldNavigate) {
                         return;
@@ -691,22 +694,31 @@ export function $messageTemplateEditorModal(): JQuery {
 
     ElementManager.$modalCloseButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
+        if (!await dirtyNavigationConfirmModal()) {
+            return;
+        }
         if (templateManager.hasPendingChanges) {
             const reloadNow = await StackExchange.helpers.showConfirmModal({
                 title: 'Message options changed',
                 bodyHtml: '<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking \'Cancel\' will still close the modal, but the page will not reload.</sub></div>',
-                buttonLabel: 'Reload'
+                buttonLabel: 'Reload',
+                closeOthers: false
             });
             if (reloadNow) {
                 window.location.reload();
-                return false;
+                return;
             }
         }
         // Clear out selection to clear away dirty form
         SelectedTemplateManager.active = 0;
         // Hide Modal
         Stacks.hideModal(document.getElementById(modalId));
-        return true;
+    });
+
+    $aside.on('s-modal:hide', (ev) => {
+        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges) {
+            ev.preventDefault();
+        }
     });
 
     $aside.on('s-modal:hidden', () => {

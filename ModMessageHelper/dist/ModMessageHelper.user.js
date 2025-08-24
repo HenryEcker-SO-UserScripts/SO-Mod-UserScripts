@@ -297,7 +297,8 @@
           const shouldReplace = await StackExchange.helpers.showConfirmModal({
             title: "Duplicate Template Found",
             bodyHtml: `<div><p>The template "${existingTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
-            buttonLabel: "Overwrite"
+            buttonLabel: "Overwrite",
+            closeOthers: false
           });
           if (!shouldReplace) {
             return false;
@@ -351,7 +352,8 @@
         const shouldDelete = await StackExchange.helpers.showConfirmModal({
           title: "Template Deletion",
           bodyHtml: `<div><p>This will delete the following template "${this.templates[index].TemplateName}"</p><p>Are you sure you want to permenantly delete this template?</p></div>`,
-          buttonLabel: "Yes"
+          buttonLabel: "Yes",
+          closeOthers: false
         });
         if (!shouldDelete) {
           return;
@@ -458,7 +460,8 @@
                         </div>
                         <div class="d-flex gx8 s-modal--footer ai-center"></div>
                         <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close"
-                                id="${modalCloseButtonId}">
+                                id="${modalCloseButtonId}"
+                                data-action="s-modal#hide">
                             <svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
                                 <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
                             </svg>
@@ -592,7 +595,8 @@
           return StackExchange.helpers.showConfirmModal({
             title: "Pending Changes",
             bodyHtml: "<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>",
-            buttonLabel: "Discard Changes"
+            buttonLabel: "Discard Changes",
+            closeOthers: false
           });
         }
         return true;
@@ -629,19 +633,21 @@
             e.preventDefault();
           });
           $elem.on("drop", async (e) => {
+            const $target = $(e.target);
+            const currentTargetIndex = $("li", $templateList).index($target);
+            const srcIndex = Number(e.originalEvent.dataTransfer.getData("text/plain"));
             if (ElementManager.templateEditorFormIsDirty()) {
               const shouldNavigate = await StackExchange.helpers.showConfirmModal({
                 title: "Pending Changes",
                 bodyHtml: "<div><p>There are unsaved changes in the template!</p><p>Reordering will discard these changes.</p><p>Are you sure you want to reorder these items?</p></div>",
-                buttonLabel: "Discard Changes"
+                buttonLabel: "Discard Changes",
+                closeOthers: false
               });
               if (!shouldNavigate) {
                 return;
               }
             }
-            const $target = $(e.target);
-            const currentTargetIndex = $("li", $templateList).index($target);
-            templateManager.move(Number(e.originalEvent.dataTransfer.getData("text/plain")), currentTargetIndex);
+            templateManager.move(srcIndex, currentTargetIndex);
             SelectedTemplateManager.active = currentTargetIndex;
             buildTemplateSelectorList();
           });
@@ -969,20 +975,28 @@
       });
       ElementManager.$modalCloseButton.on("click", async (ev) => {
         ev.preventDefault();
+        if (!await dirtyNavigationConfirmModal()) {
+          return;
+        }
         if (templateManager.hasPendingChanges) {
           const reloadNow = await StackExchange.helpers.showConfirmModal({
             title: "Message options changed",
             bodyHtml: "<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking 'Cancel' will still close the modal, but the page will not reload.</sub></div>",
-            buttonLabel: "Reload"
+            buttonLabel: "Reload",
+            closeOthers: false
           });
           if (reloadNow) {
             window.location.reload();
-            return false;
+            return;
           }
         }
         SelectedTemplateManager.active = 0;
         Stacks.hideModal(document.getElementById(modalId));
-        return true;
+      });
+      $aside.on("s-modal:hide", (ev) => {
+        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges) {
+          ev.preventDefault();
+        }
       });
       $aside.on("s-modal:hidden", () => {
         $(document.body).css("overflow", "unset");

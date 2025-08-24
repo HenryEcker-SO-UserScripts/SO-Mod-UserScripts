@@ -146,7 +146,8 @@ class TemplateManager {
             const shouldReplace = await StackExchange.helpers.showConfirmModal({
                 title: 'Duplicate Template Found',
                 bodyHtml: `<div><p>The template "${existingTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
-                buttonLabel: 'Overwrite'
+                buttonLabel: 'Overwrite',
+                closeOthers: false
             });
 
             // Confirm Dialog Failed
@@ -214,7 +215,8 @@ class TemplateManager {
         const shouldDelete = await StackExchange.helpers.showConfirmModal({
             title: 'Template Deletion',
             bodyHtml: `<div><p>This will delete the following template "${this.templates[index].TemplateName}"</p><p>Are you sure you want to permenantly delete this template?</p></div>`,
-            buttonLabel: 'Yes'
+            buttonLabel: 'Yes',
+            closeOthers: false
         });
         if (!shouldDelete) {
             return;
