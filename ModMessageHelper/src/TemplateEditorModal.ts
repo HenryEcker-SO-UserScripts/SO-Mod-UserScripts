@@ -547,8 +547,12 @@ export function $messageTemplateEditorModal(): JQuery {
         ElementManager.$importTemplateButton.prop('disabled', e.target.value.trim().length === 0);
     });
 
-    ElementManager.$importTemplateButton.on('click', (ev) => {
+    ElementManager.$importTemplateButton.on('click', async (ev) => {
         ev.preventDefault();
+
+        if (!await dirtyNavigationConfirmModal()) {
+            return;
+        }
 
         void templateManager.importFromJSONString(ElementManager.$importTemplateInputField.val().toString())
             .then(success => {
@@ -651,8 +655,12 @@ export function $messageTemplateEditorModal(): JQuery {
     });
 
     // Wire Up Export Button
-    ElementManager.$exportButton.on('click', (ev: JQuery.ClickEvent) => {
+    ElementManager.$exportButton.on('click', async (ev: JQuery.ClickEvent) => {
         ev.preventDefault();
+        if (!await dirtyNavigationConfirmModal()) {
+            return;
+        }
+
         const $target = $(ev.target);
         const isExportMode = ElementManager.isExportMode();
         if (isExportMode) {
