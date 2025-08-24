@@ -1,9 +1,11 @@
 class ModMessageForm {
     readonly blankTemplateOptionValue = '0';
-    private readonly systemTemplateReasonIds: Set<string>;
+    readonly SystemReasonIdList: string[];
+    private readonly SystemReasonIdSet: Set<string>;
 
     constructor() {
-        this.systemTemplateReasonIds = new Set([...(<JQuery<HTMLOptionElement>>this.$templateSelector.find('option')).map((_, n) => <string>$(n).val())]);
+        this.SystemReasonIdList = this.$templateSelector.find('option').map((_, n) => $(n).val()).toArray().slice(1);
+        this.SystemReasonIdSet = new Set(this.SystemReasonIdList);
     }
 
     get $form(): JQuery<HTMLFormElement> {
@@ -106,7 +108,7 @@ class ModMessageForm {
     }
 
     isSystemTemplate(reasonId?: string): boolean {
-        return this.systemTemplateReasonIds.has(reasonId ?? this.reasonId);
+        return this.SystemReasonIdSet.has(reasonId ?? this.reasonId);
     }
 
     hasTemplateSelected(): boolean {

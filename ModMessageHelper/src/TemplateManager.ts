@@ -1,6 +1,7 @@
 import {arrayMoveMutable} from 'array-move';
 import {$boolean, $enum, $number, $object, $opt, $string} from 'lizod';
-import {SystemReasonIdList, type UserDefinedMessageTemplate} from './ModMessageTypes';
+import {type UserDefinedMessageTemplate} from './ModMessageTypes';
+import ui from './ModMessageForm';
 
 function $nonEmptyString(input: unknown): input is string {
     return typeof input === 'string' && input.trim().length > 0;
@@ -9,7 +10,7 @@ function $nonEmptyString(input: unknown): input is string {
 const templateValidator = $object({
     TemplateName: $nonEmptyString,
     TemplateBody: $nonEmptyString,
-    AnalogousSystemReasonId: $enum(SystemReasonIdList),
+    AnalogousSystemReasonId: $enum(ui.SystemReasonIdList),
     DefaultSuspendDays: $opt($number),
     StackOverflowOnly: $opt($boolean),
     IncludeSuspensionFooter: $opt($boolean),
@@ -94,8 +95,9 @@ class TemplateManager {
         arrayMoveMutable(this.templates, fromIndex, toIndex);
         this.save();
     }
-    private testAgainstExistingSystemReasonIds(templateName:string){
-        if (SystemReasonIdList.includes(templateName)) {
+
+    private testAgainstExistingSystemReasonIds(templateName: string) {
+        if (ui.isSystemTemplate(templateName)) {
             StackExchange.helpers.showToast('Template names cannot match any existing system reason ids', {
                 type: 'danger',
                 transient: true,

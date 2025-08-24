@@ -1,5 +1,3 @@
-import ui from './ModMessageForm';
-
 export interface ModMessageTemplate {
     ModMessageReason: number;
     IsCommunityTeamMessage: boolean;
@@ -19,8 +17,6 @@ export interface TemplateRequestResponse {
     IsCommunityTeamMessage: boolean;
     MessageTemplate: ModMessageTemplate;
 }
-
-export const SystemReasonIdList: string[] = ui.$templateSelector.find('option').map((_, n) => $(n).val()).toArray().slice(1);
 
 export type UserDefinedMessageTemplate =
     Partial<ModMessageTemplate>
