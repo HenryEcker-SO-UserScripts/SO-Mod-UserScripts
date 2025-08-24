@@ -241,17 +241,13 @@ export function $messageTemplateEditorModal(): JQuery {
         }
     };
 
-    async function showNavigateAwayConfirmModal(): Promise<boolean> {
-        return StackExchange.helpers.showConfirmModal({
-            title: 'Pending Changes',
-            bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>',
-            buttonLabel: 'Discard Changes'
-        });
-    }
-
     async function dirtyNavigationConfirmModal(): Promise<boolean> {
         if (ElementManager.templateEditorFormIsDirty()) {
-            return showNavigateAwayConfirmModal();
+            return StackExchange.helpers.showConfirmModal({
+                title: 'Pending Changes',
+                bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>',
+                buttonLabel: 'Discard Changes'
+            });
         }
         return true;
     }
