@@ -721,10 +721,5 @@ export function $messageTemplateEditorModal(): JQuery {
         }
     });
 
-    $aside.on('s-modal:hidden', () => {
-        // Allow background scrolling again
-        $(document.body).css('overflow', 'unset');
-    });
-
     return $aside;
 }

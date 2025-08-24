@@ -182,8 +182,15 @@ function setupProxyForNonDefaults() {
 function attachModMessageEditorModal(){
     const $modal = $messageTemplateEditorModal();
     $('body').append($modal);
+
     $modal.on('s-modal:shown', () => {
+        // Prevent body behind modal from scrolling
         $(document.body).css('overflow', 'hidden');
+    });
+
+    $modal.on('s-modal:hidden', () => {
+        // Allow background scrolling again
+        $(document.body).css('overflow', 'unset');
     });
 }
 

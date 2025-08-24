@@ -998,9 +998,6 @@
           ev.preventDefault();
         }
       });
-      $aside.on("s-modal:hidden", () => {
-        $(document.body).css("overflow", "unset");
-      });
       return $aside;
     }
     function attachTemplateNameInputField() {
@@ -1120,6 +1117,9 @@
       $("body").append($modal);
       $modal.on("s-modal:shown", () => {
         $(document.body).css("overflow", "hidden");
+      });
+      $modal.on("s-modal:hidden", () => {
+        $(document.body).css("overflow", "unset");
       });
     }
     function attachSettingsButton() {
