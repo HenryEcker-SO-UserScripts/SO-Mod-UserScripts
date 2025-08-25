@@ -1,8 +1,8 @@
-import {showStandardDangerToast} from './src/StandardToastAndModalHelpers';
 import {GearSvgHtmlString} from './src/Icons';
-import {modalId, parentName, parentUrl} from './src/ModMessageConstants';
+import {parentName, parentUrl} from './src/ModMessageConstants';
 import ui from './src/ModMessageForm';
 import type {AjaxSuccess, TemplateRequestResponse} from './src/ModMessageTypes';
+import {openEditorModal, showStandardDangerToast} from './src/StandardToastAndModalHelpers';
 import {$messageTemplateEditorModal} from './src/TemplateEditorModal';
 import templateManager from './src/TemplateManager';
 
@@ -185,24 +185,13 @@ function setupProxyForNonDefaults() {
 function attachModMessageEditorModal(){
     const $modal = $messageTemplateEditorModal();
     $('body').append($modal);
-
-    $modal.on('s-modal:shown', () => {
-        // Prevent body behind modal from scrolling
-        $(document.body).css('overflow', 'hidden');
-    });
-
-    $modal.on('s-modal:hidden', () => {
-        // Allow background scrolling again
-        $(document.body).css('overflow', 'unset');
-    });
 }
 
 function attachSettingsButton() {
     const $settingsButton = $(`<button type="button" class="s-btn s-btn__outlined s-btn__muted ws-nowrap mb6"><div class="d-flex fd-row fw-nowrap ai-center g4"><span>Message Template Editor</span> ${GearSvgHtmlString}</div></button>`);
     $settingsButton.on('click', (ev) => {
         ev.preventDefault();
-        const modal = document.getElementById(modalId);
-        Stacks.showModal(modal);
+        openEditorModal();
     });
     ui.$form.before($settingsButton);
 }

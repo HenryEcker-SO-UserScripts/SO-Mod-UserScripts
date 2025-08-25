@@ -26,21 +26,6 @@
     if (!StackExchange?.options?.user?.isModerator) {
         return;
     }
-    function showStandardDangerToast(message, transientTimeout) {
-      StackExchange.helpers.showToast(message, {
-        type: "danger",
-        transient: true,
-        transientTimeout: transientTimeout ?? 4e3
-      });
-    }
-    function showStandardConfirmModal({ title, bodyHtml, buttonLabel }) {
-      return StackExchange.helpers.showConfirmModal({
-        title,
-        bodyHtml,
-        buttonLabel,
-        closeOthers: false
-      });
-    }
     const InfoSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconInfoSm" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1a6 6 0 1 1 0 12A6 6 0 0 1 7 1m1 10V6H6v5zm0-6V3H6v2z"></path></svg>';
     const GearSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconGear" width="18" height="18" viewBox="0 0 18 18"><path d="m14.53 6.3.28.67C17 7.77 17 7.86 17 8.12V9.8c0 .26 0 .35-2.18 1.22l-.27.66c.98 2.11.91 2.18.73 2.37l-1.3 1.29h-.15q-.3 0-2.14-.8l-.66.27C10.23 17 10.13 17 9.88 17H8.2c-.26 0-.35 0-1.21-2.18l-.67-.27c-1.81.84-2.03.84-2.1.84h-.14l-.12-.1-1.19-1.2c-.18-.18-.24-.25.7-2.4l-.28-.65C1 10.24 1 10.14 1 9.88V8.2c0-.27 0-.35 2.18-1.21l.27-.66c-.98-2.12-.91-2.19-.72-2.39l1.28-1.28h.16q.3.01 2.14.8l.66-.27C7.77 1 7.87 1 8.12 1H9.8c.26 0 .34 0 1.2 2.18l.67.28c1.82-.84 2.03-.84 2.1-.84h.14l.12.1 1.2 1.19c.18.18.24.25-.7 2.4m-8.4 3.9a3.1 3.1 0 1 0 5.73-2.4 3.1 3.1 0 0 0-5.72 2.4"></path></svg>';
     const ui = {
@@ -130,8 +115,31 @@
     const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
     const parentName = StackExchange.options?.site?.name;
     const modalId = "usr-mmt-editor-modal";
-    const SystemReasonIdList = ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray();
-    const SystemReasonIdSet = new Set(SystemReasonIdList);
+    const SystemReasonIdSet = new Set(ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray());
+    function showStandardDangerToast(message, transientTimeout) {
+      StackExchange.helpers.showToast(message, {
+        type: "danger",
+        transient: true,
+        transientTimeout: transientTimeout ?? 4e3
+      });
+    }
+    function showStandardConfirmModal({ title, bodyHtml, buttonLabel }) {
+      return StackExchange.helpers.showConfirmModal({
+        title,
+        bodyHtml,
+        buttonLabel
+      });
+    }
+    function openEditorModal() {
+      const modal = document.getElementById(modalId);
+      modal.setAttribute("aria-hidden", "false");
+      $(document.body).css("overflow", "hidden");
+    }
+    function hideEditorModal() {
+      const modal = document.getElementById(modalId);
+      modal.setAttribute("aria-hidden", "true");
+      $(document.body).css("overflow", "unset");
+    }
     function arrayMoveMutable(array, fromIndex, toIndex) {
       const startIndex = fromIndex < 0 ? array.length + fromIndex : fromIndex;
       if (startIndex >= 0 && startIndex < array.length) {
@@ -152,9 +160,6 @@
     };
     const $boolean = (input) => {
       return _typeof(input) === "boolean";
-    };
-    const $enum = (enums) => (input) => {
-      return enums.includes(input);
     };
     const $object = (vmap, exact = true) => {
       const fn = (input, ctx, path = []) => {
@@ -187,10 +192,16 @@
     function $nonEmptyString(input) {
       return $string(input) && input.trim().length > 0;
     }
+    function $setMember(sourceSet) {
+      function isMember(input) {
+        return $string(input) && sourceSet.has(input);
+      }
+      return isMember;
+    }
     const templateValidator = $object({
       TemplateName: $nonEmptyString,
       TemplateBody: $nonEmptyString,
-      AnalogousSystemReasonId: $enum(SystemReasonIdList),
+      AnalogousSystemReasonId: $setMember(SystemReasonIdSet),
       DefaultSuspendDays: $opt($number),
       StackOverflowOnly: $opt($boolean),
       IncludeSuspensionFooter: $opt($boolean),
@@ -406,8 +417,7 @@
       const formIsDirtyProp = "data-form-is-dirty";
       const exportButtonDataProp = "data-export-mode";
       const $aside = $(
-        `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="true"
-                   data-controller="s-modal" data-s-modal-target="modal">
+        `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="s-modal--dialog"
                      style="min-width:825px; width: max-content; max-width: 1250px; max-height: 92vh; padding:1rem;" role="document"
                      data-controller="se-draggable">
@@ -450,8 +460,7 @@
                         </div>
                         <div class="d-flex gx8 s-modal--footer ai-center"></div>
                         <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close"
-                                id="${modalCloseButtonId}"
-                                data-action="s-modal#hide">
+                                id="${modalCloseButtonId}">
                             <svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
                                 <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
                             </svg>
@@ -697,8 +706,7 @@
                         <p class="d-none flex--item s-input-message mb0 ${formValidationMessage}"></p>
                         <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
                                placeholder="Be descriptive as this is what appears in user history."
-                               name="TemplateName"
-                               data-s-modal-target="initialFocus">
+                               name="TemplateName">
                     </div>
                     <div class="d-flex fd-column gy4">
                         <div class="d-flex fd-row fw-nowrap g6 ai-center my2">
@@ -818,7 +826,7 @@
           ElementManager.clearValidationMessages();
         });
         $mountPoint.append($form);
-        ElementManager.$templateFormAnalogousSystemReasonSelect.append(...SystemReasonIdList.map((reason) => `<option value="${reason}">${reason}</option>`));
+        ElementManager.$templateFormAnalogousSystemReasonSelect.append(...SystemReasonIdSet.values().map((reason) => `<option value="${reason}">${reason}</option>`));
         ElementManager.$templateFormDefaultSuspendDays.on("input", (ev) => {
           const $target = $(ev.target);
           const value = Number($target.val());
@@ -978,12 +986,7 @@
           }
         }
         SelectedTemplateManager.active = 0;
-        Stacks.hideModal(document.getElementById(modalId));
-      });
-      $aside.on("s-modal:hide", (ev) => {
-        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges()) {
-          ev.preventDefault();
-        }
+        hideEditorModal();
       });
       return $aside;
     }
@@ -1102,19 +1105,12 @@
     function attachModMessageEditorModal() {
       const $modal = $messageTemplateEditorModal();
       $("body").append($modal);
-      $modal.on("s-modal:shown", () => {
-        $(document.body).css("overflow", "hidden");
-      });
-      $modal.on("s-modal:hidden", () => {
-        $(document.body).css("overflow", "unset");
-      });
     }
     function attachSettingsButton() {
       const $settingsButton = $(`<button type="button" class="s-btn s-btn__outlined s-btn__muted ws-nowrap mb6"><div class="d-flex fd-row fw-nowrap ai-center g4"><span>Message Template Editor</span> ${GearSvgHtmlString}</div></button>`);
       $settingsButton.on("click", (ev) => {
         ev.preventDefault();
-        const modal = document.getElementById(modalId);
-        Stacks.showModal(modal);
+        openEditorModal();
       });
       ui.$form.before($settingsButton);
     }

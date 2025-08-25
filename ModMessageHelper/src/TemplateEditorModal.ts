@@ -1,7 +1,7 @@
 import {InfoSvgHtmlString} from './Icons';
 import {modalId, parentName, parentUrl, SystemReasonIdSet} from './ModMessageConstants';
 import {type BooleanString, type UserDefinedMessageTemplate} from './ModMessageTypes';
-import {showStandardConfirmModal} from './StandardToastAndModalHelpers';
+import {hideEditorModal, showStandardConfirmModal} from './StandardToastAndModalHelpers';
 import templateManager from './TemplateManager';
 
 export function $messageTemplateEditorModal(): JQuery {
@@ -46,8 +46,7 @@ export function $messageTemplateEditorModal(): JQuery {
     const exportButtonDataProp = 'data-export-mode';
 
     const $aside = $(
-        `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="true"
-               data-controller="s-modal" data-s-modal-target="modal">
+        `<aside class="s-modal" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="s-modal--dialog"
                  style="min-width:825px; width: max-content; max-width: 1250px; max-height: 92vh; padding:1rem;" role="document"
                  data-controller="se-draggable">
@@ -90,8 +89,7 @@ export function $messageTemplateEditorModal(): JQuery {
                     </div>
                     <div class="d-flex gx8 s-modal--footer ai-center"></div>
                     <button class="s-modal--close s-btn s-btn__muted" type="button" aria-label="Close"
-                            id="${modalCloseButtonId}"
-                            data-action="s-modal#hide">
+                            id="${modalCloseButtonId}">
                         <svg aria-hidden="true" class="svg-icon iconClearSm" width="14" height="14" viewBox="0 0 14 14">
                             <path d="M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41Z"></path>
                         </svg>
@@ -376,8 +374,7 @@ export function $messageTemplateEditorModal(): JQuery {
                     <p class="d-none flex--item s-input-message mb0 ${formValidationMessage}"></p>
                     <input class="s-input" id="${templateFormTemplateNameInputFieldId}" type="text"
                            placeholder="Be descriptive as this is what appears in user history."
-                           name="TemplateName"
-                           data-s-modal-target="initialFocus">
+                           name="TemplateName">
                 </div>
                 <div class="d-flex fd-column gy4">
                     <div class="d-flex fd-row fw-nowrap g6 ai-center my2">
@@ -707,13 +704,7 @@ export function $messageTemplateEditorModal(): JQuery {
         // Clear out selection to clear away dirty form
         SelectedTemplateManager.active = 0;
         // Hide Modal
-        Stacks.hideModal(document.getElementById(modalId));
-    });
-
-    $aside.on('s-modal:hide', (ev) => {
-        if (ElementManager.templateEditorFormIsDirty() || templateManager.hasPendingChanges()) {
-            ev.preventDefault();
-        }
+        hideEditorModal();
     });
 
     return $aside;
