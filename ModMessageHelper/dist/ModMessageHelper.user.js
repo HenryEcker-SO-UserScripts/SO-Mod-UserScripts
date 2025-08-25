@@ -30,6 +30,7 @@
     const GearSvgHtmlString = '<svg aria-hidden="true" class="svg-icon iconGear" width="18" height="18" viewBox="0 0 18 18"><path d="m14.53 6.3.28.67C17 7.77 17 7.86 17 8.12V9.8c0 .26 0 .35-2.18 1.22l-.27.66c.98 2.11.91 2.18.73 2.37l-1.3 1.29h-.15q-.3 0-2.14-.8l-.66.27C10.23 17 10.13 17 9.88 17H8.2c-.26 0-.35 0-1.21-2.18l-.67-.27c-1.81.84-2.03.84-2.1.84h-.14l-.12-.1-1.19-1.2c-.18-.18-.24-.25.7-2.4l-.28-.65C1 10.24 1 10.14 1 9.88V8.2c0-.27 0-.35 2.18-1.21l.27-.66c-.98-2.12-.91-2.19-.72-2.39l1.28-1.28h.16q.3.01 2.14.8l.66-.27C7.77 1 7.87 1 8.12 1H9.8c.26 0 .34 0 1.2 2.18l.67.28c1.82-.84 2.03-.84 2.1-.84h.14l.12.1 1.2 1.19c.18.18.24.25-.7 2.4m-8.4 3.9a3.1 3.1 0 1 0 5.73-2.4 3.1 3.1 0 0 0-5.72 2.4"></path></svg>';
     const ui = {
       BlankTemplateOptionValue: "0",
+      // This can't be moved to Constants without creating a circular dependency
       get $pageTitle() {
         return $(".s-page-title");
       },
@@ -49,7 +50,7 @@
         return $("#select-template-menu");
       },
       get $systemReasonOptions() {
-        return this.$templateSelector.find(`option[value!="${this.BlankTemplateOptionValue}"]:not([data-is-custom])`);
+        return this.$templateSelector.find(`option[value!="${this.BlankTemplateOptionValue}"]:not([data-is-custom="true"])`);
       },
       get reasonId() {
         return this.$templateSelector.val();
@@ -117,6 +118,7 @@
     };
     const parentUrl = StackExchange?.options?.site?.parentUrl ?? location.origin;
     const parentName = StackExchange.options?.site?.name;
+    const GM_STORE_KEY = "ModMessageTemplates";
     const modalId = "usr-mmt-editor-modal";
     const SystemReasonIdSet = new Set(ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray());
     function showStandardDangerToast(message, transientTimeout) {
@@ -212,8 +214,11 @@
       Header: $opt($string),
       Footer: $opt($string)
     });
+    function buildCtx() {
+      return { errors: [] };
+    }
     function validateTemplate(maybeTemplate, validationErrorMessage) {
-      const ctx = { errors: [] };
+      const ctx = buildCtx();
       const result = templateValidator(maybeTemplate, ctx);
       if (ctx.errors.length > 0) {
         console.error("Validation Error", ctx);
@@ -224,7 +229,7 @@
     }
     function validateTemplateArray(maybeTemplateArray, validationErrorMessage) {
       if (maybeTemplateArray.every((t) => {
-        const ctx = { errors: [] };
+        const ctx = buildCtx();
         const result = templateValidator(t, ctx);
         if (ctx.errors.length > 0) {
           console.error("Validation Error", ctx);
@@ -238,17 +243,16 @@
     }
     class TemplateManager {
       templates;
-      GM_Store_Key = "ModMessageTemplates";
       _hasPendingChanges;
       constructor() {
-        this.templates = GM_getValue(this.GM_Store_Key, []);
+        this.templates = GM_getValue(GM_STORE_KEY, []);
         this._hasPendingChanges = false;
       }
       isSystemTemplate(reasonId) {
         return SystemReasonIdSet.has(reasonId);
       }
       save() {
-        GM_setValue(this.GM_Store_Key, this.templates);
+        GM_setValue(GM_STORE_KEY, this.templates);
         this._hasPendingChanges = true;
       }
       get count() {
@@ -259,6 +263,12 @@
       }
       hasPendingChanges() {
         return this._hasPendingChanges;
+      }
+      has(index) {
+        return this.templates?.[index] !== void 0;
+      }
+      hasName(templateName) {
+        return this.templates.some((t) => t.TemplateName === templateName);
       }
       lookupByIndex(index) {
         return this.templates[index];
@@ -315,7 +325,7 @@
           }
         }
         const foundIndex = this.getIndexFromName(existingTemplate.TemplateName);
-        if (foundIndex !== -1 && index !== foundIndex) {
+        if (index !== foundIndex) {
           showStandardDangerToast("A different template with this name already exists! Template names must be unique.");
           return false;
         }
@@ -344,12 +354,6 @@
       }
       async saveExistingTemplate(maybeTemplate, index) {
         return this.unsafeInsertOrUpdate(maybeTemplate, index, false, true);
-      }
-      has(index) {
-        return this.templates?.[index] !== void 0;
-      }
-      hasName(templateName) {
-        return this.templates.some((t) => t.TemplateName === templateName);
       }
       async delete(index) {
         if (!this.has(index)) {

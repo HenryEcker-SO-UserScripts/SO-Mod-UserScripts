@@ -1,6 +1,6 @@
 import {arrayMoveMutable} from 'array-move';
 import {$boolean, $number, $object, $opt, $string} from 'lizod';
-import {SystemReasonIdSet} from './ModMessageConstants';
+import {GM_STORE_KEY, SystemReasonIdSet} from './ModMessageConstants';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import {showStandardConfirmModal, showStandardDangerToast} from './StandardToastAndModalHelpers';
 
@@ -29,8 +29,12 @@ const templateValidator = $object({
     Footer: $opt($string),
 });
 
+function buildCtx(): { errors: ((string | symbol | number)[])[]; } {
+    return {errors: []};
+}
+
 function validateTemplate(maybeTemplate: unknown, validationErrorMessage: string): maybeTemplate is UserDefinedMessageTemplate {
-    const ctx: { errors: ((string | symbol | number)[])[]; } = {errors: []};
+    const ctx = buildCtx();
     const result = templateValidator(maybeTemplate, ctx);
     if (ctx.errors.length > 0) {
         console.error('Validation Error', ctx);
@@ -42,7 +46,7 @@ function validateTemplate(maybeTemplate: unknown, validationErrorMessage: string
 
 function validateTemplateArray(maybeTemplateArray: unknown[], validationErrorMessage: string): maybeTemplateArray is UserDefinedMessageTemplate[] {
     if (maybeTemplateArray.every(t => {
-        const ctx: { errors: ((string | symbol | number)[])[]; } = {errors: []};
+        const ctx = buildCtx();
         const result = templateValidator(t, ctx);
         if (ctx.errors.length > 0) {
             console.error('Validation Error', ctx);
@@ -57,11 +61,10 @@ function validateTemplateArray(maybeTemplateArray: unknown[], validationErrorMes
 
 class TemplateManager {
     private readonly templates: UserDefinedMessageTemplate[];
-    private readonly GM_Store_Key = 'ModMessageTemplates';
     private _hasPendingChanges: boolean;
 
     constructor() {
-        this.templates = GM_getValue<UserDefinedMessageTemplate[]>(this.GM_Store_Key, []);
+        this.templates = GM_getValue<UserDefinedMessageTemplate[]>(GM_STORE_KEY, []);
         this._hasPendingChanges = false;
     }
 
@@ -69,23 +72,31 @@ class TemplateManager {
         return SystemReasonIdSet.has(reasonId);
     }
 
-    save() {
+    save(): void {
         // Update GM Store
-        GM_setValue(this.GM_Store_Key, this.templates);
+        GM_setValue(GM_STORE_KEY, this.templates);
         // We don't know if anything actually has changed, but still flag that *something* was saved
         this._hasPendingChanges = true;
     }
 
-    get count() {
+    get count(): number {
         return this.templates.length;
     }
 
-    get customMessageTemplates() {
+    get customMessageTemplates(): UserDefinedMessageTemplate[] {
         return this.templates;
     }
 
-    hasPendingChanges() {
+    hasPendingChanges(): boolean {
         return this._hasPendingChanges;
+    }
+
+    has(index: number): boolean {
+        return this.templates?.[index] !== undefined;
+    }
+
+    hasName(templateName: string): boolean {
+        return this.templates.some(t => t.TemplateName === templateName);
     }
 
     lookupByIndex(index: number): UserDefinedMessageTemplate {
@@ -98,16 +109,16 @@ class TemplateManager {
         });
     }
 
-    private getIndexFromName(name: string) {
+    private getIndexFromName(name: string): number {
         return this.templates.findIndex(t => t.TemplateName === name);
     }
 
-    move(fromIndex: number, toIndex: number) {
+    move(fromIndex: number, toIndex: number): void {
         arrayMoveMutable(this.templates, fromIndex, toIndex);
         this.save();
     }
 
-    private testAgainstExistingSystemReasonIds(templateName: string) {
+    private testAgainstExistingSystemReasonIds(templateName: string): boolean {
         if (this.isSystemTemplate(templateName)) {
             showStandardDangerToast('Template names cannot match any existing system reason ids');
             return false;
@@ -140,6 +151,7 @@ class TemplateManager {
         if (!this.testAgainstExistingSystemReasonIds(existingTemplate.TemplateName)) {
             return false;
         }
+        // In update mode so index was already found (don't need to also check this.hasName
         if (shouldPromptDuplicates) {
             // Template already exists
             const shouldReplace = await showStandardConfirmModal({
@@ -154,8 +166,10 @@ class TemplateManager {
             }
         }
 
+        // See if there's a different template that has the new name
+        // Prevents duplicate template name creation during updates
         const foundIndex = this.getIndexFromName(existingTemplate.TemplateName);
-        if (foundIndex !== -1 && index !== foundIndex) {
+        if (index !== foundIndex) {
             showStandardDangerToast('A different template with this name already exists! Template names must be unique.');
             return false;
         }
@@ -191,15 +205,6 @@ class TemplateManager {
 
     async saveExistingTemplate(maybeTemplate: unknown, index: number): Promise<boolean> {
         return this.unsafeInsertOrUpdate(maybeTemplate, index, false, true);
-    }
-
-
-    has(index: number): boolean {
-        return this.templates?.[index] !== undefined;
-    }
-
-    hasName(templateName: string): boolean {
-        return this.templates.some(t => t.TemplateName === templateName);
     }
 
     async delete(index: number): Promise<void> {
