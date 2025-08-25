@@ -15,7 +15,8 @@
     "project": "./tsconfig.json"
   },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "@stylistic/eslint-plugin"
   ],
   "root": true,
   "rules": {
@@ -37,11 +38,11 @@
         "allowArrowFunctions": false
       }
     ],
-    "@typescript-eslint/semi": [
+    "@stylistic/semi": [
       "error",
       "always"
     ],
-    "@typescript-eslint/member-delimiter-style": [
+    "@stylistic/member-delimiter-style": [
       "error",
       {
         "multiline": {
@@ -111,7 +112,7 @@
       "error"
     ],
     "no-extra-parens": "off",
-    "@typescript-eslint/no-extra-parens": [
+    "@stylistic/no-extra-parens": [
       "error"
     ],
     "no-constant-condition": "warn"
