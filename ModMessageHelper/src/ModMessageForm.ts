@@ -1,5 +1,8 @@
 export default {
     BlankTemplateOptionValue: '0',
+    get $pageTitle(): JQuery {
+        return $('.s-page-title');
+    },
     get $form(): JQuery<HTMLFormElement> {
         return $('#js-msg-form');
     },

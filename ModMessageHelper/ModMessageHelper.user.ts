@@ -193,7 +193,7 @@ function attachSettingsButton() {
         ev.preventDefault();
         openEditorModal();
     });
-    ui.$form.before($settingsButton);
+    ui.$pageTitle.addClass('ai-center').append($settingsButton);
 }
 
 attachTemplateNameInputField();
