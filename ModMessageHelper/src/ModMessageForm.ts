@@ -1,5 +1,6 @@
 export default {
-    BlankTemplateOptionValue: '0', // This can't be moved to Constants without creating a circular dependency
+    // This can't be moved to Constants without creating a circular dependency
+    BlankTemplateOptionValue: '0',
     get $pageTitle(): JQuery {
         return $('.s-page-title');
     },
@@ -19,7 +20,7 @@ export default {
         return $('#select-template-menu');
     },
     get $systemReasonOptions(): JQuery {
-        // Get all system options excluding value blankTemplateOptionValue which is "Please select a template...")
+        // Get all system options excluding value blankTemplateOptionValue which is "Please select a template..."
         // Also exclude any custom reasons (noted by the attribute data-is-custom="true")
         return this.$templateSelector.find(`option[value!="${this.BlankTemplateOptionValue}"]:not([data-is-custom="true"])`);
     },

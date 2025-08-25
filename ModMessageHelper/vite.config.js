@@ -1,6 +1,6 @@
 import {buildMatchPatterns} from '../banner-build-util';
 import banner from 'vite-plugin-banner';
-
+import stripComments from 'vite-plugin-strip-comments';
 
 function indentString(str, count) {
     return str.replace(/^/gm, ' '.repeat(count));
@@ -49,7 +49,8 @@ ${indentString(file.code, 4).trimEnd()}
 export default {
     plugins: [
         banner(bannerText),
-        modOnlyReadyWrapPlugin
+        stripComments({type: 'none'}),
+        modOnlyReadyWrapPlugin,
     ],
     build: {
         rollupOptions: {
