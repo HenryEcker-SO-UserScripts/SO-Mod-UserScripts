@@ -1,6 +1,6 @@
 import {GearSvgHtmlString} from './src/Icons';
 import {parentName, parentUrl} from './src/ModMessageConstants';
-import ui from './src/ModMessageForm';
+import ui from './src/ModMessageFormUI';
 import type {AjaxSuccess, TemplateRequestResponse} from './src/ModMessageTypes';
 import {openEditorModal, showStandardDangerToast} from './src/StandardToastAndModalHelpers';
 import {$messageTemplateEditorModal} from './src/TemplateEditorModal';

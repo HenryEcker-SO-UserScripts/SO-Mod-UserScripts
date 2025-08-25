@@ -1,4 +1,4 @@
-export default {
+const ui = {
     // This can't be moved to Constants without creating a circular dependency
     BlankTemplateOptionValue: '0',
     get $pageTitle(): JQuery {
@@ -91,3 +91,7 @@ export default {
         return this.displayedSelectedTemplate !== this.customTemplateName;
     }
 };
+
+export const SystemReasonIdSet = new Set(ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray() as string[]);
+
+export default ui;

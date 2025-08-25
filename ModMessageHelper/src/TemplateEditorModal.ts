@@ -1,8 +1,9 @@
 import {InfoSvgHtmlString} from './Icons';
-import {modalId, parentName, parentUrl, SystemReasonIdSet} from './ModMessageConstants';
+import {modalId, parentName, parentUrl} from './ModMessageConstants';
 import {type BooleanString, type UserDefinedMessageTemplate} from './ModMessageTypes';
 import {hideEditorModal, showStandardConfirmModal} from './StandardToastAndModalHelpers';
 import templateManager from './TemplateManager';
+import {SystemReasonIdSet} from './ModMessageFormUI';
 
 export function $messageTemplateEditorModal(): JQuery {
     // IDs

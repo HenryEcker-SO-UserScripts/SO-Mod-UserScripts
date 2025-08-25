@@ -1,8 +1,9 @@
 import {arrayMoveMutable} from 'array-move';
 import {$boolean, $number, $object, $opt, $string} from 'lizod';
-import {GM_STORE_KEY, SystemReasonIdSet} from './ModMessageConstants';
+import {GM_STORE_KEY} from './ModMessageConstants';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import {showStandardConfirmModal, showStandardDangerToast} from './StandardToastAndModalHelpers';
+import {SystemReasonIdSet} from './ModMessageFormUI';
 
 
 function $nonEmptyString(input: unknown): input is string {
@@ -29,7 +30,7 @@ const templateValidator = $object({
     Footer: $opt($string),
 });
 
-function buildCtx(): { errors: ((string | symbol | number)[])[]; } {
+function buildCtx(): { errors: (string | symbol | number)[][]; } {
     return {errors: []};
 }
 
@@ -242,10 +243,13 @@ class TemplateManager {
 
             this.save();
             return true;
-        } catch (SyntaxError) {
-            showStandardDangerToast('Invalid JSON!', 2e3);
+        } catch (e) {
+            if (e instanceof SyntaxError) {
+                showStandardDangerToast('Invalid JSON!', 2e3);
+            }
+            console.error(e);
+            return false;
         }
-        return false;
     }
 
     exportToJsonString(indexes: number[]): string {
