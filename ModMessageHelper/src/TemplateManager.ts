@@ -1,6 +1,6 @@
 import {arrayMoveMutable} from 'array-move';
-import {$boolean, $enum, $number, $object, $opt, $string} from 'lizod';
-import {SystemReasonIdList, SystemReasonIdSet} from './ModMessageConstants';
+import {$boolean, $number, $object, $opt, $string} from 'lizod';
+import {SystemReasonIdSet} from './ModMessageConstants';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import {showStandardConfirmModal, showStandardDangerToast} from './StandardToastAndModalHelpers';
 
@@ -9,10 +9,18 @@ function $nonEmptyString(input: unknown): input is string {
     return $string(input) && input.trim().length > 0;
 }
 
+function $setMember(sourceSet: Set<string>) {
+    function isMember(input: unknown): input is string {
+        return $string(input) && sourceSet.has(input);
+    }
+
+    return isMember;
+}
+
 const templateValidator = $object({
     TemplateName: $nonEmptyString,
     TemplateBody: $nonEmptyString,
-    AnalogousSystemReasonId: $enum(SystemReasonIdList),
+    AnalogousSystemReasonId: $setMember(SystemReasonIdSet),
     DefaultSuspendDays: $opt($number),
     StackOverflowOnly: $opt($boolean),
     IncludeSuspensionFooter: $opt($boolean),

@@ -5,5 +5,4 @@ export const parentName = StackExchange.options?.site?.name;
 
 export const modalId = 'usr-mmt-editor-modal';
 
-export const SystemReasonIdList = ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray() as string[];
-export const SystemReasonIdSet = new Set(SystemReasonIdList);
+export const SystemReasonIdSet = new Set(ui.$systemReasonOptions.map((_, n) => $(n).val()).toArray() as string[]);
