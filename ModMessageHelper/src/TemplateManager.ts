@@ -2,7 +2,7 @@ import {arrayMoveMutable} from 'array-move';
 import {$boolean, $number, $object, $opt, $string} from 'lizod';
 import {GM_STORE_KEY} from './ModMessageConstants';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
-import {showStandardConfirmModal, showStandardDangerToast} from './StandardToastAndModalHelpers';
+import {showStandardDangerToast} from './StandardToastAndModalHelpers';
 import {SystemReasonIdSet} from './ModMessageFormUI';
 
 
@@ -155,7 +155,7 @@ class TemplateManager {
         // In update mode so index was already found (don't need to also check this.hasName
         if (shouldPromptDuplicates) {
             // Template already exists
-            const shouldReplace = await showStandardConfirmModal({
+            const shouldReplace = await StackExchange.helpers.showConfirmModal({
                 title: 'Duplicate Template Found',
                 bodyHtml: `<div><p>The template "${existingTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
                 buttonLabel: 'Overwrite'
@@ -212,7 +212,7 @@ class TemplateManager {
         if (!this.has(index)) {
             return;
         }
-        const shouldDelete = await showStandardConfirmModal({
+        const shouldDelete = await StackExchange.helpers.showConfirmModal({
             title: 'Template Deletion',
             bodyHtml: `<div><p>This will delete the following template "${this.templates[index].TemplateName}"</p><p>Are you sure you want to permenantly delete this template?</p></div>`,
             buttonLabel: 'Yes'

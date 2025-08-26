@@ -8,21 +8,6 @@ export function showStandardDangerToast(message: string, transientTimeout?: numb
     });
 }
 
-interface StandardShowConfirmModalProps {
-    title: StackExchange.ModalType['title'];
-    bodyHtml: StackExchange.ModalType['bodyHtml'];
-    buttonLabel: StackExchange.ModalType['buttonLabel'];
-}
-
-export function showStandardConfirmModal({title, bodyHtml, buttonLabel}: StandardShowConfirmModalProps) {
-    return StackExchange.helpers.showConfirmModal({
-        title: title,
-        bodyHtml: bodyHtml,
-        buttonLabel: buttonLabel
-    });
-}
-
-
 export function openEditorModal(){
     const modal = document.getElementById(modalId);
     modal.setAttribute('aria-hidden', 'false');

@@ -1,7 +1,7 @@
 import {InfoSvgHtmlString} from './Icons';
 import {modalId, parentName, parentUrl} from './ModMessageConstants';
 import {type BooleanString, type UserDefinedMessageTemplate} from './ModMessageTypes';
-import {hideEditorModal, showStandardConfirmModal} from './StandardToastAndModalHelpers';
+import {hideEditorModal} from './StandardToastAndModalHelpers';
 import templateManager from './TemplateManager';
 import {SystemReasonIdSet} from './ModMessageFormUI';
 
@@ -243,7 +243,7 @@ export function $messageTemplateEditorModal(): JQuery {
 
     async function dirtyNavigationConfirmModal(): Promise<boolean> {
         if (ElementManager.templateEditorFormIsDirty()) {
-            return showStandardConfirmModal({
+            return StackExchange.helpers.showConfirmModal({
                 title: 'Pending Changes',
                 bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>',
                 buttonLabel: 'Discard Changes'
@@ -290,7 +290,7 @@ export function $messageTemplateEditorModal(): JQuery {
                 const srcIndex = Number(e.originalEvent.dataTransfer.getData('text/plain'));
 
                 if (ElementManager.templateEditorFormIsDirty()) {
-                    const shouldNavigate = await showStandardConfirmModal({
+                    const shouldNavigate = await StackExchange.helpers.showConfirmModal({
                         title: 'Pending Changes',
                         bodyHtml: '<div><p>There are unsaved changes in the template!</p><p>Reordering will discard these changes.</p><p>Are you sure you want to reorder these items?</p></div>',
                         buttonLabel: 'Discard Changes'
@@ -692,7 +692,7 @@ export function $messageTemplateEditorModal(): JQuery {
             return;
         }
         if (templateManager.hasPendingChanges()) {
-            const reloadNow = await showStandardConfirmModal({
+            const reloadNow = await StackExchange.helpers.showConfirmModal({
                 title: 'Message options changed',
                 bodyHtml: '<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking \'Cancel\' will still close the modal, but the page will not reload.</sub></div>',
                 buttonLabel: 'Reload'

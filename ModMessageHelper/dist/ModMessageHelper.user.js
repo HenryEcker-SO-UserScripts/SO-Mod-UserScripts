@@ -127,13 +127,6 @@
         transientTimeout: transientTimeout ?? 4e3
       });
     }
-    function showStandardConfirmModal({ title, bodyHtml, buttonLabel }) {
-      return StackExchange.helpers.showConfirmModal({
-        title,
-        bodyHtml,
-        buttonLabel
-      });
-    }
     function openEditorModal() {
       const modal = document.getElementById(modalId);
       modal.setAttribute("aria-hidden", "false");
@@ -314,7 +307,7 @@
           return false;
         }
         if (shouldPromptDuplicates) {
-          const shouldReplace = await showStandardConfirmModal({
+          const shouldReplace = await StackExchange.helpers.showConfirmModal({
             title: "Duplicate Template Found",
             bodyHtml: `<div><p>The template "${existingTemplate.TemplateName}" already exists.</p><p>Do you want to overwrite the existing template with the import?</p></div>`,
             buttonLabel: "Overwrite"
@@ -358,7 +351,7 @@
         if (!this.has(index)) {
           return;
         }
-        const shouldDelete = await showStandardConfirmModal({
+        const shouldDelete = await StackExchange.helpers.showConfirmModal({
           title: "Template Deletion",
           bodyHtml: `<div><p>This will delete the following template "${this.templates[index].TemplateName}"</p><p>Are you sure you want to permenantly delete this template?</p></div>`,
           buttonLabel: "Yes"
@@ -595,7 +588,7 @@
       };
       async function dirtyNavigationConfirmModal() {
         if (ElementManager.templateEditorFormIsDirty()) {
-          return showStandardConfirmModal({
+          return StackExchange.helpers.showConfirmModal({
             title: "Pending Changes",
             bodyHtml: "<div><p>There are unsaved changes in the template!</p><p>Are you sure that you want to navigate away?</p></div>",
             buttonLabel: "Discard Changes"
@@ -639,7 +632,7 @@
             const currentTargetIndex = $("li", $templateList).index($target);
             const srcIndex = Number(e.originalEvent.dataTransfer.getData("text/plain"));
             if (ElementManager.templateEditorFormIsDirty()) {
-              const shouldNavigate = await showStandardConfirmModal({
+              const shouldNavigate = await StackExchange.helpers.showConfirmModal({
                 title: "Pending Changes",
                 bodyHtml: "<div><p>There are unsaved changes in the template!</p><p>Reordering will discard these changes.</p><p>Are you sure you want to reorder these items?</p></div>",
                 buttonLabel: "Discard Changes"
@@ -979,7 +972,7 @@
           return;
         }
         if (templateManager.hasPendingChanges()) {
-          const reloadNow = await showStandardConfirmModal({
+          const reloadNow = await StackExchange.helpers.showConfirmModal({
             title: "Message options changed",
             bodyHtml: "<div><p>Changes have been made to the templates which may not be reflected in the mod message menu selector.</p><p>To ensure that all options are up-to-date, reload the page.</p><sub>Clicking 'Cancel' will still close the modal, but the page will not reload.</sub></div>",
             buttonLabel: "Reload"
