@@ -477,7 +477,7 @@ export function $messageTemplateEditorModal(): JQuery {
                            role="menu">
                         <div class="s-popover--arrow"></div>
                         <div class="s-popover--content">
-                            <p>This option is useful in any templates that use {suspensionDurationDays} within the body</p>
+                            <p>Turning off the suspension footer is useful in any templates that use {suspensionDurationDays} within the body</p>
                         </div>
                     </div>
                 </div>
