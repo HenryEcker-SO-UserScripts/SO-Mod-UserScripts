@@ -1110,7 +1110,7 @@
             showStandardDangerToast("UserScript Message - Template with that name not found!");
             return;
           }
-          const selectedTemplate = templateSearch[0];
+          const selectedTemplate = structuredClone(templateSearch[0]);
           selectedTemplate.TemplateBody = selectedTemplate.TemplateBody.formatUnicorn({ parentUrl, parentName });
           void $.ajax({
             type: "GET",

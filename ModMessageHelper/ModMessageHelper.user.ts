@@ -153,7 +153,8 @@ function setupProxyForNonDefaults() {
                 return;
             }
 
-            const selectedTemplate = templateSearch[0];
+            // Clone found template to not modify the template with formatted values
+            const selectedTemplate = structuredClone(templateSearch[0]);
             // Replace Known Placeholders in TemplateBody
             selectedTemplate.TemplateBody = selectedTemplate.TemplateBody.formatUnicorn({parentUrl, parentName});
             // Make a different request to an analogous system defined reason to populate the majority of the fields
