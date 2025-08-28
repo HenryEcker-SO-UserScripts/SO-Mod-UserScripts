@@ -740,7 +740,7 @@
                                     <hr/>
                                     <span>The following replacement strings are supported by the base UI:</span>
                                     <dl class="my6 ml6">
-                                        <dt class="fw-bold">{todo}</dt><dd>Prevents the messaage from being submitted.</dd>
+                                        <dt class="fw-bold">{todo}</dt><dd>Prevents the message from being submitted.</dd>
                                         <dt class="fw-bold mt8">{suspensionDurationDays}</dt><dd>The number of days of the suspension.</dd>
                                         <dt class="fw-bold mt8">{optionalSuspensionAutoMessage}</dt><dd>This is the standard message about suspensions also called 'Suspension Footer'.</dd>
                                     </dl>
@@ -776,7 +776,7 @@
                                    role="menu">
                                 <div class="s-popover--arrow"></div>
                                 <div class="s-popover--content">
-                                    <p>This is used to determine which suspension banner shows on the user profile.</p>
+                                    <p class="mb0">This is used to determine which suspension banner shows on the user profile.</p>
                                 </div>
                             </div>
                         </div>
@@ -814,7 +814,7 @@
                                role="menu">
                             <div class="s-popover--arrow"></div>
                             <div class="s-popover--content">
-                                <p>Turning off the suspension footer is useful in any templates that use {suspensionDurationDays} within the body</p>
+                                <p class="mb0">Turning off the suspension footer is useful in any templates that use {suspensionDurationDays} within the body</p>
                             </div>
                         </div>
                     </div>
@@ -835,7 +835,7 @@
                                role="menu">
                             <div class="s-popover--arrow"></div>
                             <div class="s-popover--content">
-                                <p>Turning this option off will remove the Regards, Moderation Team message from the Footer.</p>
+                                <p class="mb0">Turning this option off will remove the Regards, Moderation Team message from the Footer.</p>
                             </div>
                         </div>
                     </div>
