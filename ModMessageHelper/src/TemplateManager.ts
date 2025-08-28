@@ -1,9 +1,9 @@
 import {arrayMoveMutable} from 'array-move';
-import {$boolean, $number, $object, $opt, $string} from 'lizod';
+import {$boolean, $const, $number, $object, $opt, $string} from 'lizod';
 import {GM_STORE_KEY} from './ModMessageConstants';
+import {SystemReasonIdSet} from './ModMessageFormUI';
 import {type UserDefinedMessageTemplate} from './ModMessageTypes';
 import {showStandardDangerToast} from './StandardToastAndModalHelpers';
-import {SystemReasonIdSet} from './ModMessageFormUI';
 
 
 function $nonEmptyString(input: unknown): input is string {
@@ -26,8 +26,8 @@ const templateValidator = $object({
     StackOverflowOnly: $opt($boolean),
     IncludeSuspensionFooter: $opt($boolean),
     SuspensionFooter: $opt($string),
-    Header: $opt($string),
-    Footer: $opt($string),
+    // Header: $opt($string), // Don't allow Header in templates until (or if) there is UI support
+    Footer: $opt($const('')), // Only Allow Empty String as an option here
 });
 
 function buildCtx(): { errors: (string | symbol | number)[][]; } {

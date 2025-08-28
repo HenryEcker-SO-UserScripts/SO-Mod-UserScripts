@@ -24,6 +24,7 @@ export function $messageTemplateEditorModal(): JQuery {
     const templateFormTemplateBodyInputFieldId = `${modalId}-template-form-body-field`;
     const templateFormStackOverflowOnly = `${modalId}-template-form-stackoverflow-only-checkbox`;
     const templateFormIncludeSuspensionFooter = `${modalId}-template-form-include-suspension-footer-checkbox`;
+    const templateFormIncludeRegardsFooter = `${modalId}-template-form-include-regards-footer-checkbox`;
 
     const exportOutputTextarea = `${modalId}-template-export-output-text`;
 
@@ -146,6 +147,9 @@ export function $messageTemplateEditorModal(): JQuery {
         },
         get $templateFormIncludeSuspensionFooter(): JQuery<HTMLInputElement> {
             return $(`#${templateFormIncludeSuspensionFooter}`, $aside);
+        },
+        get $templateFormIncludeRegardsFooter(): JQuery<HTMLInputElement> {
+            return $(`#${templateFormIncludeRegardsFooter}`, $aside);
         },
         // Buttons
         get $importTemplateButton(): JQuery<HTMLButtonElement> {
@@ -361,6 +365,7 @@ export function $messageTemplateEditorModal(): JQuery {
         ElementManager.$templateFormTemplateBodyInputField.val(template.TemplateBody);
         ElementManager.$templateFormStackOverflowOnly.prop('checked', template.StackOverflowOnly ?? false);
         ElementManager.$templateFormIncludeSuspensionFooter.prop('checked', template.IncludeSuspensionFooter ?? true);
+        ElementManager.$templateFormIncludeRegardsFooter.prop('checked', template.Footer === undefined);
         // Form is not dirty after being populated
         ElementManager.setTemplateEditorFormIsDirty('false');
     }
@@ -478,6 +483,27 @@ export function $messageTemplateEditorModal(): JQuery {
                         <div class="s-popover--arrow"></div>
                         <div class="s-popover--content">
                             <p>Turning off the suspension footer is useful in any templates that use {suspensionDurationDays} within the body</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex fd-row fw-nowrap g8 ai-center my2">
+                    <label class="s-label" for="${templateFormIncludeRegardsFooter}">Include Regards Footer</label>
+                    <input class="s-toggle-switch" id="${templateFormIncludeRegardsFooter}" type="checkbox" checked name="Footer">
+                    <button class="flex--item s-btn s-btn__muted p4" 
+                                role="button"
+                                type="button"
+                                aria-controls="${templateFormIncludeRegardsFooter}-popover"
+                                aria-expanded="false"
+                                data-controller="s-popover"
+                                data-action="s-popover#toggle"
+                                data-s-popover-placement="auto"
+                                data-s-popover-toggle-class="is-selected">${InfoSvgHtmlString}</button>
+                    <div class="s-popover"
+                           id="${templateFormIncludeRegardsFooter}-popover"
+                           role="menu">
+                        <div class="s-popover--arrow"></div>
+                        <div class="s-popover--content">
+                            <p>Turning this option off will remove the Regards, Moderation Team message from the Footer.</p>
                         </div>
                     </div>
                 </div>
@@ -609,7 +635,11 @@ export function $messageTemplateEditorModal(): JQuery {
         if (!shouldIncludeSuspensionFooter) {
             templateFromFormData['IncludeSuspensionFooter'] = shouldIncludeSuspensionFooter;
         }
-
+        // If the Include Regards Footer is not checked blank it out with an empty space
+        const shouldIncludeRegardsFooter = ElementManager.$templateFormIncludeRegardsFooter.prop('checked');
+        if (!shouldIncludeRegardsFooter) {
+            templateFromFormData['Footer'] = '';
+        }
 
         let isValid = true;
 
