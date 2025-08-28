@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      1.0.0
+// @version      1.0.1
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -440,7 +440,7 @@
                                 </button>
                             </div>
                             <div class="d-flex fd-row fw-nowrap g6 ai-center">
-                                <input id="${importTemplateInputField}" class="flex--item s-input wmn2 wmx3"/>
+                                <input id="${importTemplateInputField}" class="flex--item s-input wmn2 wmx4" placeholder="Paste your import here..."/>
                                 <button class="flex--item s-btn s-btn__outlined s-btn__muted ws-nowrap" type="button"
                                         id="${importTemplateButtonId}" disabled>
                                     Import Template

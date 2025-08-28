@@ -13,7 +13,7 @@ const bannerText = `// ==UserScript==
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      1.0.0
+// @version      1.0.1
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 ${buildMatchPatterns('// @match        ', '/users/message/create/*')}
