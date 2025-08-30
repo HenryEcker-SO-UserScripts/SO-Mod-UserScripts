@@ -3,7 +3,7 @@
 // @description  Adds mod message templates with default configurations to the mod message drop-down
 // @homepage     https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts
 // @author       Henry Ecker (https://github.com/HenryEcker)
-// @version      1.0.1
+// @version      1.0.2
 // @downloadURL  https://github.com/HenryEcker-SO-UserScripts/SO-Mod-UserScripts/raw/master/ModMessageHelper/dist/ModMessageHelper.user.js
 //
 // @match        *://*.askubuntu.com/users/message/create/*
@@ -212,29 +212,26 @@
     function buildCtx() {
       return { errors: [] };
     }
-    function validateTemplate(maybeTemplate, validationErrorMessage) {
+    function validateTemplate(maybeTemplate) {
       const ctx = buildCtx();
       const result = templateValidator(maybeTemplate, ctx);
       if (ctx.errors.length > 0) {
-        console.error("Validation Error", ctx);
-        showStandardDangerToast(validationErrorMessage);
-        return false;
+        console.error({
+          message: "Mod Message Template Validation Error",
+          validatedObject: maybeTemplate,
+          validationResults: ctx
+        });
       }
       return result;
     }
-    function validateTemplateArray(maybeTemplateArray, validationErrorMessage) {
-      if (maybeTemplateArray.every((t) => {
-        const ctx = buildCtx();
-        const result = templateValidator(t, ctx);
-        if (ctx.errors.length > 0) {
-          console.error("Validation Error", ctx);
+    function validateTemplateArray(maybeTemplateArray) {
+      let isValid = true;
+      for (const maybeTemplate of maybeTemplateArray) {
+        if (!validateTemplate(maybeTemplate)) {
+          isValid = false;
         }
-        return result;
-      })) {
-        return true;
       }
-      showStandardDangerToast(validationErrorMessage);
-      return false;
+      return isValid;
     }
     class TemplateManager {
       templates;
@@ -339,7 +336,8 @@
         }
       }
       async unsafeInsertOrUpdate(maybeTemplate, index, shouldPromptDuplicates, shouldSave) {
-        if (!validateTemplate(maybeTemplate, "Unable to parse template. See console for errors.")) {
+        if (!validateTemplate(maybeTemplate)) {
+          showStandardDangerToast("Unable to parse template. See console for errors.");
           return false;
         }
         return this.insertOrUpdate(maybeTemplate, index, shouldPromptDuplicates, shouldSave);
@@ -371,7 +369,8 @@
           if (!Array.isArray(maybeTemplateArray)) {
             maybeTemplateArray = [maybeTemplateArray];
           }
-          if (!validateTemplateArray(maybeTemplateArray, "Unable to parse template import. See console error for more details")) {
+          if (!validateTemplateArray(maybeTemplateArray)) {
+            showStandardDangerToast("Unable to parse template import. See console error for more details");
             return false;
           }
           for (const newTemplate of maybeTemplateArray) {
@@ -588,6 +587,7 @@
           populateFormFromTemplate(templateManager.lookupByIndex(this.selected));
           ElementManager.$templateListContainer.find(`li:eq(${this.selected})`).addClass(activeListStyleClass);
           ElementManager.$deleteTemplateButton.prop("disabled", false);
+          ElementManager.clearValidationMessages();
         },
         reset() {
           this.active = 0;

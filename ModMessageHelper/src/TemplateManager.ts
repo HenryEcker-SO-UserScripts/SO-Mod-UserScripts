@@ -34,30 +34,28 @@ function buildCtx(): { errors: (string | symbol | number)[][]; } {
     return {errors: []};
 }
 
-function validateTemplate(maybeTemplate: unknown, validationErrorMessage: string): maybeTemplate is UserDefinedMessageTemplate {
+function validateTemplate(maybeTemplate: unknown): maybeTemplate is UserDefinedMessageTemplate {
     const ctx = buildCtx();
     const result = templateValidator(maybeTemplate, ctx);
     if (ctx.errors.length > 0) {
-        console.error('Validation Error', ctx);
-        showStandardDangerToast(validationErrorMessage);
-        return false;
+        console.error({
+            message: 'Mod Message Template Validation Error',
+            validatedObject: maybeTemplate,
+            validationResults: ctx
+        });
     }
     return result;
 }
 
-function validateTemplateArray(maybeTemplateArray: unknown[], validationErrorMessage: string): maybeTemplateArray is UserDefinedMessageTemplate[] {
-    if (maybeTemplateArray.every(t => {
-        const ctx = buildCtx();
-        const result = templateValidator(t, ctx);
-        if (ctx.errors.length > 0) {
-            console.error('Validation Error', ctx);
+function validateTemplateArray(maybeTemplateArray: unknown[]): maybeTemplateArray is UserDefinedMessageTemplate[] {
+    // Don't use maybeTemplateArray.every here because we want to validate every template and log the errors
+    let isValid = true;
+    for (const maybeTemplate of maybeTemplateArray) {
+        if (!validateTemplate(maybeTemplate)) {
+            isValid = false;
         }
-        return result;
-    })) {
-        return true;
     }
-    showStandardDangerToast(validationErrorMessage);
-    return false;
+    return isValid;
 }
 
 class TemplateManager {
@@ -194,7 +192,8 @@ class TemplateManager {
     }
 
     private async unsafeInsertOrUpdate(maybeTemplate: unknown, index: number | undefined, shouldPromptDuplicates: boolean, shouldSave: boolean): Promise<boolean> {
-        if (!validateTemplate(maybeTemplate, 'Unable to parse template. See console for errors.')) {
+        if (!validateTemplate(maybeTemplate)) {
+            showStandardDangerToast('Unable to parse template. See console for errors.');
             return false;
         }
         return this.insertOrUpdate(maybeTemplate, index, shouldPromptDuplicates, shouldSave);
@@ -233,7 +232,8 @@ class TemplateManager {
             }
             // Validate All Array Elements to ensure they are all valid Templates
             // If any part of the import is invalid, fail
-            if (!validateTemplateArray(maybeTemplateArray, 'Unable to parse template import. See console error for more details')) {
+            if (!validateTemplateArray(maybeTemplateArray)) {
+                showStandardDangerToast('Unable to parse template import. See console error for more details');
                 return false;
             }
             // Import by insert or updating
