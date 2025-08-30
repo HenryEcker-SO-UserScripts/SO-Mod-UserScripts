@@ -239,6 +239,8 @@ export function $messageTemplateEditorModal(): JQuery {
                 .addClass(activeListStyleClass);
             // Enable Delete Button
             ElementManager.$deleteTemplateButton.prop('disabled', false);
+            // Clear any validation messages
+            ElementManager.clearValidationMessages();
         },
         reset() {
             this.active = 0;
