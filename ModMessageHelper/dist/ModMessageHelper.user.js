@@ -127,14 +127,15 @@
         transientTimeout: transientTimeout ?? 4e3
       });
     }
+    function getModal() {
+      return document.getElementById(modalId);
+    }
     function openEditorModal() {
-      const modal = document.getElementById(modalId);
-      modal.setAttribute("aria-hidden", "false");
+      getModal().setAttribute("aria-hidden", "false");
       $(document.body).css("overflow", "hidden");
     }
     function hideEditorModal() {
-      const modal = document.getElementById(modalId);
-      modal.setAttribute("aria-hidden", "true");
+      getModal().setAttribute("aria-hidden", "true");
       $(document.body).css("overflow", "unset");
     }
     function arrayMoveMutable(array, fromIndex, toIndex) {

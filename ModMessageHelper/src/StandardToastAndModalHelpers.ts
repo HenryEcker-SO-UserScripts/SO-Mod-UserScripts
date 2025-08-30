@@ -8,16 +8,18 @@ export function showStandardDangerToast(message: string, transientTimeout?: numb
     });
 }
 
+export function getModal(){
+    return document.getElementById(modalId);
+}
+
 export function openEditorModal(){
-    const modal = document.getElementById(modalId);
-    modal.setAttribute('aria-hidden', 'false');
+    getModal().setAttribute('aria-hidden', 'false');
     // Prevent body behind modal from scrolling
     $(document.body).css('overflow', 'hidden');
 }
 
 export function hideEditorModal(){
-    const modal = document.getElementById(modalId);
-    modal.setAttribute('aria-hidden', 'true');
+    getModal().setAttribute('aria-hidden', 'true');
     // Allow background scrolling again
     $(document.body).css('overflow', 'unset');
 }
